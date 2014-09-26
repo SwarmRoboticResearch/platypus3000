@@ -9,7 +9,7 @@ In order to keep the dependency management and build system simple and portable 
 The following steps get you up and running:
 
 1. Make sure that maven 2 is installed on you system. On debian the according package is called `maven2`.
-2. Because Platypus3000 depends on the processing library and the processing library is not (yet) in the maven central
+2. Because Platypus3000 depends on the processing library which is not (yet) in the maven central
 repository you need to install it manually to your local maven repository. For this:
     1. Go to https://processing.org/download/ and download version 2.2 of processing and unpack it to your disk.
     2. Install the processing library and its pdf export library to your local maven repository using the following commands:
@@ -22,13 +22,14 @@ repository you need to install it manually to your local maven repository. For t
     mvn install:install-file -DgroupId=org.processing.pdf -DartifactId=pdf -Dversion=2.2 -Dpackaging=jar -Dfile=DOWNLOADPATH/processing-2.2/modes/java/libraries/pdf/library/pdf.jar
     ```
 
-    Make sure to modify the path.
+    Make sure to modify the DOWNLOADPATH.
 
-3. Now you are ready to build using maven:
+3. Now you are ready to build using maven. Execute
     ```
     mvn compile
     ```
-
+    inside the root directory of the Platypus 3000 repository.
+    
 Install
 -------
 After you finished the build setup, you can install Platypus3000 to your local maven repository. This means that you
