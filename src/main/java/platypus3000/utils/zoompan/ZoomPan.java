@@ -1,4 +1,4 @@
-package zoompan;
+package platypus3000.utils.zoompan;
 
 import processing.core.PApplet;
 import processing.core.PConstants;

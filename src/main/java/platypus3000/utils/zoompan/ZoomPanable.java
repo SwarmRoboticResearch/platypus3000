@@ -1,7 +1,6 @@
-package zoompan;
+package platypus3000.utils.zoompan;
 
-import zoompan.ZoomPan.ZoomPanBehaviour;
-
+import platypus3000.utils.zoompan.ZoomPan.ZoomPanBehaviour;
 import processing.core.PGraphics;
 import processing.core.PVector;
 

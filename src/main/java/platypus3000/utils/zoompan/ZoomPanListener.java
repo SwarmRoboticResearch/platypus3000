@@ -1,4 +1,4 @@
-package zoompan;
+package platypus3000.utils.zoompan;
 
 //******************************************************************************************
 /** Interface for object that need to respond to the end of a zoom or pan event.

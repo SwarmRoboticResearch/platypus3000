@@ -9,7 +9,6 @@ import platypus3000.simulation.Simulator;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
-import zoompan.ZoomPan;
 
 import java.util.HashSet;
 import java.util.Set;

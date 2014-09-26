@@ -1,12 +1,14 @@
-package zoompan;
+package platypus3000.utils.zoompan;
 
+import platypus3000.utils.zoompan.ZoomPan.ZoomPanBehaviour;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
-import processing.event.MouseEvent;
 
 import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
@@ -15,14 +17,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import zoompan.ZoomPan.ZoomPanBehaviour;
-
 // *****************************************************************************************
 
 /** Class to allow interactive zooming and panning of the Processing display. This is the
- *  Processing 2.x implementation that uses Processing 2's event handling model. This should
+ *  Processing 1.x implementation that uses Processing 1.x's old event handling model. This should
  *  not be created directly, but instead it will be created at runtime by the <code>ZoomPan</code>
- *  class if it detects Processing 2.x core libraries. Despite this, the class has to remain
+ *  class if it detects Processing 1.x core libraries. Despite this, the class has to remain
  *  public so that it can be registered by Processing's event handling model.
  *  @author Jo Wood and Aidan Slingsby, giCentre, City University London.
  *  @version 3.3, 13th March, 2013. 
@@ -42,43 +42,41 @@ import zoompan.ZoomPan.ZoomPanBehaviour;
  * source code (see COPYING.LESSER included with this source code). If not, see 
  * http://www.gnu.org/licenses/.
  */
-public class ZoomPan20 implements ZoomPanable
+
+public class ZoomPan15 implements ZoomPanable
 {
 	// ---------------------------- Object variables -----------------------------
 
-	private ZoomPanState zoomPanState;                // zoomScale and panOffset is now stored in an instance of zoomPanState
-	                                                  // All reporting of the zoom/offset and coordinate transformation in handled by this object
+	private ZoomPanState zoomPanState;              // zoomScale and panOffset is now stored in an instance of zoomPanState
+	                                                // All reporting of the zoom/offset and coordinate transformation in handled by this object
 	private PVector zoomStartPosition,oldPosition;
 	private double zoomStep;
 	private boolean isZooming, isPanning,isMouseCaptured;
 	private boolean allowZoomButton, allowPanButton;
 	private int mouseMask = 0;
 	private Vector<ZoomPanListener> listeners;
-	private int zoomMouseButton=PConstants.LEFT; 	  // Implies pan is the other button
+	private int zoomMouseButton=PConstants.LEFT; 	// Implies pan is the other button
 	
-	private Rectangle mouseBoundsMask=null; 		  // Zoom/pan bounding box (in screen space) mask for mouse controlled zooming/panning.
-	private Long timeAtLastWheelZoom=null;			  // The time at which the mouse wheel was last used - null if it hasn't been used since the last zoom event
-	private Timer timer; 							  // Timer so that we have a delay before a zoom event is triggered with the timer
-	private int millisecondsBeforeWheelZoomEvent=700; // Milliseconds before a zoom event is triggered by the mouse wheel - set to 0.7 of a second by default
+	private Rectangle mouseBoundsMask=null; 		// Zoom/pan bounding box (in screen space) mask for mouse controlled zooming/panning.
+	private Long timeAtLastWheelZoom=null;			// The time at which the mouse wheel was last used - null if it hasn't been used since the last zoom event
+	private Timer timer; 							// Timer so that we have a delay before a zoom event is triggered with the timer
+	private int millisecondsBeforeWheelZoomEvent=700;// Milliseconds before a zoom event is triggered by the mouse wheel - set to 0.7 of a second by default
 	
 	double minZoomScale=Double.MIN_VALUE;
 	double maxZoomScale=Double.MAX_VALUE;
 	
-	private ZoomPanBehaviour zoomPanType=ZoomPanBehaviour.BOTH_DIRECTIONS; //By default, zooming/panning is in x and y
 	
-	/* TODO: Panning constraints not yet implemented.
-	private float maxPanXOffset = -1;				// Absolute maximum permitted panning offset in x direction, or negative if no maximum.
-	private float maxPanYOffset = -1;				// Absolute maximum permitted panning offset in y direction, or negative if no maximum.
-	*/
+	private ZoomPanBehaviour zoomPanType= ZoomPanBehaviour.BOTH_DIRECTIONS;
 	
-	// ------------------------------- Constructors ------------------------------- 
+	// ------------------------------- Constructor ------------------------------- 
 
 	/** Initialises the zooming and panning transformations for the given applet context. 
 	 *  Can be used to have independent zooming in multiple windows by creating multiple
 	 *  objects each with a different PApplet object.
 	 *  @param aContext Applet context in which zooming and panning are to take place. 
 	 */
-	ZoomPan20(PApplet aContext)
+	@SuppressWarnings("deprecation")
+	ZoomPan15(PApplet aContext)
 	{
 		zoomPanState=new ZoomPanState(aContext,null);
 		if (aContext == null)
@@ -91,8 +89,7 @@ public class ZoomPan20 implements ZoomPanable
 		listeners = new Vector<ZoomPanListener>();
 		reset();
 		timer=new Timer();
-		
-		aContext.registerMethod("mouseEvent", this);
+		aContext.registerMouseEvent(this);
 		aContext.addMouseWheelListener(new MouseWheelMonitor());
 	}
 
@@ -102,7 +99,8 @@ public class ZoomPan20 implements ZoomPanable
 	 *  @param aContext Applet context in which zooming and panning are to take place. 
 	 *  @param graphics Graphics context in which to draw.
 	 */
-	ZoomPan20(PApplet aContext, PGraphics graphics)
+	@SuppressWarnings("deprecation")
+	ZoomPan15(PApplet aContext, PGraphics graphics)
 	{
 		zoomPanState=new ZoomPanState(aContext,graphics);
 
@@ -122,9 +120,7 @@ public class ZoomPan20 implements ZoomPanable
 		reset();
 		timer=new Timer();
 		
-		// Old PRE 2.0 code: aContext.registerMouseEvent(this);
-		aContext.registerMethod("mouseEvent", this);
-				
+		aContext.registerMouseEvent(this);		
 		aContext.addMouseWheelListener(new MouseWheelMonitor());
 	}
 
@@ -184,6 +180,7 @@ public class ZoomPan20 implements ZoomPanable
 	{
 		return listeners.remove(zoomPanListener); 
 	}
+	
 
 	/** Sets the key that must be pressed before mouse actions are active. By default, no key
 	 *  is needed for the mouse to be active. Specifying a value allows normal mouse actions to
@@ -203,7 +200,6 @@ public class ZoomPan20 implements ZoomPanable
 
 		switch (mouseMask)
 		{
-		/* Pre 2.0 code:
 			case PConstants.CONTROL:
 				this.mouseMask = InputEvent.CTRL_DOWN_MASK;
 				break;
@@ -215,19 +211,7 @@ public class ZoomPan20 implements ZoomPanable
 			case PConstants.ALT:
 				this.mouseMask = InputEvent.ALT_DOWN_MASK;
 				break;
-		*/
-	
-			case PConstants.CONTROL:
-				this.mouseMask = PConstants.CONTROL;
-				break;
-	
-			case PConstants.SHIFT:
-				this.mouseMask = PConstants.SHIFT;
-				break;
-	
-			case PConstants.ALT:
-				this.mouseMask = PConstants.ALT;
-				break;
+				
 			default:
 				this.mouseMask = 0;
 		}
@@ -268,7 +252,8 @@ public class ZoomPan20 implements ZoomPanable
 	 * 
 	 * @param zoomPanType  BOTH_DIRECTIONS=normal; VERTICAL_ONLY=only in y; HORIZONTAL_ONLY=only in x
 	 */
-	public void setZoomPanBehaviour(ZoomPanBehaviour zoomPanType){
+	public void setZoomPanBehaviour(ZoomPanBehaviour zoomPanType)
+	{
 		this.zoomPanType=zoomPanType;
 		calcTransformation();
 	}
@@ -359,7 +344,7 @@ public class ZoomPan20 implements ZoomPanable
 
 	/** Updates zoom and pan transformation according to mouse activity.
 	 *  @param e Mouse event.
-	 */	
+	 */
 	public void mouseEvent(MouseEvent e)
 	{   
 		if (mouseMask == -1)
@@ -368,7 +353,8 @@ public class ZoomPan20 implements ZoomPanable
 			return;
 		}
 
-		if (e.getAction() == MouseEvent.RELEASE)
+	
+		if (e.getID() == MouseEvent.MOUSE_RELEASED)
 		{
 			// Regardless of mouse mask, if the mouse is released, 
 			// that is the end of the zooming and panning.
@@ -407,15 +393,14 @@ public class ZoomPan20 implements ZoomPanable
 
 		// The remaining events only apply if the mouse mask is specified and it is pressed.
 
-		if ((mouseMask < 0) || ((mouseMask == PConstants.SHIFT)   && !e.isShiftDown())
-				 			|| ((mouseMask == PConstants.CONTROL) && !e.isControlDown())
-				 			|| ((mouseMask == PConstants.ALT)     && !e.isAltDown()))
+		if ((e.getModifiersEx() & mouseMask) != mouseMask)
 		{
 			return;
 		}
-
+	
 		// Only interpret the mousepressed event if the mouse is within mouseBoundsMask (or there's no mouseBoundsMask)
-		if ((e.getAction() == MouseEvent.PRESS)	&& 
+
+		if ((e.getID() == MouseEvent.MOUSE_PRESSED)	&& 
 			((mouseBoundsMask==null) || (mouseBoundsMask.contains(zoomPanState.aContext.mouseX,zoomPanState.aContext.mouseY))))
 		{
 			isMouseCaptured   = true;
@@ -423,7 +408,7 @@ public class ZoomPan20 implements ZoomPanable
 			oldPosition       = new PVector(e.getX(),e.getY());
 		}
 		// Dragging is allowed outside the mouseBoundsMask
-		else if (e.getAction() == MouseEvent.DRAG)
+ 		else if (e.getID() == MouseEvent.MOUSE_DRAGGED) 
 		{
 			// Check in case applet has been destroyed.
 			if ((zoomPanState.aContext == null) || (oldPosition == null))
@@ -457,6 +442,17 @@ public class ZoomPan20 implements ZoomPanable
 
 			oldPosition = new PVector(e.getX(),e.getY());
 		}
+	}
+
+	/** Sets the screen area outside which mouse movements will have no effect on zooming and panning.
+	 *  Use null if there is to be no mask (the default).
+	 *  @param mouseBoundsMask
+	 *  @deprecated Greater flexibility can be achieved by setting a mouse mask at the sketch level using
+	 *             <code>setMouseMask(-1)</code> to disable zooming/panning outside desired areas.           
+	 */
+	public void setMouseBoundsMask(Rectangle mouseBoundsMask)
+	{
+		this.mouseBoundsMask=mouseBoundsMask;
 	}
 
 	/** Sets the minimum permitted zoom scale (i.e. how far zoomed out a view is allowed to be). If the
@@ -597,7 +593,7 @@ public class ZoomPan20 implements ZoomPanable
 		// Call the static version providing the applet context that was given to the constructor.
 		ZoomPan.text(zoomPanState.aContext,textToDisplay, xPos,yPos);
 	}
-
+	
 	/** Provides a copy (cloned snapshot) of the current ZoomPanState.
 	 *  You can assume that this will not change its state.
 	 *  @return Copy of the current zoomPanState.
