@@ -3,7 +3,7 @@ package platypus3000.analyticstools.overlays;
 import platypus3000.analyticstools.DynamicColor;
 import platypus3000.analyticstools.LocalOverlay;
 import platypus3000.simulation.ColorInterface;
-import platypus3000.simulation.RobotController;
+import platypus3000.simulation.control.RobotController;
 import platypus3000.visualisation.Colors;
 import processing.core.PApplet;
 import processing.core.PGraphics;

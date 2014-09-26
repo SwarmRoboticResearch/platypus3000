@@ -1,13 +1,15 @@
-package platypus3000.simulation;
+package platypus3000.simulation.neighborhood;
 
 import org.jbox2d.common.Vec2;
+import platypus3000.simulation.NoiseModel;
+import platypus3000.simulation.Robot;
 import platypus3000.utils.AngleUtils;
 
 import java.util.Comparator;
 
 
 /**
- * This objects represents the local knowledge of a robot of one of its neighbors.
+ * This objects represents the local knowledge of a robot about one of its neighbors.
  */
 public class NeighborView {
     Robot source, neighbor;
@@ -41,7 +43,7 @@ public class NeighborView {
      */
     public Vec2 getLocalMovement() {
         if(localMovement==null) {
-            localMovement = LocalNetworkUtils.toVector(neighbor.getSpeed(), (AngleUtils.normalizeToMinusPi_Pi(neighbor.getGlobalAngle() - source.getGlobalAngle())));
+            localMovement = AngleUtils.toVector(neighbor.getSpeed(), (AngleUtils.normalizeToMinusPi_Pi(neighbor.getGlobalAngle() - source.getGlobalAngle())));
         }
         return localMovement.clone();
     }

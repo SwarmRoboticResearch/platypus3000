@@ -2,6 +2,8 @@ package platypus3000.simulation;
 
 import org.junit.Before;
 import org.junit.Test;
+import platypus3000.simulation.neighborhood.LocalNeighborhood;
+import platypus3000.simulation.neighborhood.NeighborView;
 
 import java.util.ArrayList;
 import java.util.Arrays;

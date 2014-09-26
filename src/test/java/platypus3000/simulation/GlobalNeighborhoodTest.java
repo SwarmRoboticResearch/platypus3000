@@ -3,6 +3,7 @@ package platypus3000.simulation;
 import org.jbox2d.common.Vec2;
 import org.junit.Before;
 import org.junit.Test;
+import platypus3000.simulation.neighborhood.GlobalNeighborhood;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by m on 6/1/14.
  */
-public class NeighborhoodGraphTest {
+public class GlobalNeighborhoodTest {
 
 
     /**
@@ -33,7 +34,7 @@ public class NeighborhoodGraphTest {
     Simulator sim;
     Robot A, B, C, D, E, F, G, H;
     Set<Robot> allRobots;
-    NeighborhoodGraph nGraph;
+    GlobalNeighborhood nGraph;
 
     @Before
     public void setUp() throws Exception {
@@ -53,7 +54,7 @@ public class NeighborhoodGraphTest {
         allRobots = new HashSet<Robot>(8);
         allRobots.addAll(Arrays.asList(A, B, C, D, E, F, G, H));
         
-        nGraph = new NeighborhoodGraph(sim);
+        nGraph = new GlobalNeighborhood(sim);
         nGraph.updateNeighborhoodGraph();
     }
 

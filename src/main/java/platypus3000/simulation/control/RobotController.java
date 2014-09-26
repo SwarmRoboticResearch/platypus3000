@@ -1,4 +1,4 @@
-package platypus3000.simulation;
+package platypus3000.simulation.control;
 
 import platypus3000.analyticstools.OverlayManager;
 
@@ -11,6 +11,6 @@ public abstract class RobotController
 
     public void init(RobotInterface robot){}
 
-    boolean IS_INITIALISED = false;
+    public boolean IS_INITIALISED = false;
     public OverlayManager overlayManager;
 }

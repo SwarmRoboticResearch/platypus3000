@@ -1,6 +1,11 @@
-package platypus3000.simulation;
+package platypus3000.simulation.control;
 
 import org.jbox2d.common.Vec2;
+import platypus3000.simulation.ColorInterface;
+import platypus3000.simulation.communication.Message;
+import platypus3000.simulation.communication.MessagePayload;
+import platypus3000.simulation.neighborhood.LocalNeighborhood;
+import platypus3000.simulation.neighborhood.NeighborView;
 
 import java.util.ArrayList;
 

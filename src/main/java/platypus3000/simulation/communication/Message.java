@@ -1,4 +1,4 @@
-package platypus3000.simulation;
+package platypus3000.simulation.communication;
 
 
 /**

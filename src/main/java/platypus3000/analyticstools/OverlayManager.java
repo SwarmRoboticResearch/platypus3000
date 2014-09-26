@@ -1,7 +1,7 @@
 package platypus3000.analyticstools;
 
 import platypus3000.simulation.Robot;
-import platypus3000.simulation.RobotController;
+import platypus3000.simulation.control.RobotController;
 import processing.core.PGraphics;
 
 import java.util.*;

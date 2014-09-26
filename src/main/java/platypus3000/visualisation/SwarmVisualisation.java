@@ -2,13 +2,12 @@ package platypus3000.visualisation;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
-import platypus3000.simulation.NeighborhoodGraph.RobotVisibilityEdge;
+import platypus3000.simulation.neighborhood.GlobalNeighborhood.RobotVisibilityEdge;
 import platypus3000.simulation.Obstacle;
 import platypus3000.simulation.Robot;
 import platypus3000.simulation.Simulator;
 import processing.core.PConstants;
 import processing.core.PGraphics;
-import processing.core.PVector;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -149,7 +148,7 @@ public class SwarmVisualisation implements PConstants{
     public void drawNeighborhoodGraph() {
         if(showNeighborhood) {
             graphics.stroke(graphLineColor);
-            for (RobotVisibilityEdge e : simulator.getNeighborhoodGraph().getGraph().edgeSet()) {
+            for (RobotVisibilityEdge e : simulator.getGlobalNeighborhood().getGraph().edgeSet()) {
                 Vec2 from = e.r1.getGlobalPosition();
                 Vec2 to = e.r2.getGlobalPosition();
                 graphics.line(from.x, from.y, to.x, to.y);

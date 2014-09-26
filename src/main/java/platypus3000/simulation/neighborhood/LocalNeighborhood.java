@@ -1,7 +1,8 @@
-package platypus3000.simulation;
+package platypus3000.simulation.neighborhood;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
+import platypus3000.simulation.Robot;
 
 import java.util.*;
 
@@ -24,7 +25,7 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     public ArrayList<NeighborView> neighborViews;
     public HashMap<Integer, Integer> positionOfId;
 
-    protected LocalNeighborhood(ArrayList<NeighborView> neighborViews){
+    public LocalNeighborhood(ArrayList<NeighborView> neighborViews){
        this.neighborViews = neighborViews;
         positionOfId = new HashMap<Integer, Integer>(neighborViews.size());
         Collections.sort(neighborViews, NeighborView.angularComparator);

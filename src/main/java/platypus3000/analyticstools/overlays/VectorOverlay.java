@@ -4,7 +4,7 @@ import org.jbox2d.common.Vec2;
 import platypus3000.analyticstools.DynamicColor;
 import platypus3000.analyticstools.LocalOverlay;
 import platypus3000.simulation.ColorInterface;
-import platypus3000.simulation.RobotController;
+import platypus3000.simulation.control.RobotController;
 import processing.core.PGraphics;
 import processing.core.PVector;
 

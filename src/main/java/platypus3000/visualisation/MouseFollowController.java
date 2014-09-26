@@ -2,8 +2,8 @@ package platypus3000.visualisation;
 
 import org.jbox2d.common.Vec2;
 import platypus3000.simulation.Robot;
-import platypus3000.simulation.RobotController;
-import platypus3000.simulation.RobotInterface;
+import platypus3000.simulation.control.RobotController;
+import platypus3000.simulation.control.RobotInterface;
 import platypus3000.utils.LeaderInterface;
 import processing.core.PVector;
 

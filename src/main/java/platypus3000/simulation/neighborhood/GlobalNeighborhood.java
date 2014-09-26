@@ -1,4 +1,4 @@
-package platypus3000.simulation;
+package platypus3000.simulation.neighborhood;
 
 import org.jbox2d.callbacks.QueryCallback;
 import org.jbox2d.callbacks.RayCastCallback;
@@ -8,11 +8,13 @@ import org.jbox2d.dynamics.Fixture;
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.graph.UnmodifiableUndirectedGraph;
+import platypus3000.simulation.Robot;
+import platypus3000.simulation.Simulator;
 
 import java.util.*;
 
 
-public class NeighborhoodGraph {
+public class GlobalNeighborhood {
     private Simulator sim;
     public int raycastCount = 0;
 
@@ -21,7 +23,7 @@ public class NeighborhoodGraph {
 
     public Robot[] leaders;
 
-    public NeighborhoodGraph(Simulator sim) {
+    public GlobalNeighborhood(Simulator sim) {
         this.sim = sim;
         //new NeighborhoodOverlay(this);
     }

@@ -7,6 +7,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
 import platypus3000.analyticstools.OverlayManager;
+import platypus3000.simulation.neighborhood.GlobalNeighborhood;
 import platypus3000.visualisation.InteractiveVisualisation;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class Simulator {
 
     public World world;
     private long time = 0;
-    NeighborhoodGraph neighborhoodGraph = new NeighborhoodGraph(this);
+    GlobalNeighborhood globalNeighborhood = new GlobalNeighborhood(this);
 
     private static ExecutorService executor = Executors.newFixedThreadPool(16);
 
@@ -140,7 +141,7 @@ public class Simulator {
     }
 
     public void refresh(){
-        neighborhoodGraph.updateNeighborhoodGraph();
+        globalNeighborhood.updateNeighborhoodGraph();
         for (Robot r : robots.values()) r.updateInput();
     }
 
@@ -181,8 +182,8 @@ public class Simulator {
         InteractiveVisualisation.showSimulation(this);
     }
 
-    public NeighborhoodGraph getNeighborhoodGraph() {
-        return neighborhoodGraph;
+    public GlobalNeighborhood getGlobalNeighborhood() {
+        return globalNeighborhood;
     }
 }
 

@@ -5,6 +5,12 @@ import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.Contact;
+import platypus3000.simulation.communication.Message;
+import platypus3000.simulation.communication.MessagePayload;
+import platypus3000.simulation.control.RobotController;
+import platypus3000.simulation.control.RobotInterface;
+import platypus3000.simulation.neighborhood.LocalNeighborhood;
+import platypus3000.simulation.neighborhood.NeighborView;
 import platypus3000.utils.AngleUtils;
 
 import java.util.*;
@@ -110,7 +116,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
         //<Refresh LocalNeighborhood>
         colors.clear();
-        Set<Robot> realNeighbors = getSimulator().neighborhoodGraph.getNeighbors(this);
+        Set<Robot> realNeighbors = getSimulator().globalNeighborhood.getNeighbors(this);
         noisedNeighbors = new HashSet<Robot>(realNeighbors.size());
         for(Robot neighborRobot : realNeighbors)
             if(NoiseModel.connectionExists()) noisedNeighbors.add(neighborRobot);
@@ -142,7 +148,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     public Vec2 getGlobalMovement(){
-        return LocalNetworkUtils.toVector(movementsPhysics.getSpeed(), getGlobalAngle());
+        return AngleUtils.toVector(movementsPhysics.getSpeed(), getGlobalAngle());
     }
 
 
