@@ -23,16 +23,6 @@ import java.util.concurrent.BlockingQueue;
  * If you want to create your own robot you have to inherit from this class.
  * The instance of a robot can only be part of ONE simulation. This is because you have to specify the Simulator in
  * the constructor.
- *
- * Content:
- *  1. Variables
- *  2. Constructors
- *  3. Update
- *  4. Global Functions
- *  5. Movement
- *  6. Messages
- *  7. Neighbourhood
- *  8. Collision
  */
 public class Robot extends SimulatedObject implements RobotInterface {
     //<R-One Properties>
@@ -42,25 +32,13 @@ public class Robot extends SimulatedObject implements RobotInterface {
     public static final float RANGE_2 = RANGE*RANGE;
     public static final int MESSAGE_BUFFER_SIZE = 5000; //The maximum amount of messages, the robot can buffer.
 
-    public static final float MAX_SPEED = 1;
-    public static final float MAX_ROTATION_SPEED = 3;
-
-    public static final float MAX_ACCELERATION = 0.1f;
-    public static final float MAX_BRAKE = 0.3f;
+    RobotMovementPhysics movementsPhysics = new RobotMovementPhysics();
     //</R-One Properties>
 
     private String name;
     public Set<Robot> noisedNeighbors = new HashSet<Robot>();
 
-    RobotMovementPhysics movementsPhysics = new RobotMovementPhysics();
-
-    //<Movement>
-
-    //</Movement>
-
-    //<Colors>
-    List<Integer> colors = new ArrayList<Integer>(5);
-    //</Colors>
+    List<Integer> colors = new ArrayList<Integer>(5); //The colors used in the visualisation
 
     //<Talking> Robots in the simulator can talk. Here we store what he is currently saying.
     public String textString;
@@ -142,34 +120,33 @@ public class Robot extends SimulatedObject implements RobotInterface {
         while (outgoingMessages.size() > 0) transmit(outgoingMessages.poll());
     }
 
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // BEGIN: Movement
-    // These functions allow movements of the robot for the robotController
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     public Vec2 getGlobalMovement(){
         return AngleUtils.toVector(movementsPhysics.getSpeed(), getGlobalAngle());
     }
 
-
-
-    /**
-     * Vec.x: + Right, -Left
-     * Vec.y: + Forward, - Backwards (in this case only rotate)
-     * <p/>
-     * Could be of less value or conflict with other thing
-     *
-     * @param direction
-     */
-    public void setMovement(Vec2 direction) //TODO normalize and stuff? TODO this method does not realy work yet!!!
-    {
+    public void setMovement(Vec2 direction) {
         movementsPhysics.setLocalMovement(direction);
+    }
 
+    @Override
+    public void setSpeed(float speed) {
+        assert false;
+    }
+
+    @Override
+    public void setRotation(float rotation) {
+        assert false;
     }
 
     @Override
     public Vec2 getLocalMovement() {
         return new Vec2(movementsPhysics.getSpeed(), 0);
+    }
+
+    @Override
+    public OdometryVector getOdometryVector() {
+        return new OdometryVector(this);
     }
 
     @Override
@@ -182,8 +159,6 @@ public class Robot extends SimulatedObject implements RobotInterface {
         return getSimulator().getTime();
     }
 
-
-    //TODO: Colors. I don't know if this is a good approach. Different robots could have different overlays,
     @Override
     public void setColor(int color) {
         colors.clear();
@@ -199,11 +174,6 @@ public class Robot extends SimulatedObject implements RobotInterface {
     public List<Integer> getColors() {
         return colors;
     }
-
-
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // END: Movement
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 
@@ -358,15 +328,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
         return !collisions.isEmpty();
     }
 
-    @Override
-    public void setSpeed(float speed) {
-        assert false;
-    }
 
-    @Override
-    public void setRotation(float rotation) {
-        assert false;
-    }
 
 
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
