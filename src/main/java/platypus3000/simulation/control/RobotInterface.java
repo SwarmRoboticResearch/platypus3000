@@ -31,8 +31,6 @@ public interface RobotInterface extends ColorInterface
      * @return
      */
 
-    public ArrayList<NeighborView> getNeighborRobots();//TODO: necessary? We already have getNeighborhood().
-
     public LocalNeighborhood getNeighborhood();
 
     public float getCollisionSensor();

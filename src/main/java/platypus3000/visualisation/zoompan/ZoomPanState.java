@@ -1,4 +1,4 @@
-package platypus3000.utils.zoompan;
+package platypus3000.visualisation.zoompan;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;

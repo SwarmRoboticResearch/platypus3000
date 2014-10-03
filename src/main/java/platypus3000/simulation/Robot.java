@@ -244,11 +244,6 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //BEGIN: Neighbourhood
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    @Override
-    public ArrayList<NeighborView> getNeighborRobots() {
-        return getNeighborhood().neighborViews;
-    }
-
     LocalNeighborhood neighborRobots = null;
     @Override
     public LocalNeighborhood getNeighborhood() {

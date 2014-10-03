@@ -7,6 +7,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Fixture;
 import platypus3000.simulation.*;
 import platypus3000.simulation.control.RobotInterface;
+import platypus3000.visualisation.zoompan.ZoomPan;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;

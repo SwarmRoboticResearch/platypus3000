@@ -6,9 +6,10 @@ import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.FixtureDef;
 
 /**
- * This object represents a arbitrary object in the simulation.
+ * This object represents a arbitrary object in the simulation, especially for JBox2D.
  * The only two kinds at this time are robots and obstacles.
  * This makes it easier to make manipulations like moving or deleting in the visualisation.
+ *
  */
 public abstract class SimulatedObject {
     private Body jbox2d_body;

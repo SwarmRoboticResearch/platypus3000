@@ -5,7 +5,10 @@ import org.jbox2d.common.Vec2;
 import platypus3000.utils.AngleUtils;
 
 /**
- * Created by doms on 7/27/14.
+ * This class is a hack to integrate a two wheel model into JBox2D without much overhead.
+ * Using this class, JBox2D only considers a robot as a simple circle and the movements constraints are made here,
+ *
+ * TODO: This method may be not optimal yet. But it doesn't make much fun to optimize it and it is somehow working.
  */
 public class RobotMovementPhysics {
     public static final float MAX_ACCELERATION=0.1f;
@@ -16,10 +19,10 @@ public class RobotMovementPhysics {
     public static final float MAX_ROTATION_BRAKE_POWER = 1f;
 
 
-    float desiredSpeed;
-    float desiredRotationSpeed;
-    float actual_speed=0;
-    float actual_roationSpeed=0;
+    private float desiredSpeed;
+    private float desiredRotationSpeed;
+    private float actual_speed=0;
+    private float actual_roationSpeed=0;
 
     public void step(){
         actual_speed = getNewVelocity(actual_speed);
@@ -101,18 +104,5 @@ public class RobotMovementPhysics {
         speed = MathUtils.min(MAX_ROTATION_VELOCITY, speed);
         speed = MathUtils.max(-MAX_ROTATION_VELOCITY, speed);
         return speed;
-    }
-
-    public static void main(String[] args){
-        RobotMovementPhysics rmp = new RobotMovementPhysics();
-        rmp.setLocalMovement(new Vec2(1,10));
-        rmp.step();
-        System.out.println(rmp.getSpeed()+" "+rmp.getRotationSpeed());
-        rmp.step();
-        System.out.println(rmp.getSpeed()+" "+rmp.getRotationSpeed());
-        rmp.step();
-        System.out.println(rmp.getSpeed()+" "+rmp.getRotationSpeed());
-        rmp.step();
-        System.out.println(rmp.getSpeed()+" "+rmp.getRotationSpeed());
     }
 }

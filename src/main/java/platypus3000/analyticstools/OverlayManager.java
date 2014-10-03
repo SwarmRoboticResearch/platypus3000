@@ -32,7 +32,15 @@ public class OverlayManager {
         globalOverlays.add(overlay);
     }
 
-    public SharedOverlayProperties getSharedProperties(String name){
+    /**
+     * As every robot has its own controller instance and thus its own overlay instances, the colors etc. have to be
+     * synchronized. For this, the SharedOverlayProperties object is used, which is the same for all instances of the
+     * same type.
+     *
+     * @param name The unique name of the overlay
+     * @return The SharedOverlayProperties Object, which is the same for same names.
+     */
+    protected SharedOverlayProperties getSharedProperties(String name){
         if(!propertiesMap.containsKey(name)){
             SharedOverlayProperties properties = new SharedOverlayProperties(name);
             propertiesMap.put(name, properties);

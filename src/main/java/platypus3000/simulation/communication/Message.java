@@ -12,7 +12,7 @@ public class Message
     public final int sender; //Send from robot with this id
     public final int receiver; //To the robot with this id
     public final boolean isBroadcast; //Has also be send to all other robots in range
-    public final long timestamp; //Send and only valid for this time. //TODO: this should not be public i think
+    public final long timestamp; //Send and only valid for this time.
 
     public Message(Object msg, int sender, int receiver, long timestamp, boolean isBroadcast) {
         this.timestamp=timestamp;

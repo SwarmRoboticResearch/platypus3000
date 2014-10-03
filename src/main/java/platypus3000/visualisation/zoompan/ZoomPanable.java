@@ -1,6 +1,5 @@
-package platypus3000.utils.zoompan;
+package platypus3000.visualisation.zoompan;
 
-import platypus3000.utils.zoompan.ZoomPan.ZoomPanBehaviour;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -89,12 +88,12 @@ interface ZoomPanable
 	/** Should set the zoom/pan behaviour type
 	 *  @param zoomPanType  BOTH_DIRECTIONS=normal; VERTICAL_ONLY=only in y; HORIZONTAL_ONLY=only in x
 	 */
-	abstract void setZoomPanBehaviour(ZoomPanBehaviour zoomPanType);
+	abstract void setZoomPanBehaviour(ZoomPan.ZoomPanBehaviour zoomPanType);
 
 	/** Should report the zoom/pan behaviour type.
 	 *  @return  BOTH_DIRECTIONS=normal; VERTICAL_ONLY=only in y; HORIZONTAL_ONLY=only in x
 	 */
-	abstract ZoomPanBehaviour getZoomPanBehaviour();
+	abstract ZoomPan.ZoomPanBehaviour getZoomPanBehaviour();
 
 	/** Should report the current pan offset. Useful when wishing to use an interpolated panning
 	 *  between this current value and some new pan offset.
