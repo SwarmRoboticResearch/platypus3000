@@ -24,11 +24,8 @@ public abstract class LocalOverlay {
      * @param name       A unique name, which is also used for the Table in the GUI to activate it and change the colors.
      */
     protected LocalOverlay(RobotController controller, String name) {
-        //TODO: This is bad. This means, you can only create overlays in loop and init!!!!
-        if (controller.overlayManager != null) {
-            controller.overlayManager.addNewOverlay(controller, this);
-            overlayState = controller.overlayManager.getSharedProperties(name);
-        }
+        controller.overlays.add(this);
+        overlayState = controller.getConfiguration().overlayManager.getSharedProperties(name);
     }
 
     /**

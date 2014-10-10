@@ -88,25 +88,7 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     }
 
     private static final boolean SUDO_COULD_SEE = false; //Allow a real can see and not only could
-    /**
-     * Checks if two robots could see each other
-     * @param a Robot a
-     * @param b Robot b
-     * @return True if they could be connected
-     */
-    public static boolean couldSee(NeighborView a, NeighborView b) {
-        if(SUDO_COULD_SEE){
-            return a.neighbor.getNeighborhood().getById(b.getID())!=null;
-        } else {
-            if(!inRange(a,b)) return false;
-            //compute the distance between the source robot and the line from a to b
-            Vec2 x1 = a.getLocalPosition();
-            Vec2 x2 = b.getLocalPosition();
-            Vec2 x2TOx1 = x2.sub(x1);
-            float d = MathUtils.abs(Vec2.cross(x2TOx1, x1))/x2TOx1.length();
-            return d > Robot.RADIUS;
-        }
-    }
+
 
     /**
      * Checks if the two neighbors could be connected due to their distance.
@@ -114,9 +96,9 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
      * @param b
      * @return
      */
-    public static boolean inRange(NeighborView a, NeighborView b) {
-        return a.getLocalPosition().sub(b.getLocalPosition()).lengthSquared() < Robot.RANGE * Robot.RANGE;
-    }
+   // public static boolean inRange(NeighborView a, NeighborView b) {
+    //    return a.getLocalPosition().sub(b.getLocalPosition()).lengthSquared() < Robot.RANGE * Robot.RANGE;
+    //}     TODO
 
     //******************************************************************
     // Debugging

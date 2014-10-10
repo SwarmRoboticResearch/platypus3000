@@ -20,7 +20,7 @@ import java.util.concurrent.*;
  */
 public class Simulator {
 
-    public final OverlayManager overlayManager;
+    public final Configuration configuration;
 
     //<Physic Engine Configuration>
     final float TIME_STEP = 1.0f / 60.f; //TODO: I guess this is 1/60 second?
@@ -38,15 +38,8 @@ public class Simulator {
 
     private static ExecutorService executor = Executors.newFixedThreadPool(16);
 
-    public Simulator() {
-        this(true);
-    }
-
-    public Simulator(boolean hasDebugOverlay) {
-        if(hasDebugOverlay)
-            overlayManager = new OverlayManager();
-        else
-            overlayManager = null;
+    public Simulator(Configuration configuration) {
+        this.configuration = configuration;
 
         world = new World(new Vec2(0, 0));  //World without gravity.
 

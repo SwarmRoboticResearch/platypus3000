@@ -39,7 +39,7 @@ public class LocalNeighborhoodTest {
     NeighborView BviewsA, BviewsD;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() throws Exception {  /**
         float R = Robot.RANGE*1.1f;
         Simulator sim = new Simulator();
 
@@ -65,7 +65,7 @@ public class LocalNeighborhoodTest {
         Dneighborhood = new LocalNeighborhood(new ArrayList(Arrays.asList(DviewsB, DviewsC, DviewsE)));
         Hneighborhood = new LocalNeighborhood(new ArrayList(Arrays.asList(HviewsF, HviewsG)));
         Bneighborhood = new LocalNeighborhood(new ArrayList(Arrays.asList(BviewsA, BviewsD)));
-        
+                                 **/
     }
 
     @Test
@@ -170,14 +170,5 @@ public class LocalNeighborhoodTest {
         assertEquals(BviewsD, Bneighborhood.nextClockwiseNeighbor(BviewsA));
     }
 
-    @Test
-    public void testCouldSee() throws Exception {
-        assertFalse(LocalNeighborhood.couldSee(DviewsE, DviewsC));
-        assertFalse(LocalNeighborhood.couldSee(DviewsC, DviewsB));
-        assertFalse(LocalNeighborhood.couldSee(DviewsB, DviewsE));
 
-        assertFalse(LocalNeighborhood.couldSee(HviewsG, HviewsF));
-
-        assertFalse(LocalNeighborhood.couldSee(BviewsD, BviewsA));
-    }
 }

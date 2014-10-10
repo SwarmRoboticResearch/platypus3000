@@ -11,7 +11,6 @@ import java.util.*;
  * Only for internal use! All needed calls are made automatically by the base-classes.
  */
 public class OverlayManager {
-    private HashMap<RobotController, ArrayList<LocalOverlay>> overlayMap = new HashMap<RobotController, ArrayList<LocalOverlay>>();
     private HashSet<GlobalOverlay> globalOverlays = new HashSet<GlobalOverlay>();
     private HashMap<String, SharedOverlayProperties> propertiesMap = new HashMap<String, SharedOverlayProperties>();
     public List<SharedOverlayProperties> sharedPropertiesList = new ArrayList<SharedOverlayProperties>();
@@ -19,12 +18,6 @@ public class OverlayManager {
 
     public SettingsTable getJTable(){
         return new SettingsTable(this);
-    }
-
-    public void addNewOverlay(RobotController controller, LocalOverlay overlay){
-        if(!overlayMap.containsKey(controller)) overlayMap.put(controller,new ArrayList<LocalOverlay>());
-        assert !overlayMap.get(controller).contains(overlay);
-        overlayMap.get(controller).add(overlay);
     }
 
     public void addNewOverlay(GlobalOverlay overlay){
@@ -70,13 +63,11 @@ public class OverlayManager {
             graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
             graphics.rotate(r.getGlobalAngle());
             graphics.pushStyle();
-            if(overlayMap.containsKey(r.getController())){
-                for(LocalOverlay overlay: overlayMap.get(r.getController())){
+                for(LocalOverlay overlay:r.getController().overlays){
                     if(overlay.showAll() || (overlay.showSelected() &&selectedRobots.contains(r))) {
                         overlay.drawBackground(graphics, r);
                     }
                 }
-            }
             graphics.popStyle();
             graphics.popMatrix();
         }
@@ -102,14 +93,14 @@ public class OverlayManager {
             graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
             graphics.rotate(r.getGlobalAngle());
             graphics.pushStyle();
-            if(overlayMap.containsKey(r.getController())) {
-                for (LocalOverlay overlay :overlayMap.get(r.getController())){
+
+                for (LocalOverlay overlay :r.getController().overlays){
                     if(overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
                         overlay.drawForeground(graphics);
                     }
                     overlay.reset();
                 }
-            }
+
             graphics.popStyle();
             graphics.popMatrix();
         }

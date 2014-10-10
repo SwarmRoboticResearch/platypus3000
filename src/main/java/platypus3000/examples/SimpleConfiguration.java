@@ -11,7 +11,7 @@ import platypus3000.simulation.*;
 public class SimpleConfiguration {
     public static void main(String... args){
         //First we need a simulation, where the robots can live.
-        Simulator sim = new Simulator(true);
+        Simulator sim = new Simulator(new Configuration());
         //Second, we need robots in this simulation
         Robot r1 = new Robot("Robot 1", null, sim, 0, 0, 0);
         Robot r2 = new Robot("Robot 2", null, sim, 0.5f, 0, 0);

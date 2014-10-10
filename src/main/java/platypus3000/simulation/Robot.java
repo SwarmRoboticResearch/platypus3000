@@ -26,19 +26,14 @@ import java.util.concurrent.BlockingQueue;
  */
 public class Robot extends SimulatedObject implements RobotInterface {
     //<R-One Properties>
-    public static final float RADIUS = 0.1f; //radius of robot in m
-    public static final float RANGE = 1f; //range of the communication in m from the center of the robot
-    public static final float RADIUS_2 = RADIUS*RADIUS;
-    public static final float RANGE_2 = RANGE*RANGE;
-    public static final int MESSAGE_BUFFER_SIZE = 5000; //The maximum amount of messages, the robot can buffer.
-
-    RobotMovementPhysics movementsPhysics = new RobotMovementPhysics();
+    RobotMovementPhysics movementsPhysics;
     //</R-One Properties>
 
     private String name;
     public Set<Robot> noisedNeighbors = new HashSet<Robot>();
 
     List<Integer> colors = new ArrayList<Integer>(5); //The colors used in the visualisation
+
 
     //<Talking> Robots in the simulator can talk. Here we store what he is currently saying.
     public String textString;
@@ -57,7 +52,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
         //Setting the shape of the robot in the physic engine to an circle with radius defined in RADIUS
         CircleShape shape = new CircleShape();
-        shape.m_radius = Robot.RADIUS;
+        shape.m_radius = simulator.configuration.RADIUS;
 
         FixtureDef fixtureDef = new FixtureDef(); //The fixture contains the physical properties of the robot in the physic engine
         fixtureDef.shape = shape;
@@ -73,6 +68,8 @@ public class Robot extends SimulatedObject implements RobotInterface {
         this.robotID = simulator.getRobots().size();
         simulator.addRobot(this);
         setController(controller);
+
+        movementsPhysics = new RobotMovementPhysics(getSimulator().configuration);
     }
     private int robotID;
 
@@ -182,8 +179,8 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //These functions handle the message system
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-    private BlockingQueue<Message> incomingMessages = new ArrayBlockingQueue<Message>(MESSAGE_BUFFER_SIZE);
-    private BlockingQueue<Message> outgoingMessages = new ArrayBlockingQueue<Message>(MESSAGE_BUFFER_SIZE);
+    private BlockingQueue<Message> incomingMessages = new ArrayBlockingQueue<Message>(getSimulator().configuration.MESSAGE_BUFFER_SIZE);
+    private BlockingQueue<Message> outgoingMessages = new ArrayBlockingQueue<Message>(getSimulator().configuration.MESSAGE_BUFFER_SIZE);
 
     @Override
     public int getID() {
@@ -361,9 +358,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     public void setController(RobotController controller) {
         this.controller = controller;
         if(controller != null && !controller.IS_INITIALISED) {
-            controller.overlayManager = getSimulator().overlayManager;
-            controller.init(this);
-            controller.IS_INITIALISED = true;
+            controller.setup(getSimulator().configuration, this);
         }
     }
 

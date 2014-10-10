@@ -60,13 +60,13 @@ public class GlobalNeighborhood {
             public boolean reportFixture(Fixture fixture) {
                 if (fixture.getUserData() instanceof Robot) {
                     final Robot closeRobot = (Robot) fixture.getUserData();
-                    if (location.sub(closeRobot.getGlobalPosition()).lengthSquared() < Robot.RANGE_2) {
+                    if (location.sub(closeRobot.getGlobalPosition()).lengthSquared() < sim.configuration.RANGE*sim.configuration.RANGE) {
                         robotsInRange.add(closeRobot); //Add the robot to the neighbours list for now
                     }
                 }
                 return true;
             }
-        }, new AABB(new Vec2(location.x - Robot.RANGE, location.y - Robot.RANGE), new Vec2(location.x + Robot.RANGE, location.y + Robot.RANGE)));
+        }, new AABB(new Vec2(location.x - sim.configuration.RANGE, location.y - sim.configuration.RANGE), new Vec2(location.x + sim.configuration.RANGE, location.y + sim.configuration.RANGE)));
 
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 
@@ -105,13 +105,13 @@ public class GlobalNeighborhood {
             public boolean reportFixture(Fixture fixture) {
                 if (fixture.getUserData() instanceof Robot) {
                     final Robot closeRobot = (Robot) fixture.getUserData();
-                    if (closeRobot != sourceRobot && location.sub(closeRobot.getGlobalPosition()).lengthSquared() < Robot.RANGE_2) {
+                    if (closeRobot != sourceRobot && location.sub(closeRobot.getGlobalPosition()).lengthSquared() < sim.configuration.RANGE*sim.configuration.RANGE) {
                         robotsInRange.add(closeRobot); //Add the robot to the neighbours list for now
                     }
                 }
                 return true;
             }
-        }, new AABB(new Vec2(location.x - Robot.RANGE, location.y - Robot.RANGE), new Vec2(location.x + Robot.RANGE, location.y + Robot.RANGE)));
+        }, new AABB(new Vec2(location.x - sim.configuration.RANGE, location.y - sim.configuration.RANGE), new Vec2(location.x + sim.configuration.RANGE, location.y + sim.configuration.RANGE)));
 
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 

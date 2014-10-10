@@ -8,7 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Created by doms on 10/10/14.
+ * This class provides a window with a MenuBar and the Visualisation Embedding.
+ * The content of the MenuBar is at the moment elaborately filled in by hand.
  */
 public class VisualisationWindow extends JFrame {
     InteractiveVisualisation visualisation;
@@ -19,12 +20,16 @@ public class VisualisationWindow extends JFrame {
     JMenu menu_view;
     JMenu menu_visualisation;
 
-    public VisualisationWindow(Simulator sim) {
+    public VisualisationWindow(Simulator sim){
+        this(sim, new Dimension(1200,700));
+    }
+
+    public VisualisationWindow(Simulator sim, Dimension size) {
         super("Swarm Visualisation");
 
         //PApplet embedding
         setLayout(new BorderLayout());
-        visualisation = new InteractiveVisualisation(new Dimension(1200,700), sim);
+        visualisation = new InteractiveVisualisation(size, sim);
         add(visualisation, BorderLayout.CENTER);
 
         //MenuBar

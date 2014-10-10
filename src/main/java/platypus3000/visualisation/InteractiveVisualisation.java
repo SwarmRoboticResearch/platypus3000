@@ -42,11 +42,11 @@ public class InteractiveVisualisation extends PApplet
     //This enables the coordination system cross. Only for visualisation, does not influence the simulator.
     public boolean drawCoordCross = true;
     public boolean allowRobotDragging = true;
+    public boolean HOVER = true;
 
 
 
     //<Select and Drag> Only needed for the possibility of selecting and/or dragging a robot
-    //Robot selectedRobot = null;
     private boolean dragging = false;
     private boolean recordPDF = false;
 
@@ -55,7 +55,7 @@ public class InteractiveVisualisation extends PApplet
     }
 
     SimulatedObject selectedObject = null;
-    public boolean HOVER = true;
+
 
     public boolean isSelectedRobot(RobotInterface r){
         return r == selectedObject;
@@ -97,7 +97,7 @@ public class InteractiveVisualisation extends PApplet
                     public boolean reportFixture(Fixture fixture) {
                         if (fixture.getUserData() instanceof Robot) {
                             hoverRobot = (Robot) fixture.getUserData();
-                            if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (Robot.RADIUS * Robot.RADIUS)) {
+                            if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (sim.configuration.RADIUS * sim.configuration.RADIUS)) {
                                 hoverRobot = null;
                                 return true;
                             }
@@ -214,7 +214,7 @@ public class InteractiveVisualisation extends PApplet
         graphics.textAlign(LEFT);
         graphics.fill(0);
         graphics.textSize(10);
-        if(!recordPDF) text("LEFT mouse to zoom\nRIGHT mouse to pan", 10, 20);
+        if(!recordPDF) text("RIGHT mouse to zoom\nLEFT mouse to pan", 10, 20);
 
         //Draw the texts we put in the texts map
         graphics.textAlign(CENTER, CENTER);
@@ -252,7 +252,7 @@ public class InteractiveVisualisation extends PApplet
                         selectedObject = (Robot) fixture.getUserData();
                         swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
 
-                        if(selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared()>(Robot.RADIUS*Robot.RADIUS)){
+                        if(selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared()>(sim.configuration.RADIUS*sim.configuration.RADIUS)){
                             selectedObject = null;
                             swarmVisualisation.selectedRobots.clear();
                             return true;
@@ -290,16 +290,16 @@ public class InteractiveVisualisation extends PApplet
         for(Robot r : sim.getRobots()) {
             //Prints the name under the robot
             if (showNamesOfAllRobots) {
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + Robot.RADIUS * 2), r.toString());
+                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + sim.configuration.RADIUS * 2), r.toString());
             } else {
                 if (showNameOfSelectedRobot && r == selectedObject)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + Robot.RADIUS * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + sim.configuration.RADIUS * 2), r.getName());
                 if (HOVER && r == hoverRobot)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + Robot.RADIUS * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + sim.configuration.RADIUS * 2), r.getName());
             }
 
             if (r.textString != null)
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - Robot.RADIUS * 2), r.textString);
+                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y -sim.configuration.RADIUS * 2), r.textString);
         }
     }
 

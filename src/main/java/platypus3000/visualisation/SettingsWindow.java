@@ -17,7 +17,7 @@ public class SettingsWindow extends JFrame {
         setSize(800,800);
         setResizable(false);
         add(new JScrollPane(ParameterPlayground.getInstance(),ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER));
-        add(new JScrollPane(applet.sim.overlayManager.getJTable()));
+        add(new JScrollPane(applet.sim.configuration.overlayManager.getJTable()));
 
         if(ParameterPlayground.getInstance() != null)
             ParameterPlayground.getInstance().setRootWindow(this);

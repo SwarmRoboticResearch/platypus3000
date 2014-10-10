@@ -41,14 +41,14 @@ public class SwarmVisualisation implements PConstants{
     public void drawSimulation() {
         graphics.strokeWeight(0.01f);
         drawNeighborhoodGraph();
-        simulator.overlayManager.loopBackgroundOverlays(graphics, simulator.getRobots(), selectedRobots);
+        simulator.configuration.overlayManager.loopBackgroundOverlays(graphics, simulator.getRobots(), selectedRobots);
         for(Robot r: selectedRobots) drawRobot(r);
         for(Robot r : simulator.getRobots()){
             if(!selectedRobots.contains(r)) drawRobot(r);
         }
         for(Obstacle o : simulator.getObstacles())
             drawObstacle(o);
-        simulator.overlayManager.loopForegroundOverlays(graphics, simulator.getRobots(), selectedRobots);
+        simulator.configuration.overlayManager.loopForegroundOverlays(graphics, simulator.getRobots(), selectedRobots);
 
     }
 
@@ -58,11 +58,11 @@ public class SwarmVisualisation implements PConstants{
         graphics.stroke(0f,0f);
         if(r.getColors().size() == 0) {
             graphics.fill(robotFillColor);
-            graphics.ellipse(0, 0, Robot.RADIUS * 2, Robot.RADIUS * 2);
+            graphics.ellipse(0, 0, simulator.configuration.RADIUS * 2, simulator.configuration.RADIUS * 2);
         }
         else {
             for(int i=r.getColors().size()-1; i>=0; --i){
-                float diameter = 2* MathUtils.sqrt((Robot.RADIUS * Robot.RADIUS * (i + 1)) / (r.getColors().size()));
+                float diameter = 2* MathUtils.sqrt((simulator.configuration.RADIUS * simulator.configuration.RADIUS * (i + 1)) / (r.getColors().size()));
                 graphics.fill(r.getColors().get(i));
                 graphics.ellipse(0,0,diameter, diameter);
             }
@@ -81,8 +81,8 @@ public class SwarmVisualisation implements PConstants{
 
         //Print Robot Contour
         graphics.noFill();
-        graphics.ellipse(0, 0, Robot.RADIUS * 2, Robot.RADIUS * 2);
-        graphics.line(0, 0, Robot.RADIUS, 0);
+        graphics.ellipse(0, 0, simulator.configuration.RADIUS * 2, simulator.configuration.RADIUS * 2);
+        graphics.line(0, 0, simulator.configuration.RADIUS, 0);
         graphics.popStyle();
     }
 
@@ -91,7 +91,7 @@ public class SwarmVisualisation implements PConstants{
             graphics.pushStyle();
             graphics.noStroke();
             graphics.fill(robotRangeColor);
-            graphics.ellipse(0, 0, Robot.RANGE * 2, Robot.RANGE * 2);
+            graphics.ellipse(0, 0, simulator.configuration.RANGE * 2, simulator.configuration.RANGE * 2);
             graphics.popStyle();
         }
     }
