@@ -15,6 +15,7 @@ import java.util.*;
 
 
 public class GlobalNeighborhood {
+    private static final boolean LINE_OF_SIGHT_CONSTRAINT = false;
     private Simulator sim;
     public int raycastCount = 0;
 
@@ -50,7 +51,7 @@ public class GlobalNeighborhood {
         return neighbors;
     }
 
-    public Set<Robot> getVisibleRobots(final Vec2 location, float range) {
+    public Set<Robot> getVisibleRobots(final Vec2 location, float range) { //TODO: Is this method realy needed?
         final Set<Robot> robotsInRange = new HashSet<Robot>();
 
         //Get robots in range
@@ -70,22 +71,24 @@ public class GlobalNeighborhood {
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 
         //Remove neighbors not in visual contact.
-        for (final Robot closeRobot : robotsInRange) {
-            raycastCount++;
-            if(location.sub(closeRobot.getGlobalPosition()).lengthSquared() > 0) {
-                sim.world.raycast(new RayCastCallback() {
-                    @Override
-                    public float reportFixture(Fixture fixture, Vec2 point, Vec2 normal, float fraction) {
-                        if (fixture.getUserData() == closeRobot) //Ignore hits with this (no need-> check doc) and the other robot
-                        {
-                            return 1;
-                        } else //We hit something between source robot and close robot -> closeRobot can not be visible!
-                        {
-                            visibleRobots.remove(closeRobot);
-                            return -1;
+        if(LINE_OF_SIGHT_CONSTRAINT) {
+            for (final Robot closeRobot : robotsInRange) {
+                raycastCount++;
+                if (location.sub(closeRobot.getGlobalPosition()).lengthSquared() > 0) {
+                    sim.world.raycast(new RayCastCallback() {
+                        @Override
+                        public float reportFixture(Fixture fixture, Vec2 point, Vec2 normal, float fraction) {
+                            if (fixture.getUserData() == closeRobot) //Ignore hits with this (no need-> check doc) and the other robot
+                            {
+                                return 1;
+                            } else //We hit something between source robot and close robot -> closeRobot can not be visible!
+                            {
+                                visibleRobots.remove(closeRobot);
+                                return -1;
+                            }
                         }
-                    }
-                }, location, closeRobot.getGlobalPosition());
+                    }, location, closeRobot.getGlobalPosition());
+                }
             }
         }
 
@@ -113,22 +116,24 @@ public class GlobalNeighborhood {
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 
         //Remove neighbors not in visual contact.
-        for (final Robot closeRobot : robotsInRange) {
-            if(!neighborhoodGraph.containsEdge(sourceRobot, closeRobot)) { //only check for visual contact if there is no edge yet
-                raycastCount++;
-                sim.world.raycast(new RayCastCallback() {
-                    @Override
-                    public float reportFixture(Fixture fixture, Vec2 point, Vec2 normal, float fraction) {
-                        if (fixture.getUserData() == closeRobot) //Ignore hits with this (no need-> check doc) and the other robot
-                        {
-                            return 1;
-                        } else //We hit something between source robot and close robot -> closeRobot can not be visible!
-                        {
-                            visibleRobots.remove(closeRobot);
-                            return -1;
+        if(LINE_OF_SIGHT_CONSTRAINT) {
+            for (final Robot closeRobot : robotsInRange) {
+                if (!neighborhoodGraph.containsEdge(sourceRobot, closeRobot)) { //only check for visual contact if there is no edge yet
+                    raycastCount++;
+                    sim.world.raycast(new RayCastCallback() {
+                        @Override
+                        public float reportFixture(Fixture fixture, Vec2 point, Vec2 normal, float fraction) {
+                            if (fixture.getUserData() == closeRobot) //Ignore hits with this (no need-> check doc) and the other robot
+                            {
+                                return 1;
+                            } else //We hit something between source robot and close robot -> closeRobot can not be visible!
+                            {
+                                visibleRobots.remove(closeRobot);
+                                return -1;
+                            }
                         }
-                    }
-                }, location, closeRobot.getGlobalPosition());
+                    }, location, closeRobot.getGlobalPosition());
+                }
             }
         }
 

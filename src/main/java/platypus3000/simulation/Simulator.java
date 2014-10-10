@@ -176,12 +176,6 @@ public class Simulator {
     //</Obstacles>
 
 
-
-
-    public void run() {
-        InteractiveVisualisation.showSimulation(this);
-    }
-
     public GlobalNeighborhood getGlobalNeighborhood() {
         return globalNeighborhood;
     }

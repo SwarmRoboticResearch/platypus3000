@@ -6,13 +6,14 @@ import org.jbox2d.collision.AABB;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Fixture;
 import platypus3000.simulation.*;
+import platypus3000.simulation.Robot;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.visualisation.zoompan.ZoomPan;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
-import platypus3000.utils.zoompan.*;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,34 +25,34 @@ import java.util.Map;
  */
 public class InteractiveVisualisation extends PApplet
 {
-    //This enables the coordination system cross. Only for visualisation, does not influence the simulator.
-    public static boolean DRAW_COORD_CROSS= true;
-
-    //For showing the names of robots. Only for visualisation, does not influence the simulator.
-    public static boolean SHOW_NAMES_OF_ALL_ROBOTS = false; //For all robots
-    public static boolean SHOW_NAME_OF_SELECTED_ROBOT = true; //Only for the selected robot
-
-    //For showing the range of the robot with a grey circle around it. Only for visualisation, does not influence the simulator
-    public static boolean SHOW_RANGE_OF_ALL_ROBOTS = false; //For all
-    public static boolean SHOW_RANGE_OF_SELECTED_ROBOT = true; //Only the selected
-
-    public static boolean SHOW_NEIGHBOURHOOD = true;
-    public static boolean SHOW_COLLISIONS = true;
-
-    public static boolean ROBOT_DRAGGING = true;
+    final Dimension WINDOW_SIZE;
 
     public ZoomPan zoomPan;
     public Simulator sim; //The actual simulator, which is visualised here.
     DrawingCallback extraDrawing = null;
 
-    boolean isPaused = false; //Determines if the simulation will be executed (nevertheless the neighborhood will be updated)
+    //-----------------------------------------------
+    //PARAMETER
+    //-----------------------------------------------
+    public boolean isPaused = false; //Determines if the simulation will be executed (nevertheless the neighborhood will be updated)
+    //For showing the names of robots. Only for visualisation, does not influence the simulator.
+    public boolean showNamesOfAllRobots = false; //For all robots
+    public boolean showNameOfSelectedRobot = true; //Only for the selected robot
+    public boolean superspeed = false;
+    //This enables the coordination system cross. Only for visualisation, does not influence the simulator.
+    public boolean drawCoordCross = true;
+    public boolean allowRobotDragging = true;
+
+
 
     //<Select and Drag> Only needed for the possibility of selecting and/or dragging a robot
     //Robot selectedRobot = null;
-    boolean dragging = false;
-    boolean recordPDF = false;
+    private boolean dragging = false;
+    private boolean recordPDF = false;
 
-    boolean superspeed = false;
+    public void makeScreenshot(){
+        recordPDF = true;
+    }
 
     SimulatedObject selectedObject = null;
     public boolean HOVER = true;
@@ -70,7 +71,7 @@ public class InteractiveVisualisation extends PApplet
 
     public void setup()
     {
-        size(1280, 720, P2D);
+        size(WINDOW_SIZE.width, WINDOW_SIZE.height, P2D);
         zoomPan = new ZoomPan(this);
         float simToVisScaling = 100;
         zoomPan.setZoomScale(simToVisScaling);
@@ -80,16 +81,6 @@ public class InteractiveVisualisation extends PApplet
         frameRate(30);
 
         swarmVisualisation = new SwarmVisualisation(sim, g);
-        ParameterPlayground.addOption(this, "DRAW_COORD_CROSS",             "Visualisation", "Draw Coordinate Cross");
-        ParameterPlayground.addOption(this, "SHOW_NAMES_OF_ALL_ROBOTS",     "Visualisation", "Show Robot Names");
-        ParameterPlayground.addOption(this, "SHOW_NAME_OF_SELECTED_ROBOT",  "Visualisation", "Show Selected Robot Name");
-        ParameterPlayground.addOption(swarmVisualisation, "showAllRobotsRanges",     "Visualisation", "Show Robot Ranges");
-        ParameterPlayground.addOption(swarmVisualisation, "showSelectedRobotsRanges", "Visualisation", "Show Selected Robot Range");
-        ParameterPlayground.addOption(swarmVisualisation, "showNeighborhood",           "Visualisation", "Show Neighbourhood Graph");
-        ParameterPlayground.addOption(swarmVisualisation, "showCollisions",              "Visualisation", "Show Collisions");
-        ParameterPlayground.addOption(this, "ROBOT_DRAGGING", "Visualisation", "Enable Robot Dragging");
-        ParameterPlayground.addOption(this, "HOVER", "Visualisation", "Enable Hover");
-
     }
 
 
@@ -123,6 +114,7 @@ public class InteractiveVisualisation extends PApplet
 
         PGraphics usedGraphics = g;
         if(recordPDF) {
+            System.out.println("Save Screenshot to 'frame-" + frameCount + ".pdf'");
             usedGraphics = createGraphics(width, height, PDF, "frame-" + frameCount + ".pdf");
             usedGraphics.beginDraw();
         }
@@ -155,7 +147,7 @@ public class InteractiveVisualisation extends PApplet
             selectedRobotTrace.clear();
 
         //Draw a cross in the middle of the coordinate system
-        if(DRAW_COORD_CROSS) {
+        if(drawCoordCross) {
             usedGraphics.stroke(200);
             usedGraphics.line(-1000, 0, 1000, 0);
             usedGraphics.line(0, -1000, 0, 1000);
@@ -266,7 +258,7 @@ public class InteractiveVisualisation extends PApplet
                             return true;
                         }
                         selectedRobotTrace.clear();
-                        dragging = ROBOT_DRAGGING;
+                        dragging = allowRobotDragging;
                         zoomPan.setMouseMask(SHIFT);
 
                         return false;
@@ -274,7 +266,7 @@ public class InteractiveVisualisation extends PApplet
                         if(!((Obstacle)fixture.getUserData()).pointInObstacle(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)) return true;
                         selectedObject = (Obstacle) fixture.getUserData();
                         swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
-                        dragging = ROBOT_DRAGGING;
+                        dragging = allowRobotDragging;
                         zoomPan.setMouseMask(SHIFT);
                         selectedRobotTrace.clear();
                         return false;
@@ -297,10 +289,10 @@ public class InteractiveVisualisation extends PApplet
     public void drawRobotsTexts() {
         for(Robot r : sim.getRobots()) {
             //Prints the name under the robot
-            if (SHOW_NAMES_OF_ALL_ROBOTS) {
+            if (showNamesOfAllRobots) {
                 texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + Robot.RADIUS * 2), r.toString());
             } else {
-                if (SHOW_NAME_OF_SELECTED_ROBOT && r == selectedObject)
+                if (showNameOfSelectedRobot && r == selectedObject)
                     texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + Robot.RADIUS * 2), r.getName());
                 if (HOVER && r == hoverRobot)
                     texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + Robot.RADIUS * 2), r.getName());
@@ -377,10 +369,6 @@ public class InteractiveVisualisation extends PApplet
         }
     }
 
-    public void pauseSimulation() {
-        isPaused = true;
-    }
-
     public interface LoopCallback {
         void loopCalled();
     }
@@ -389,22 +377,12 @@ public class InteractiveVisualisation extends PApplet
 
     public static InteractiveVisualisation instance = null;
 
-    public InteractiveVisualisation() {
+    public InteractiveVisualisation(Dimension size, Simulator sim) {
         super();
         if(instance != null) throw new RuntimeException();
         instance = this;
-    }
-
-    public static void showSimulation(Simulator sim)
-    {
-        if(instance == null)
-        {
-            printPlatypus();
-            PApplet.main(new String[]{InteractiveVisualisation.class.getName()});
-            instance.sim = sim;
-            new SettingsWindow(instance);
-
-        }
+        this.sim = sim;
+        WINDOW_SIZE = size;
     }
 
     /**
