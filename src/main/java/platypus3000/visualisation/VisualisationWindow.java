@@ -1,5 +1,6 @@
 package platypus3000.visualisation;
 
+import platypus3000.simulation.Configuration;
 import platypus3000.simulation.Simulator;
 
 import javax.swing.*;
@@ -21,7 +22,7 @@ public class VisualisationWindow extends JFrame {
     JMenu menu_visualisation;
 
     public VisualisationWindow(Simulator sim){
-        this(sim, new Dimension(1200,700));
+        this(sim, new Dimension(800,600));
     }
 
     public VisualisationWindow(Simulator sim, Dimension size) {
@@ -60,6 +61,16 @@ public class VisualisationWindow extends JFrame {
                 }
             });
             menu_simulation.add(menuItem_superspeed);
+            //Overlapping
+            final JCheckBoxMenuItem menuItem_overlapping = new JCheckBoxMenuItem("Allow Overlapping");
+            menuItem_overlapping.setState(Configuration.ALLOW_OVERLAPPING);
+            menuItem_overlapping.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    Configuration.ALLOW_OVERLAPPING = menuItem_overlapping.getState();
+                }
+            });
+            menu_simulation.add(menuItem_overlapping);
             //Screenshot-Entry
             final JMenuItem menuItem_screenshot = new JMenuItem("Screenshot");
             menuItem_playpause.addActionListener(new ActionListener() {

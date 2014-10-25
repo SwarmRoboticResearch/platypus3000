@@ -8,6 +8,8 @@ import platypus3000.analyticstools.OverlayManager;
 public class Configuration {
     public OverlayManager overlayManager = new OverlayManager();
 
+    public static boolean ALLOW_OVERLAPPING = false;
+
     //Robot Options
     public final float RADIUS = 0.05f; //radius of robot in m
     public final float RANGE =4f; //range of the communication in m from the center of the robot

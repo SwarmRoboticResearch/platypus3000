@@ -1,9 +1,11 @@
 package platypus3000.simulation;
 
+import org.jbox2d.callbacks.ContactFilter;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
 import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
 import platypus3000.analyticstools.OverlayManager;
@@ -42,6 +44,15 @@ public class Simulator {
         this.configuration = configuration;
 
         world = new World(new Vec2(0, 0));  //World without gravity.
+        //Dynamically allow/disallow overlapping of robots. For Testing you maybe want to allow overlapping.
+
+        world.setContactFilter(new ContactFilter(){
+            @Override
+            public boolean shouldCollide(Fixture fixtureA, Fixture fixtureB) {
+                if(Configuration.ALLOW_OVERLAPPING && fixtureA.getUserData() instanceof Robot && fixtureB.getUserData() instanceof Robot) return false;
+                return super.shouldCollide(fixtureA, fixtureB);
+            }
+        });
 
         //CollisionListener. Needed for the bump sensor
         world.setContactListener(new ContactListener() {
@@ -103,8 +114,9 @@ public class Simulator {
                 public void run() {
                     try {
                         theRobot.runController();
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         e.printStackTrace();
+                        System.err.println("Error "+theRobot.getID());
                     }
                     finally {
                         latch.countDown();

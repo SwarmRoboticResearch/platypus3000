@@ -14,7 +14,7 @@ public class OdometryVector {
     Robot robot;
 
     OdometryVector(Robot r){
-        start = r.getGlobalPosition();
+        start = r.getGlobalPosition().clone();
         startAngle = r.getGlobalAngle();
         robot = r;
     }

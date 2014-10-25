@@ -12,6 +12,7 @@ import platypus3000.utils.AngleUtils;
  */
 public class RobotMovementPhysics {
     Configuration configuration;
+    private float accuracy = MathUtils.PI;
 
     public RobotMovementPhysics(Configuration configuration){
         this.configuration = configuration;
@@ -66,6 +67,7 @@ public class RobotMovementPhysics {
                 desiredSpeed = v.x;
             }
         }
+        if(Math.abs(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian((desiredSpeed>0?v:v.mul(-1)))))>accuracy) desiredSpeed = 0;
         desiredRotationSpeed*=-5;
     }
 
@@ -104,5 +106,9 @@ public class RobotMovementPhysics {
         speed = MathUtils.min(configuration.MAX_ROTATION_VELOCITY, speed);
         speed = MathUtils.max(-configuration.MAX_ROTATION_VELOCITY, speed);
         return speed;
+    }
+
+    public void setAccuracy(float accuracy) {
+        this.accuracy = accuracy;
     }
 }

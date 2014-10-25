@@ -120,4 +120,12 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     public int size() {
         return neighborViews.size();
     }
+
+    public ArrayList<NeighborView> getNeighborViews() {
+        return neighborViews;
+    }
+
+    public boolean isEmpty() {
+        return size()==0;
+    }
 }

@@ -13,6 +13,7 @@ public class Message
     public final int receiver; //To the robot with this id
     public final boolean isBroadcast; //Has also be send to all other robots in range
     public final long timestamp; //Send and only valid for this time.
+    public boolean delete = false;
 
     public Message(Object msg, int sender, int receiver, long timestamp, boolean isBroadcast) {
         this.timestamp=timestamp;
@@ -28,6 +29,10 @@ public class Message
 
     public Message(Object msg, int sender, int receiver, long timestamp) {
         this(msg, sender, receiver, timestamp, false);
+    }
+
+    public void delete(){
+       delete = true;
     }
 
     @Override
