@@ -92,6 +92,7 @@ public class MinimalQuadraticSpanningTree {
                         robot.send(new MinimalQuadraticSpanningTreeMessage(false), m.sender);
                     }
                 }
+                m.delete();
             }
         }
 

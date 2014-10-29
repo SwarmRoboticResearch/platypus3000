@@ -29,6 +29,7 @@ import java.util.concurrent.BlockingQueue;
  * the constructor.
  */
 public class Robot extends SimulatedObject implements RobotInterface {
+    private static final boolean CLEAN_OLD_MESSAGES = true; //TODO false leads to unpredictable behaviors (but could be the algorithm)
     //<R-One Properties>
     RobotMovementPhysics movementsPhysics;
     //</R-One Properties>
@@ -114,7 +115,11 @@ public class Robot extends SimulatedObject implements RobotInterface {
         if (controller != null) {
             controller.loop(this);   //The robot specific (user programmed) loop function.
         }
-        messageQueue.cleanUp();
+        if(CLEAN_OLD_MESSAGES){
+            messageQueue.removeOldMessages();
+        } else {
+            messageQueue.cleanUp();
+        }
     }
 
     void updateOutput() {
@@ -227,6 +232,8 @@ public class Robot extends SimulatedObject implements RobotInterface {
                         if (!receiver.messageQueue.offer(m)) {
                             System.err.printf("%s (%d) tried to send %s but the queue of the receiving robot %s (%d) is full\n", name, getID(), m.msg, receiver.name, receiver.getID());
                         }
+                    } else {
+                        System.out.println("Message thrown away due to noise");
                     }
                 } else {
                     System.err.printf("%s (%d) tried tried to send \"%s\" to a non-neightbour (%d)!\n", name, hashCode(), m.msg, m.receiver);

@@ -31,6 +31,7 @@ public class StateManager implements Loopable {
                 for(PublicState publicState : ((StateMap) m.msg).values())
                     publicState.robotID = m.sender;
                 neighborStateMaps.put(m.sender, (StateMap) m.msg);
+               m.delete();
             }
         }
         ownRobotID = robot.getID();
