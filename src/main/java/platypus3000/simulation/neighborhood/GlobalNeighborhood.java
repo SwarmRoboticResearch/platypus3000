@@ -71,7 +71,7 @@ public class GlobalNeighborhood {
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 
         //Remove neighbors not in visual contact.
-        if(sim.configuration.LINE_OF_SIGHT_CONSTRAINT) {
+        if(sim.configuration.isLineOfSightConstraintActive()) {
             for (final Robot closeRobot : robotsInRange) {
                 raycastCount++;
                 if (location.sub(closeRobot.getGlobalPosition()).lengthSquared() > 0) {
@@ -116,7 +116,7 @@ public class GlobalNeighborhood {
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 
         //Remove neighbors not in visual contact.
-        if(sim.configuration.LINE_OF_SIGHT_CONSTRAINT) {
+        if(sim.configuration.isLineOfSightConstraintActive()) {
             for (final Robot closeRobot : robotsInRange) {
                 if (!neighborhoodGraph.containsEdge(sourceRobot, closeRobot)) { //only check for visual contact if there is no edge yet
                     raycastCount++;

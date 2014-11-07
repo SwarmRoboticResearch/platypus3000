@@ -1,4 +1,4 @@
-package platypus3000.algorithms;
+package platypus3000.algorithms.distributedalgorithms;
 
 import org.jbox2d.common.Vec2;
 import platypus3000.analyticstools.overlays.DiscreteStateColorOverlay;
@@ -12,7 +12,13 @@ import platypus3000.utils.NeighborState.StateManager;
 import java.util.Comparator;
 
 /**
- * Created by doms on 10/22/14.
+ * This is a simple distributed leader election algorithm for robots with unique identifiers.
+ * Mostly as identifier the ID is chosen and as leader the robot with the maximum or minimum ID.
+ * However, you can also chose other things for election.
+ *
+ * PLEASE NOTE: THIS IS A DISTRIBUTED ALGORITHM! It is not robust and needs a static environment with a possibly delayed
+ * but lossles connection. The loop will return true if it finished. You can assume the result to be
+ * correct and available in around 2N time rounds (without message delays).
  */
 public class LeaderElection <T> {
     StateManager stateManager;
@@ -25,7 +31,6 @@ public class LeaderElection <T> {
     VectorOverlay predOverlay;
     Vec2  pred_vec = new Vec2();
     DiscreteStateColorOverlay done_overlay;
-
 
     public LeaderElection(RobotController controller, StateManager stateManager, Comparator<T> comparator,T value, RobotInterface robot, String key){
         predOverlay = new VectorOverlay(controller, "Predecessor", pred_vec);
@@ -104,31 +109,33 @@ public class LeaderElection <T> {
     public void remove(){
         stateManager.removeLocalState(state_key);
     }
+
+    private class LeaderElectionState<T> extends PublicState {
+        T max_value;
+        int leader;
+        Integer predecessor;
+        int hops = 0;
+
+        boolean lowerLevelDone = false;
+        boolean done = false;
+
+        LeaderElectionState(T value, int id){
+            this.max_value = value;
+            this.leader = id;
+        }
+
+        @Override
+        public PublicState clone() throws CloneNotSupportedException {
+            LeaderElectionState<T> cloned = new LeaderElectionState<T>(max_value, leader);
+            cloned.predecessor = predecessor;
+            cloned.hops = hops;
+            cloned.lowerLevelDone = lowerLevelDone;
+            cloned.done = done;
+            return cloned;
+        }
+    }
 }
 
-class LeaderElectionState<T> extends PublicState {
-    T max_value;
-    int leader;
-    Integer predecessor;
-    int hops = 0;
 
-    boolean lowerLevelDone = false;
-    boolean done = false;
-
-    LeaderElectionState(T value, int id){
-        this.max_value = value;
-        this.leader = id;
-    }
-
-    @Override
-    public PublicState clone() throws CloneNotSupportedException {
-        LeaderElectionState<T> cloned = new LeaderElectionState<T>(max_value, leader);
-        cloned.predecessor = predecessor;
-        cloned.hops = hops;
-        cloned.lowerLevelDone = lowerLevelDone;
-        cloned.done = done;
-        return cloned;
-    }
-}
 
 

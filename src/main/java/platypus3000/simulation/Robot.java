@@ -32,7 +32,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     private static final boolean CLEAN_OLD_MESSAGES = true; //TODO false leads to unpredictable behaviors (but could be the algorithm)
     //<R-One Properties>
     final RobotMovementPhysics movementsPhysics;
-    final NoiseModel noiseModel;
+    public final NoiseModel noiseModel;
     //</R-One Properties>
 
     private String name;

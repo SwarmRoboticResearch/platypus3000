@@ -71,11 +71,11 @@ public class VisualisationWindow extends JFrame {
             });
             menu_simulation.add(menuItem_superspeed);
             //Overlapping
-            menuItem_overlapping.setState(simulator.configuration.ALLOW_OVERLAPPING);
+            menuItem_overlapping.setState(simulator.configuration.isOverlappingAllowed());
             menuItem_overlapping.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    simulator.configuration.ALLOW_OVERLAPPING = menuItem_overlapping.getState();
+                    simulator.configuration.setAllowOverlapping(menuItem_overlapping.getState());
                 }
             });
             menu_simulation.add(menuItem_overlapping);

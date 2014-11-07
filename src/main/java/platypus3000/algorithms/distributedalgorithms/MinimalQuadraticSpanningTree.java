@@ -1,4 +1,4 @@
-package platypus3000.algorithms;
+package platypus3000.algorithms.distributedalgorithms;
 
 import org.jbox2d.common.Vec2;
 import platypus3000.analyticstools.overlays.VectorOverlay;

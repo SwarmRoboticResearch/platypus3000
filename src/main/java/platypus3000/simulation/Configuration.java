@@ -8,8 +8,27 @@ import platypus3000.analyticstools.OverlayManager;
 public class Configuration {
     public OverlayManager overlayManager = new OverlayManager();
 
-    public boolean ALLOW_OVERLAPPING = false;
-    public boolean LINE_OF_SIGHT_CONSTRAINT = false;
+    private boolean ALLOW_OVERLAPPING = false;
+    public void setAllowOverlapping(boolean overlapping){
+        if(overlapping!=ALLOW_OVERLAPPING){
+            ALLOW_OVERLAPPING = overlapping;
+            notifyListener();
+        }
+    }
+    public boolean isOverlappingAllowed(){
+        return ALLOW_OVERLAPPING;
+    }
+
+    private boolean LINE_OF_SIGHT_CONSTRAINT = false;
+    public void setLineOfSightConstraint(boolean los){
+        if(los!= LINE_OF_SIGHT_CONSTRAINT) {
+            LINE_OF_SIGHT_CONSTRAINT = los;
+            notifyListener();
+        }
+    }
+    public boolean isLineOfSightConstraintActive(){
+        return LINE_OF_SIGHT_CONSTRAINT;
+    }
 
     //Robot Options
     public final float RADIUS = 0.05f; //radius of robot in m
@@ -35,4 +54,16 @@ public class Configuration {
     public float POSITION_DISTANCE_NOISE = 0f;//0-0.5f may be rational
     public float messageFailureProbability = 0f; // good 0<=x<1 bad
     //</Noise>
+
+    private void notifyListener(){
+        if(changeListener!=null) changeListener.onChange(this);
+    }
+
+    ConfigurationChangeListener changeListener;
+    public void setConfigurationChangeListener(ConfigurationChangeListener configurationChangeListener){
+        this.changeListener = configurationChangeListener;
+    }
+    interface ConfigurationChangeListener{
+        public void onChange(Configuration configuration);
+    }
 }

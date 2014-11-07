@@ -42,7 +42,7 @@ public class Simulator {
         world.setContactFilter(new ContactFilter(){
             @Override
             public boolean shouldCollide(Fixture fixtureA, Fixture fixtureB) {
-                if(configuration.ALLOW_OVERLAPPING && fixtureA.getUserData() instanceof Robot && fixtureB.getUserData() instanceof Robot) return false;
+                if(configuration.isOverlappingAllowed() && fixtureA.getUserData() instanceof Robot && fixtureB.getUserData() instanceof Robot) return false;
                 return super.shouldCollide(fixtureA, fixtureB);
             }
         });

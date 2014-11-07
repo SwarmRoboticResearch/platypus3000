@@ -31,7 +31,7 @@ public class NeighborView {
         checkIfValid();
         if(localPosition == null){
             localPosition = source.getLocalPoint(neighbor.getGlobalPosition());
-            NoiseModel.noisePosition(localPosition);
+            source.noiseModel.noisePosition(localPosition);
         }
         return localPosition.clone();
     }
