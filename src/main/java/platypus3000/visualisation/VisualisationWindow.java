@@ -23,7 +23,7 @@ public class VisualisationWindow extends JFrame {
 
     final Simulator simulator;
 
-    final JMenuItem menuItem_playpause = new JMenuItem((visualisation.isPaused ? "Play" : "Pause"));
+    final JMenuItem menuItem_playpause = new JMenuItem( "Pause");
     final JCheckBoxMenuItem menuItem_superspeed = new JCheckBoxMenuItem("Enable Superspeed");
     final JCheckBoxMenuItem menuItem_overlapping = new JCheckBoxMenuItem("Allow Overlapping");
     final JMenuItem menuItem_screenshot = new JMenuItem("Screenshot");
