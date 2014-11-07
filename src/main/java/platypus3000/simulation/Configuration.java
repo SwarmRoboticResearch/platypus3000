@@ -8,7 +8,8 @@ import platypus3000.analyticstools.OverlayManager;
 public class Configuration {
     public OverlayManager overlayManager = new OverlayManager();
 
-    public static boolean ALLOW_OVERLAPPING = false;
+    public boolean ALLOW_OVERLAPPING = false;
+    public boolean LINE_OF_SIGHT_CONSTRAINT = false;
 
     //Robot Options
     public final float RADIUS = 0.05f; //radius of robot in m
@@ -22,4 +23,16 @@ public class Configuration {
     public final float MAX_ROTATION_VELOCITY = 10f;
     public final float MAX_ROTATION_BRAKE_POWER = 1f;
 
+    //<Physic Engine Configuration>
+    final float TIME_STEP = 1.0f / 60.f; //TODO: I guess this is 1/60 second?
+    final int VELOCITY_ITERATIONS = 6;
+    final int POSITION_ITERATIONS = 2;
+    //<Physic Engine Configuration>
+
+    //<Noise>
+    public float connectivityProbability = 1f; //bad 0<x<=1 good
+    public float POSITION_ANGLE_NOISE = 0f; // 0-0.25Pi may be rational
+    public float POSITION_DISTANCE_NOISE = 0f;//0-0.5f may be rational
+    public float messageFailureProbability = 0f; // good 0<=x<1 bad
+    //</Noise>
 }

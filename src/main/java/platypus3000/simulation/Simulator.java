@@ -21,27 +21,20 @@ import java.util.concurrent.*;
  * This class is the main class which maintains the simulation. It is independent of the visualisation!
  */
 public class Simulator {
-
     public final Configuration configuration;
-
-    //<Physic Engine Configuration>
-    final float TIME_STEP = 1.0f / 60.f; //TODO: I guess this is 1/60 second?
-    final int VELOCITY_ITERATIONS = 6;
-    final int POSITION_ITERATIONS = 2;
-    //<Physic Engine Configuration>
 
     //<Robots>
     LinkedHashMap<Integer, Robot> robots = new LinkedHashMap<Integer, Robot>();
     ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
 
-    public World world;
+    public World world; //JBox2d-World
     private long time = 0;
     GlobalNeighborhood globalNeighborhood = new GlobalNeighborhood(this);
 
     private static ExecutorService executor = Executors.newFixedThreadPool(16);
 
-    public Simulator(Configuration configuration) {
-        this.configuration = configuration;
+    public Simulator(Configuration conf) {
+        this.configuration = conf;
 
         world = new World(new Vec2(0, 0));  //World without gravity.
         //Dynamically allow/disallow overlapping of robots. For Testing you maybe want to allow overlapping.
@@ -49,7 +42,7 @@ public class Simulator {
         world.setContactFilter(new ContactFilter(){
             @Override
             public boolean shouldCollide(Fixture fixtureA, Fixture fixtureB) {
-                if(Configuration.ALLOW_OVERLAPPING && fixtureA.getUserData() instanceof Robot && fixtureB.getUserData() instanceof Robot) return false;
+                if(configuration.ALLOW_OVERLAPPING && fixtureA.getUserData() instanceof Robot && fixtureB.getUserData() instanceof Robot) return false;
                 return super.shouldCollide(fixtureA, fixtureB);
             }
         });
@@ -103,7 +96,7 @@ public class Simulator {
     // Next step for Physic Engine
     public void step() {
         ++time;
-        world.step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+        world.step(configuration.TIME_STEP, configuration.VELOCITY_ITERATIONS, configuration.POSITION_ITERATIONS);
         refresh(); //The base function for calculating the neighborhood and co
 
         final CountDownLatch latch = new CountDownLatch(robots.size());
@@ -183,6 +176,14 @@ public class Simulator {
 
     public GlobalNeighborhood getGlobalNeighborhood() {
         return globalNeighborhood;
+    }
+
+    NoiseModel noiseModel;
+    public NoiseModel getNoiseModel() {
+        if(noiseModel == null){
+            noiseModel = new NoiseModel(configuration);
+        }
+        return noiseModel;
     }
 }
 

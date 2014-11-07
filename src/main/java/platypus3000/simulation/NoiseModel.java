@@ -10,35 +10,26 @@ import java.util.Random;
  * This class disturbs the sensors of the robots for testing, how robust the algorithms are
  */
 public class NoiseModel {
-    public static float connectivityProbability = 1f;
-
-    public static float POSITION_ANGLE_NOISE = 0f;
-    public static float POSITION_DISTANCE_NOISE = 0f;
     public static Random random = new Random(0);
 
-    static {
-        ParameterPlayground.addParameter(NoiseModel.class, 0, 1, "connectivityProbability", "Connectivity", "Noise");
-        ParameterPlayground.addParameter(NoiseModel.class, 0, 1, "messageFailureProbability", "Message Noise", "Noise");
-
-        ParameterPlayground.addParameter(NoiseModel.class, 0, MathUtils.PI*0.25f, "POSITION_ANGLE_NOISE", "Angle", "Noise Model");
-        ParameterPlayground.addParameter(NoiseModel.class, 0, 0.5f, "POSITION_DISTANCE_NOISE", "Distance", "Noise Model");
+    Configuration configuration;
+    public NoiseModel(Configuration configuration){
+         this.configuration = configuration;
     }
 
-    public static float messageFailureProbability = 0f;
-
-    public static boolean connectionExists() {
-        return random.nextFloat() < connectivityProbability;
+    public boolean connectionExists() {
+        return random.nextFloat() < configuration.connectivityProbability;
     }
 
-    public static boolean messageFailure(){
-        return random.nextFloat() < messageFailureProbability;
+    public boolean messageFailure(){
+        return random.nextFloat() < configuration.messageFailureProbability;
     }
 
-    public static void noisePosition(Vec2 q){
-        if(POSITION_ANGLE_NOISE > 0 || POSITION_DISTANCE_NOISE > 0){
-            float a = MathUtils.randomFloat(-POSITION_ANGLE_NOISE, POSITION_ANGLE_NOISE);
+    public void noisePosition(Vec2 q){
+        if(configuration.POSITION_ANGLE_NOISE > 0 || configuration.POSITION_DISTANCE_NOISE > 0){
+            float a = MathUtils.randomFloat(-configuration.POSITION_ANGLE_NOISE, configuration.POSITION_ANGLE_NOISE);
             rotate(q,a);
-            float l = MathUtils.randomFloat(-POSITION_DISTANCE_NOISE, POSITION_DISTANCE_NOISE);
+            float l = MathUtils.randomFloat(-configuration.POSITION_DISTANCE_NOISE, configuration.POSITION_DISTANCE_NOISE);
             q.mulLocal(1+l);
         }
     }

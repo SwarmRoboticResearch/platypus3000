@@ -2,13 +2,10 @@ package platypus3000.simulation.control;
 
 import org.jbox2d.common.Vec2;
 import platypus3000.simulation.ColorInterface;
-import platypus3000.simulation.OdometryVector;
+import platypus3000.simulation.Odometer;
 import platypus3000.simulation.communication.Message;
 import platypus3000.simulation.communication.MessagePayload;
 import platypus3000.simulation.neighborhood.LocalNeighborhood;
-import platypus3000.simulation.neighborhood.NeighborView;
-
-import java.util.ArrayList;
 
 /**
  * With this interface a swarm robot controller can steer the robot without getting access to the global level.
@@ -41,7 +38,7 @@ public interface RobotInterface extends ColorInterface
     public void setSpeed(float speed);
     public void setRotation(float rotation);
     public void setMovement(Vec2 direction);
-    public OdometryVector getOdometryVector();
+    public Odometer getOdometryVector();
     public void setMovementAccuracy(float accuracy);
 
     public Vec2 getLocalMovement();

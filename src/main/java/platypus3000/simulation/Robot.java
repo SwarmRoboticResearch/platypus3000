@@ -31,7 +31,8 @@ import java.util.concurrent.BlockingQueue;
 public class Robot extends SimulatedObject implements RobotInterface {
     private static final boolean CLEAN_OLD_MESSAGES = true; //TODO false leads to unpredictable behaviors (but could be the algorithm)
     //<R-One Properties>
-    RobotMovementPhysics movementsPhysics;
+    final RobotMovementPhysics movementsPhysics;
+    final NoiseModel noiseModel;
     //</R-One Properties>
 
     private String name;
@@ -51,6 +52,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //<Constructors>
     public Robot(String name, RobotController controller, Simulator simulator, float x, float y, float angle) {
         super(simulator);
+        noiseModel = simulator.getNoiseModel();
 
         BodyDef bd = new BodyDef(); //Create a body in the physic engine
         bd.position.set(x, y);
@@ -106,7 +108,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
         Set<Robot> realNeighbors = getSimulator().globalNeighborhood.getNeighbors(this);
         noisedNeighbors = new HashSet<Robot>(realNeighbors.size());
         for (Robot neighborRobot : realNeighbors)
-            if (NoiseModel.connectionExists()) noisedNeighbors.add(neighborRobot);
+            if (noiseModel.connectionExists()) noisedNeighbors.add(neighborRobot);
         //</Refresh LocalNeighborhood>
     }
 
@@ -155,8 +157,8 @@ public class Robot extends SimulatedObject implements RobotInterface {
     }
 
     @Override
-    public OdometryVector getOdometryVector() {
-        return new OdometryVector(this);
+    public Odometer getOdometryVector() {
+        return new Odometer(this);
     }
 
     @Override
@@ -216,7 +218,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     private void transmit(Message m) {
         if (m.isBroadcast) {
             for (Robot r : noisedNeighbors) {
-                if (!NoiseModel.messageFailure()) {
+                if (!noiseModel.messageFailure()) {
                     if (!r.messageQueue.offer(m)) {
                         System.err.println("Message Overflow");
                     }
@@ -228,7 +230,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
                 System.err.printf("%s (%d) tried to send \"%s\" to an unkown robot (%d)\n", name, getID(), m.msg, m.receiver);
             } else {
                 if (noisedNeighbors.contains(receiver)) {
-                    if (!NoiseModel.messageFailure()) {
+                    if (!noiseModel.messageFailure()) {
                         if (!receiver.messageQueue.offer(m)) {
                             System.err.printf("%s (%d) tried to send %s but the queue of the receiving robot %s (%d) is full\n", name, getID(), m.msg, receiver.name, receiver.getID());
                         }

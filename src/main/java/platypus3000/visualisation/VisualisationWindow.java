@@ -21,12 +21,23 @@ public class VisualisationWindow extends JFrame {
     JMenu menu_view;
     JMenu menu_visualisation;
 
+    final Simulator simulator;
+
+    final JMenuItem menuItem_playpause = new JMenuItem((visualisation.isPaused ? "Play" : "Pause"));
+    final JCheckBoxMenuItem menuItem_superspeed = new JCheckBoxMenuItem("Enable Superspeed");
+    final JCheckBoxMenuItem menuItem_overlapping = new JCheckBoxMenuItem("Allow Overlapping");
+    final JMenuItem menuItem_screenshot = new JMenuItem("Screenshot");
+    final JMenuItem menuItem_exit = new JMenuItem("Exit");
+
+    final JMenuItem menuItem_settingswindow = new JMenuItem("Show/Hide SettingsWindow");
+
     public VisualisationWindow(Simulator sim){
         this(sim, new Dimension(800,600));
     }
 
     public VisualisationWindow(Simulator sim, Dimension size) {
         super("Swarm Visualisation");
+        this.simulator = sim;
 
         //PApplet embedding
         setLayout(new BorderLayout());
@@ -42,7 +53,6 @@ public class VisualisationWindow extends JFrame {
 
         { //Entries of MenuBar
             //PlayPause-Entry
-            final JMenuItem menuItem_playpause = new JMenuItem((visualisation.isPaused ? "Play" : "Pause"));
             menuItem_playpause.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
@@ -52,7 +62,6 @@ public class VisualisationWindow extends JFrame {
             });
             menu_simulation.add(menuItem_playpause);
             //Superspeed
-            final JCheckBoxMenuItem menuItem_superspeed = new JCheckBoxMenuItem("Enable Superspeed");
             menuItem_superspeed.setState(visualisation.superspeed);
             menuItem_superspeed.addActionListener(new ActionListener() {
                 @Override
@@ -62,17 +71,15 @@ public class VisualisationWindow extends JFrame {
             });
             menu_simulation.add(menuItem_superspeed);
             //Overlapping
-            final JCheckBoxMenuItem menuItem_overlapping = new JCheckBoxMenuItem("Allow Overlapping");
-            menuItem_overlapping.setState(Configuration.ALLOW_OVERLAPPING);
+            menuItem_overlapping.setState(simulator.configuration.ALLOW_OVERLAPPING);
             menuItem_overlapping.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    Configuration.ALLOW_OVERLAPPING = menuItem_overlapping.getState();
+                    simulator.configuration.ALLOW_OVERLAPPING = menuItem_overlapping.getState();
                 }
             });
             menu_simulation.add(menuItem_overlapping);
             //Screenshot-Entry
-            final JMenuItem menuItem_screenshot = new JMenuItem("Screenshot");
             menuItem_playpause.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
@@ -81,7 +88,6 @@ public class VisualisationWindow extends JFrame {
             });
             menu_simulation.add(menuItem_screenshot);
             //Exit
-            final JMenuItem menuItem_exit = new JMenuItem("Exit");
             menuItem_exit.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
@@ -90,7 +96,6 @@ public class VisualisationWindow extends JFrame {
             });
             menu_simulation.add(menuItem_exit);
             //Show/Hide SettingsWindow
-            final JMenuItem menuItem_settingswindow = new JMenuItem("Show/Hide SettingsWindow");
             menuItem_settingswindow.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
@@ -229,5 +234,10 @@ public class VisualisationWindow extends JFrame {
         settingsWindow = new SettingsWindow(visualisation);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    public void refresh(){
+        menuItem_playpause.setText((visualisation.isPaused ? "Play" : "Pause"));
+
     }
 }

@@ -11,15 +11,15 @@ import platypus3000.visualisation.VisualisationWindow;
  * Created by doms on 10/11/14.
  */
 public class OdometryExample extends RobotController {
-    OdometryVector odometryVector;
+    Odometer odometer;
     @Override
     public void init(RobotInterface robot){
-        odometryVector = robot.getOdometryVector();
+        odometer = robot.getOdometryVector();
     }
     @Override
     public void loop(RobotInterface robot) {
         //Move to the position (1,1). Because the robot starts at the origin of the global coordinate system, this matches the global coordinate.1
-        robot.setMovement(odometryVector.transformOldPosition(new Vec2(1,1)));
+        robot.setMovement(odometer.transformOldPosition(new Vec2(1,1)));
 
     }
 

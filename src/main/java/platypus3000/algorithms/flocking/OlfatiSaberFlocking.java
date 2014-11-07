@@ -1,4 +1,4 @@
-package platypus3000.algorithms;
+package platypus3000.algorithms.flocking;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
@@ -9,16 +9,17 @@ import platypus3000.simulation.control.RobotInterface;
 import platypus3000.simulation.neighborhood.NeighborView;
 import platypus3000.utils.Loopable;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.util.List;
 
 /**
  * Created by doms on 5/3/14.
  */
-public class Flocking implements Loopable {
+public class OlfatiSaberFlocking implements Loopable {
     //TUNABLE PARAMETER
-    final static float EPSILON = 1f; //> 0
-    final static float A=5f;  // A>0
-    final static float B=8f; // A<=B
+    final float EPSILON;// = 1f; //> 0
+    final float A;//=5f;  // A>0
+    final float B; // A<=B
 
     //PARAMETER
     final float H;
@@ -28,7 +29,7 @@ public class Flocking implements Loopable {
     //AUTOMATIC GENERATED PARAMETER
     final float R_ALPHA; //Range
     final float D_ALPHA; //Lattice
-    final static float C=Math.abs(A-B)/(float)Math.sqrt(4*A*B);
+    final float C;
 
     //DEBUG
     private MultiVectorOverlay multiVectorOverlay;
@@ -37,7 +38,17 @@ public class Flocking implements Loopable {
     Vec2 force = new Vec2();
 
     //BASE
-    public Flocking(RobotController controller){
+    public OlfatiSaberFlocking(RobotController controller){
+        this(controller, 1,5,8);
+    }
+
+    public OlfatiSaberFlocking(RobotController controller, float EPSILON, float A, float B){
+        if(A<=0 || A>B || EPSILON<=0) throw new RuntimeException("Invalid Parameters: A>0 and A<=B and EPSILON>0");
+        this.EPSILON = EPSILON;
+        this.A = A;
+        this.B = B;
+        C=Math.abs(A-B)/(float)Math.sqrt(4*A*B);
+
         new VectorOverlay(controller, "OS", force);
         multiVectorOverlay  = new MultiVectorOverlay(controller, "OlfatiSaber");
         multiVectorOverlay.add(consensusForce, "Consensus");
@@ -121,7 +132,7 @@ public class Flocking implements Loopable {
         return rho_h(z/R_ALPHA)*phi(z-D_ALPHA);
     }
 
-    private static float phi(float z){
+    private float phi(float z){
         float omega1 = (z+C)/ MathUtils.sqrt(1 + (z + C) * (z + C));
         return 0.5f*((A+B)*omega1+(A-B));
     }
@@ -131,25 +142,25 @@ public class Flocking implements Loopable {
      * @param qjMinqi
      * @return
      */
-    private static Vec2 n_ij(Vec2 qjMinqi){
+    private Vec2 n_ij(Vec2 qjMinqi){
         return omega_epsilon(qjMinqi);
     }
 
-    private static Vec2 omega_epsilon(Vec2 z){
+    private Vec2 omega_epsilon(Vec2 z){
         return z.mul(1/(MathUtils.sqrt(1+EPSILON* sqrdNorm(z))));
     }
 
     // ||z||_omega
-    private static float omegaNorm(Vec2 z){
+    private float omegaNorm(Vec2 z){
         return ( (1/EPSILON)*(MathUtils.sqrt(1+EPSILON* sqrdNorm(z))-1) );
     }
 
-    private static float omegaNorm(float z){
+    private float omegaNorm(float z){
         return ( (1/EPSILON)*(MathUtils.sqrt(1+EPSILON*Math.abs(z))-1) );
     }
 
     // ||z||^2
-    private static float sqrdNorm(Vec2 z){
+    private float sqrdNorm(Vec2 z){
         return (z.x*z.x+z.y*z.y);
     }
 

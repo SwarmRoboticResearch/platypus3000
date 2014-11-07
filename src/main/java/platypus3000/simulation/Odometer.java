@@ -7,13 +7,15 @@ import platypus3000.utils.VectorUtils;
 /**
  * This class provides Odometry, which can be used to transform the vectors of the previous time step to the changed
  * coordinate system.
+ *
+ * TODO:  implement inaccuracy
  */
-public class OdometryVector {
+public class Odometer {
     Vec2 start;
     float startAngle;
     Robot robot;
 
-    OdometryVector(Robot r){
+    Odometer(Robot r){
         start = r.getGlobalPosition().clone();
         startAngle = r.getGlobalAngle();
         robot = r;
