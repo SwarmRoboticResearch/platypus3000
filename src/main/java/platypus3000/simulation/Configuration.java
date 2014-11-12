@@ -63,7 +63,7 @@ public class Configuration {
     public void setConfigurationChangeListener(ConfigurationChangeListener configurationChangeListener){
         this.changeListener = configurationChangeListener;
     }
-    interface ConfigurationChangeListener{
+    public interface ConfigurationChangeListener{
         public void onChange(Configuration configuration);
     }
 }

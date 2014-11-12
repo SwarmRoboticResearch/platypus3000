@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
  * This class provides a window with a MenuBar and the Visualisation Embedding.
  * The content of the MenuBar is at the moment elaborately filled in by hand.
  */
-public class VisualisationWindow extends JFrame {
+public class VisualisationWindow extends JFrame implements Configuration.ConfigurationChangeListener {
     InteractiveVisualisation visualisation;
     SettingsWindow settingsWindow;
     JMenuBar menuBar;
@@ -38,6 +38,7 @@ public class VisualisationWindow extends JFrame {
     public VisualisationWindow(Simulator sim, Dimension size) {
         super("Swarm Visualisation");
         this.simulator = sim;
+        sim.configuration.setConfigurationChangeListener(this);
 
         //PApplet embedding
         setLayout(new BorderLayout());
@@ -236,8 +237,8 @@ public class VisualisationWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public void refresh(){
+    @Override
+    public void onChange(Configuration configuration) {
         menuItem_playpause.setText((visualisation.isPaused ? "Play" : "Pause"));
-
     }
 }

@@ -42,7 +42,7 @@ public abstract class SimulatedObject {
     }
 
     public Vec2 getMovement(){
-        return jbox2d_body.getLinearVelocity().clone();
+        return getLocalPoint(jbox2d_body.getLinearVelocity().add(getGlobalPosition()));
     }
 
 

@@ -126,7 +126,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     void updateOutput() {
         //Set the movement
-        movementsPhysics.step();
+        movementsPhysics.step(getMovement());
         super.setMovement(movementsPhysics.getSpeed(), movementsPhysics.getRotationSpeed());
 
         while (outgoingMessages.size() > 0) transmit(outgoingMessages.poll());

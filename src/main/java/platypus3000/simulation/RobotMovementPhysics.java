@@ -25,7 +25,8 @@ public class RobotMovementPhysics {
     private float actual_speed=0;
     private float actual_roationSpeed=0;
 
-    public void step(){
+    public void step(Vec2 actualMovement){
+        actual_speed = actualMovement.x;
         actual_speed = getNewVelocity(actual_speed);
         actual_roationSpeed = getRotationVelocity(actual_roationSpeed);
     }
