@@ -32,7 +32,7 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
     final JMenuItem menuItem_settingswindow = new JMenuItem("Show/Hide SettingsWindow");
 
     public VisualisationWindow(Simulator sim){
-        this(sim, new Dimension(800,600));
+        this(sim, new Dimension(sim.configuration.GUI_WIDTH,sim.configuration.GUI_HEIGHT));
     }
 
     public VisualisationWindow(Simulator sim, Dimension size) {

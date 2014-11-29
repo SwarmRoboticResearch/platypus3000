@@ -6,6 +6,8 @@ import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.visualisation.VisualisationWindow;
 
+import java.io.IOException;
+
 
 /**
  * Created by doms on 10/11/14.
@@ -23,7 +25,7 @@ public class OdometryExample extends RobotController {
 
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
         Simulator sim = new Simulator(new Configuration());
         Robot r = new Robot(new OdometryExample(), sim, 0,0,0);
         new VisualisationWindow(sim);
