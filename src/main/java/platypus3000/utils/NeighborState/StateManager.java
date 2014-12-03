@@ -116,6 +116,10 @@ public class StateManager implements Loopable {
         return states;
     }
 
+    public boolean contains(int id, String key){
+        return getState(id, key)!=null;
+    }
+
     /**
      * Clones and broadcast all own states.
      */
