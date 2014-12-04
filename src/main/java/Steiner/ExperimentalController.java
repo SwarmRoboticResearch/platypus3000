@@ -69,7 +69,7 @@ public class ExperimentalController extends RobotController {
     }
 
     public static void main(String[] args) throws IOException{
-        Simulator sim = new Simulator(new Configuration("/home/doms/Projects/SwarmRoboticResearch/platypus3000/src/main/java/Steiner/simulation.properties"));
+        Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
         for(int i = 1; i<400; i++){
             new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(0, 10), MathUtils.randomFloat(0,10),0);
         }
