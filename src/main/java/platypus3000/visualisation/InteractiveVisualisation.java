@@ -165,24 +165,6 @@ public class InteractiveVisualisation extends PApplet
             }
         }
 
-        //TODO: handle the loopCallback inside the SimulationRunner!
-        //Calculates the next state of the simulation, which will be visualised in the following.
-//        if(!isPaused){
-//            if(superspeed)
-//                for(int i = 0; i < 10; i++) {
-//                    simRunner.step();
-//                    if(loopCallback != null) loopCallback.loopCalled();
-//                }
-//            else {
-//                simRunner.step();
-//                if (loopCallback != null) loopCallback.loopCalled();
-//            }
-//
-//        } else {
-//           simRunner.getSim().refresh();
-//        }
-
-
         if(extraDrawing != null)
             extraDrawing.onDraw(this);
 //        println(frameRate);
@@ -370,12 +352,6 @@ public class InteractiveVisualisation extends PApplet
             simRunner.superspeed = !simRunner.superspeed;
         }
     }
-
-    public interface LoopCallback {
-        void loopCalled();
-    }
-
-    public static LoopCallback loopCallback = null;
 
     public static InteractiveVisualisation instance = null;
 
