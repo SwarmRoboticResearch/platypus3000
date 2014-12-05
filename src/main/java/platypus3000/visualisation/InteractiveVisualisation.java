@@ -28,17 +28,15 @@ public class InteractiveVisualisation extends PApplet
     final Dimension WINDOW_SIZE;
 
     public ZoomPan zoomPan;
-    public Simulator sim; //The actual simulator, which is visualised here.
+    public SimulationRunner simRunner; //The actual simulator, which is visualised here.
     DrawingCallback extraDrawing = null;
 
     //-----------------------------------------------
     //PARAMETER
     //-----------------------------------------------
-    public boolean isPaused = false; //Determines if the simulation will be executed (nevertheless the neighborhood will be updated)
     //For showing the names of robots. Only for visualisation, does not influence the simulator.
     public boolean showNamesOfAllRobots = false; //For all robots
     public boolean showNameOfSelectedRobot = true; //Only for the selected robot
-    public boolean superspeed = false;
     //This enables the coordination system cross. Only for visualisation, does not influence the simulator.
     public boolean drawCoordCross = true;
     public boolean allowRobotDragging = true;
@@ -80,7 +78,7 @@ public class InteractiveVisualisation extends PApplet
         zoomPan.setMouseMask(0);
         frameRate(30);
 
-        swarmVisualisation = new SwarmVisualisation(sim, g);
+        swarmVisualisation = new SwarmVisualisation(simRunner.getSim(), g);
     }
 
 
@@ -92,22 +90,22 @@ public class InteractiveVisualisation extends PApplet
             //Find robot under mouse cursor
             hoverRobot = null;
             if (selectedObject == null) {
-                sim.world.queryAABB(new QueryCallback() {
-                    @Override
-                    public boolean reportFixture(Fixture fixture) {
-                        if (fixture.getUserData() instanceof Robot) {
-                            hoverRobot = (Robot) fixture.getUserData();
-                            if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (sim.configuration.RADIUS * sim.configuration.RADIUS)) {
-                                hoverRobot = null;
-                                return true;
+                synchronized (simRunner.getSim()) {
+                    simRunner.getSim().world.queryAABB(new QueryCallback() {
+                        @Override
+                        public boolean reportFixture(Fixture fixture) {
+                            if (fixture.getUserData() instanceof Robot) {
+                                hoverRobot = (Robot) fixture.getUserData();
+                                if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.RADIUS * simRunner.getSim().configuration.RADIUS)) {
+                                    hoverRobot = null;
+                                    return true;
+                                }
+                                return false;
                             }
-
-
-                            return false;
+                            return true;
                         }
-                        return true;
-                    }
-                }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+                    }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+                }
             }
         }
 
@@ -157,7 +155,7 @@ public class InteractiveVisualisation extends PApplet
         drawRobotsTexts();
 
         if(dontMove){
-            for(Robot r: sim.getRobots()){
+            for(Robot r: simRunner.getSim().getRobots()){
                 r.setMovement(0,0);
             }
         } else {
@@ -167,20 +165,20 @@ public class InteractiveVisualisation extends PApplet
         }
 
         //Calculates the next state of the simulation, which will be visualised in the following.
-        if(!isPaused){
-            if(superspeed)
-                for(int i = 0; i < 10; i++) {
-                    sim.step();
-                    if(loopCallback != null) loopCallback.loopCalled();
-                }
-            else {
-                sim.step();
-                if (loopCallback != null) loopCallback.loopCalled();
-            }
-
-        } else {
-           sim.refresh();
-        }
+//        if(!isPaused){
+//            if(superspeed)
+//                for(int i = 0; i < 10; i++) {
+//                    simRunner.step();
+//                    if(loopCallback != null) loopCallback.loopCalled();
+//                }
+//            else {
+//                simRunner.step();
+//                if (loopCallback != null) loopCallback.loopCalled();
+//            }
+//
+//        } else {
+//           simRunner.getSim().refresh();
+//        }
 
 
         if(extraDrawing != null)
@@ -245,36 +243,38 @@ public class InteractiveVisualisation extends PApplet
             selectedObject = null;
             swarmVisualisation.selectedRobots.clear();
             dragging = false;
-            sim.world.queryAABB(new QueryCallback() {
-                @Override
-                public boolean reportFixture(Fixture fixture) {
-                    if (fixture.getUserData() instanceof Robot) {
-                        selectedObject = (Robot) fixture.getUserData();
-                        swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
+            synchronized (simRunner.getSim()) {
+                simRunner.getSim().world.queryAABB(new QueryCallback() {
+                    @Override
+                    public boolean reportFixture(Fixture fixture) {
+                        if (fixture.getUserData() instanceof Robot) {
+                            selectedObject = (Robot) fixture.getUserData();
+                            swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
 
-                        if(selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared()>(sim.configuration.RADIUS*sim.configuration.RADIUS)){
-                            selectedObject = null;
-                            swarmVisualisation.selectedRobots.clear();
-                            return true;
+                            if (selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.RADIUS * simRunner.getSim().configuration.RADIUS)) {
+                                selectedObject = null;
+                                swarmVisualisation.selectedRobots.clear();
+                                return true;
+                            }
+                            selectedRobotTrace.clear();
+                            dragging = allowRobotDragging;
+                            zoomPan.setMouseMask(SHIFT);
+
+                            return false;
+                        } else if (fixture.getUserData() instanceof Obstacle) {
+                            if (!((Obstacle) fixture.getUserData()).pointInObstacle(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y))
+                                return true;
+                            selectedObject = (Obstacle) fixture.getUserData();
+                            swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
+                            dragging = allowRobotDragging;
+                            zoomPan.setMouseMask(SHIFT);
+                            selectedRobotTrace.clear();
+                            return false;
                         }
-                        selectedRobotTrace.clear();
-                        dragging = allowRobotDragging;
-                        zoomPan.setMouseMask(SHIFT);
-
-                        return false;
-                    } else if(fixture.getUserData() instanceof Obstacle){
-                        if(!((Obstacle)fixture.getUserData()).pointInObstacle(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)) return true;
-                        selectedObject = (Obstacle) fixture.getUserData();
-                        swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
-                        dragging = allowRobotDragging;
-                        zoomPan.setMouseMask(SHIFT);
-                        selectedRobotTrace.clear();
-                        return false;
+                        return true;
                     }
-                    return true;
-                }
-            }, new AABB(new Vec2(zoomPan.getMouseCoord().x , zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x , zoomPan.getMouseCoord().y)));
-
+                }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+            }
 
         } else if(mouseButton == RIGHT){
             assert dragging == false;
@@ -287,19 +287,19 @@ public class InteractiveVisualisation extends PApplet
     }
 
     public void drawRobotsTexts() {
-        for(Robot r : sim.getRobots()) {
+        for(Robot r : simRunner.getSim().getRobots()) {
             //Prints the name under the robot
             if (showNamesOfAllRobots) {
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + sim.configuration.RADIUS * 2), r.toString());
+                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.toString());
             } else {
                 if (showNameOfSelectedRobot && r == selectedObject)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + sim.configuration.RADIUS * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.getName());
                 if (HOVER && r == hoverRobot)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + sim.configuration.RADIUS * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.getName());
             }
 
             if (r.textString != null)
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y -sim.configuration.RADIUS * 2), r.textString);
+                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - simRunner.getSim().configuration.RADIUS * 2), r.textString);
         }
     }
 
@@ -333,11 +333,11 @@ public class InteractiveVisualisation extends PApplet
         }
 
         if(key == ' '){
-            isPaused = !isPaused;
+            simRunner.paused = !simRunner.paused;
         }
 
         if(key == DELETE && selectedObject!=null){
-             sim.remove(selectedObject);
+             simRunner.getSim().remove(selectedObject);
             selectedObject = null;
             swarmVisualisation.selectedRobots.clear();
         }
@@ -355,7 +355,7 @@ public class InteractiveVisualisation extends PApplet
             dontMoveObjects.clear();
             swarmVisualisation.frozenRobots.clear();
             if(dontMove)
-                swarmVisualisation.frozenRobots.addAll(sim.getRobots());
+                swarmVisualisation.frozenRobots.addAll(simRunner.getSim().getRobots());
         }
 
         if(key== '~' && selectedObject!=null){
@@ -365,7 +365,7 @@ public class InteractiveVisualisation extends PApplet
         }
 
         if(key == 's') {
-            superspeed = !superspeed;
+            simRunner.superspeed = !simRunner.superspeed;
         }
     }
 
@@ -377,11 +377,11 @@ public class InteractiveVisualisation extends PApplet
 
     public static InteractiveVisualisation instance = null;
 
-    public InteractiveVisualisation(Dimension size, Simulator sim) {
+    public InteractiveVisualisation(Dimension size, SimulationRunner simRunner) {
         super();
         if(instance != null) throw new RuntimeException();
         instance = this;
-        this.sim = sim;
+        this.simRunner = simRunner;
         WINDOW_SIZE = size;
     }
 

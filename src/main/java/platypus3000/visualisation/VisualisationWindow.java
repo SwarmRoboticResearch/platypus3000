@@ -1,6 +1,7 @@
 package platypus3000.visualisation;
 
 import platypus3000.simulation.Configuration;
+import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.Simulator;
 
 import javax.swing.*;
@@ -22,6 +23,7 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
     JMenu menu_visualisation;
 
     final Simulator simulator;
+    final SimulationRunner simRunner;
 
     final JMenuItem menuItem_playpause = new JMenuItem( "Pause");
     final JCheckBoxMenuItem menuItem_superspeed = new JCheckBoxMenuItem("Enable Superspeed");
@@ -31,18 +33,28 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
 
     final JMenuItem menuItem_settingswindow = new JMenuItem("Show/Hide SettingsWindow");
 
-    public VisualisationWindow(Simulator sim){
-        this(sim, new Dimension(sim.configuration.GUI_WIDTH,sim.configuration.GUI_HEIGHT));
+    public VisualisationWindow(Simulator sim) {
+        this(new SimulationRunner(sim));
     }
 
-    public VisualisationWindow(Simulator sim, Dimension size) {
+    public VisualisationWindow(final Simulator sim, Dimension size) {
+        this(new SimulationRunner(sim), size);
+    }
+
+    public VisualisationWindow(SimulationRunner simRunner){
+        this(simRunner, new Dimension(simRunner.getSim().configuration.GUI_WIDTH, simRunner.getSim().configuration.GUI_HEIGHT));
+    }
+
+    public VisualisationWindow(final SimulationRunner simRunner, Dimension size) {
         super("Swarm Visualisation");
-        this.simulator = sim;
-        sim.configuration.setConfigurationChangeListener(this);
+        this.simulator = simRunner.getSim();
+        this.simRunner = simRunner;
+        this.simRunner.run(30);
+        simulator.configuration.setConfigurationChangeListener(this);
 
         //PApplet embedding
         setLayout(new BorderLayout());
-        visualisation = new InteractiveVisualisation(size, sim);
+        visualisation = new InteractiveVisualisation(size, simRunner);
         add(visualisation, BorderLayout.CENTER);
 
         //MenuBar
@@ -57,17 +69,17 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
             menuItem_playpause.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    visualisation.isPaused = !visualisation.isPaused;
-                    menuItem_playpause.setText((visualisation.isPaused ? "Play" : "Pause"));
+                    simRunner.paused = !simRunner.paused;
+                    menuItem_playpause.setText((simRunner.paused ? "Pause" : "Play"));
                 }
             });
             menu_simulation.add(menuItem_playpause);
             //Superspeed
-            menuItem_superspeed.setState(visualisation.superspeed);
+            menuItem_superspeed.setState(simRunner.superspeed);
             menuItem_superspeed.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    visualisation.superspeed = menuItem_superspeed.getState();
+                    simRunner.superspeed = menuItem_superspeed.getState();
                 }
             });
             menu_simulation.add(menuItem_superspeed);
@@ -239,6 +251,6 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
 
     @Override
     public void onChange(Configuration configuration) {
-        menuItem_playpause.setText((visualisation.isPaused ? "Play" : "Pause"));
+        menuItem_playpause.setText((simRunner.paused ? "Pause" : "Play" ));
     }
 }

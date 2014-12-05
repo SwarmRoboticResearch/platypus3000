@@ -15,9 +15,9 @@ public class SettingsWindow extends JFrame {
         setVisible(true);
         setLayout(new FlowLayout());
         setSize(800,800);
-        setResizable(applet.sim.configuration.GUI_SHOW_PARAMETER_WINDOW);
+        setResizable(applet.simRunner.getSim().configuration.GUI_SHOW_PARAMETER_WINDOW);
         add(new JScrollPane(ParameterPlayground.getInstance(),ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER));
-        add(new JScrollPane(applet.sim.configuration.overlayManager.getJTable()));
+        add(new JScrollPane(applet.simRunner.getSim().configuration.overlayManager.getJTable()));
 
         if(ParameterPlayground.getInstance() != null)
             ParameterPlayground.getInstance().setRootWindow(this);
