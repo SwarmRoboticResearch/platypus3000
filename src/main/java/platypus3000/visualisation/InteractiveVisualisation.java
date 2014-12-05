@@ -154,6 +154,7 @@ public class InteractiveVisualisation extends PApplet
         swarmVisualisation.drawSimulation();
         drawRobotsTexts();
 
+        //TODO: Freezing should happen inside the simulation. It has nothing to do with the visualisation!
         if(dontMove){
             for(Robot r: simRunner.getSim().getRobots()){
                 r.setMovement(0,0);
@@ -164,6 +165,7 @@ public class InteractiveVisualisation extends PApplet
             }
         }
 
+        //TODO: handle the loopCallback inside the SimulationRunner!
         //Calculates the next state of the simulation, which will be visualised in the following.
 //        if(!isPaused){
 //            if(superspeed)
