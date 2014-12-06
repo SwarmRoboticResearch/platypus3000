@@ -13,7 +13,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.util.List;
 
 /**
- * Created by doms on 5/3/14.
+ * A Flocking algorithm by Olfati-Saber, which produces an equilateral triangle 'grid' and provides some movement consensus.
  */
 public class OlfatiSaberFlocking implements Loopable {
     //TUNABLE PARAMETER

@@ -72,16 +72,14 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
         return neighborViews.iterator();
     }
 
+    public int size() {
+        return neighborViews.size();
+    }
 
-    /**
-     * Checks if the two neighbors could be connected due to their distance.
-     * @param a
-     * @param b
-     * @return
-     */
-   // public static boolean inRange(NeighborView a, NeighborView b) {
-    //    return a.getLocalPosition().sub(b.getLocalPosition()).lengthSquared() < Robot.RANGE * Robot.RANGE;
-    //}     TODO
+    public boolean isEmpty() {
+        return size()==0;
+    }
+
 
     //******************************************************************
     // Debugging
@@ -100,11 +98,5 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
         return builder.toString();
     }
 
-    public int size() {
-        return neighborViews.size();
-    }
 
-    public boolean isEmpty() {
-        return size()==0;
-    }
 }
