@@ -38,7 +38,7 @@ public class ThicknessDetermination implements Loopable {
              publicState.boundarydist = 0;
          } else {
              Integer min = null;
-             for(NeighborView n: neighbors.getNeighbors()){
+             for(NeighborView n: neighbors){
                  if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
                  ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
                  if(nstate.boundarydist!=null && (min == null || nstate.boundarydist<min)) min = nstate.boundarydist;
@@ -47,7 +47,7 @@ public class ThicknessDetermination implements Loopable {
          }
         publicState.thickness = publicState.boundarydist;
         publicState.hops = 0;
-        for(NeighborView n: neighbors.getNeighbors()){
+        for(NeighborView n: neighbors){
             if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
             ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
             if(nstate.thickness!=null && nstate.hops<=nstate.thickness && (publicState.thickness==null || nstate.thickness>publicState.thickness || (nstate.thickness.equals(publicState.thickness) && nstate.hops<publicState.hops))){

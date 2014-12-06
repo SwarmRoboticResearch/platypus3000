@@ -22,11 +22,16 @@ import java.util.*;
  *
  */
 public class LocalNeighborhood implements Iterable<NeighborView>{
-    public ArrayList<NeighborView> neighborViews;
-    public HashMap<Integer, Integer> positionOfId;
+    protected ArrayList<NeighborView> neighborViews;
+    protected HashMap<Integer, Integer> positionOfId;
+
+    //For derived reducing LocalNeighborhoods like the DelaundayNeighborhoodReduction.
+    protected LocalNeighborhood(){
+
+    }
 
     public LocalNeighborhood(ArrayList<NeighborView> neighborViews){
-       this.neighborViews = neighborViews;
+        this.neighborViews = neighborViews;
         positionOfId = new HashMap<Integer, Integer>(neighborViews.size());
         Collections.sort(neighborViews, NeighborView.angularComparator);
         for(int i=0; i<neighborViews.size(); ++i){
@@ -43,7 +48,6 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     public boolean contains(int i){
         return getById(i)!=null;
     }
-
 
     //Left Neighbor
     public NeighborView nextCounterClockwiseNeighbor(NeighborView n){
@@ -63,31 +67,10 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     }
 
 
-    //First the closest, than the farthermost
-    ArrayList<NeighborView> distanceSorted = null;
-    public ArrayList<NeighborView> getDistanceSortedNeighborhood(){
-        if(distanceSorted == null){
-            distanceSorted = new ArrayList<NeighborView>(neighborViews);
-            Collections.sort(distanceSorted, new Comparator<NeighborView>() {
-                @Override
-                public int compare(NeighborView a, NeighborView b) {
-                    float div = a.getLocalPosition().lengthSquared() - b.getLocalPosition().lengthSquared();
-                    if(div>0) return 1;
-                    else if(div<0) return -1;
-                    else return 0;
-                }
-            });
-        }
-        return distanceSorted;
-    }
-
-
     @Override
     public Iterator<NeighborView> iterator() {
         return neighborViews.iterator();
     }
-
-    private static final boolean SUDO_COULD_SEE = false; //Allow a real can see and not only could
 
 
     /**
@@ -119,10 +102,6 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
 
     public int size() {
         return neighborViews.size();
-    }
-
-    public ArrayList<NeighborView> getNeighborViews() {
-        return neighborViews;
     }
 
     public boolean isEmpty() {
