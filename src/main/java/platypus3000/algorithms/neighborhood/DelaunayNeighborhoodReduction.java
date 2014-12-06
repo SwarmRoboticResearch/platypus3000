@@ -23,7 +23,7 @@ public class DelaunayNeighborhoodReduction extends LocalNeighborhood{
      * The constructor of the LocalNeighborhood is skipped by using the protected constructor (which does nothing at all)
      *
      * TODO: Implement a more efficient algorithm
-     * TODO: Check if the algorithm is correct at all (I somehow have my doubts right now... I implemented is very naive from memory)
+     * TODO: Check if the algorithm is correct at all (I somehow have my doubts right now... I implemented is very naive from memory) - Yes, it is wrong... but works as heuristic. Still, this can be done better
      * @param neighborhood The neighborhood that has to be reduced
      */
     public DelaunayNeighborhoodReduction(LocalNeighborhood neighborhood){
