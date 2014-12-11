@@ -1,5 +1,10 @@
 package platypus3000.simulation;
 
+import java.net.InterfaceAddress;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Created by m on 12/4/14.
  */
@@ -9,6 +14,7 @@ public class SimulationRunner {
     public volatile boolean paused = false;
     public volatile boolean superspeed = false;
     private Thread workerThread = null;
+    public List<SimStepListener> listeners = new LinkedList<SimStepListener>();
 
     public SimulationRunner(Simulator sim) {
         this.sim = sim;
@@ -45,6 +51,8 @@ public class SimulationRunner {
                                 sim.refresh();
                             else
                                 sim.step();
+                            for(SimStepListener l : listeners)
+                                l.simStep(sim);
                         }
                         lastStep = System.currentTimeMillis();
                     }
@@ -61,5 +69,9 @@ public class SimulationRunner {
 
     public Simulator getSim() {
         return sim;
+    }
+
+    public interface SimStepListener {
+        public void simStep(Simulator sim);
     }
 }
