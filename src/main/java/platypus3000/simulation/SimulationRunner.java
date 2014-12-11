@@ -46,14 +46,12 @@ public class SimulationRunner {
                         Thread.yield();
                     }
                     else {
-                        synchronized (sim) {
-                            if (paused)
-                                sim.refresh();
-                            else
-                                sim.step();
-                            for(SimStepListener l : listeners)
-                                l.simStep(sim);
-                        }
+                        if (paused)
+                            sim.refresh();
+                        else
+                            sim.step();
+                        for(SimStepListener l : listeners)
+                            l.simStep(sim);
                         lastStep = System.currentTimeMillis();
                     }
                 }

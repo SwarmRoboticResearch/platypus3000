@@ -86,7 +86,7 @@ public class InteractiveVisualisation extends PApplet
     LinkedList<Vec2> selectedRobotTrace = new LinkedList<Vec2>();
     public void draw()
     {
-        synchronized (simRunner.getSim()) {
+
             if (HOVER) {
                 //Find robot under mouse cursor
                 hoverRobot = null;
@@ -122,7 +122,8 @@ public class InteractiveVisualisation extends PApplet
             //Set the zoom and move possibility and additional the dragging.
             if (dragging && mousePressedFor(300)) {
                 //Move the selected robot to the mouse-position, if it is dragged (mouse is still clicked)
-                selectedObject.sudo_setGlobalPosition(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y);
+                PVector mouseCoord = zoomPan.getMouseCoord();
+                simRunner.getSim().beamObject(selectedObject, mouseCoord.x, mouseCoord.y);
                 // zoomPan.setMouseMask(SHIFT); //Still allow moving in the coord-system with shift
             }
 
@@ -179,7 +180,7 @@ public class InteractiveVisualisation extends PApplet
                 usedGraphics.dispose();
             }
 
-        }
+
     }
 
     private long mousePressedAt = 0;

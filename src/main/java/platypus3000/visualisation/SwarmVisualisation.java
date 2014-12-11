@@ -148,10 +148,12 @@ public class SwarmVisualisation implements PConstants{
     public void drawNeighborhoodGraph() {
         if(showNeighborhood) {
             graphics.stroke(graphLineColor);
-            for (RobotVisibilityEdge e : simulator.getGlobalNeighborhood().getGraph().edgeSet()) {
-                Vec2 from = e.r1.getGlobalPosition();
-                Vec2 to = e.r2.getGlobalPosition();
-                graphics.line(from.x, from.y, to.x, to.y);
+            synchronized (simulator) {
+                for (RobotVisibilityEdge e : simulator.getGlobalNeighborhood().getGraph().edgeSet()) {
+                    Vec2 from = e.r1.getGlobalPosition();
+                    Vec2 to = e.r2.getGlobalPosition();
+                    graphics.line(from.x, from.y, to.x, to.y);
+                }
             }
         }
     }

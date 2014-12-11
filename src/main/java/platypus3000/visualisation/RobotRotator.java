@@ -64,7 +64,7 @@ public class RobotRotator {
             }
 
             if (rotate) {
-                r.sudo_setGlobalAngle(-AngleUtils.getRadian(new Vec2(v.zoomPan.getMouseCoord().x, v.zoomPan.getMouseCoord().y).sub(r.getGlobalPosition())));
+                r.getSimulator().rotateObject(r, -AngleUtils.getRadian(new Vec2(v.zoomPan.getMouseCoord().x, v.zoomPan.getMouseCoord().y).sub(r.getGlobalPosition())));
             }
         }
 

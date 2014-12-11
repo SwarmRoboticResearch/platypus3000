@@ -95,10 +95,11 @@ public class Simulator {
 
     // Next step for Physic Engine
     public void step() {
-        ++time;
-        world.step(configuration.TIME_STEP, configuration.VELOCITY_ITERATIONS, configuration.POSITION_ITERATIONS);
-        refresh(); //The base function for calculating the neighborhood and co
-
+        synchronized (this) {
+            ++time;
+            world.step(configuration.TIME_STEP, configuration.VELOCITY_ITERATIONS, configuration.POSITION_ITERATIONS);
+            refresh(); //The base function for calculating the neighborhood and co
+        }
         final CountDownLatch latch = new CountDownLatch(robots.size());
         for (Robot r : robots.values()) {
             final Robot theRobot = r;
@@ -124,9 +125,17 @@ public class Simulator {
         }
 //        for(Robot r : robots.values())
 //                r.runController();
+        synchronized (this) {
+            for (Robot r : robots.values()) r.updateOutput(); //Update the output of the robots
+        }
+    }
 
-        for (Robot r : robots.values()) r.updateOutput(); //Update the output of the robots
+    public synchronized void beamObject(SimulatedObject object, float x, float y) {
+        object.sudo_setGlobalPosition(x, y);
+    }
 
+    public synchronized void rotateObject(SimulatedObject object, float a) {
+        object.sudo_setGlobalAngle(a);
     }
 
     public void remove(SimulatedObject o){
@@ -138,7 +147,7 @@ public class Simulator {
         o.destroy();
     }
 
-    public void refresh(){
+    public synchronized void refresh(){
         globalNeighborhood.updateNeighborhoodGraph();
         for (Robot r : robots.values()) r.updateInput();
     }

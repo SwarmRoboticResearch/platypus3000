@@ -60,12 +60,16 @@ public abstract class SimulatedObject {
      * @param x
      * @param y
      */
-    public void sudo_setGlobalPosition(float x, float y) {
-        jbox2d_body.setTransform(new Vec2(x, y), jbox2d_body.getAngle());
+    void sudo_setGlobalPosition(float x, float y) {
+        synchronized (simulator) {
+            jbox2d_body.setTransform(new Vec2(x, y), jbox2d_body.getAngle());
+        }
     }
 
-    public void sudo_setGlobalAngle(float angle){
-        jbox2d_body.setTransform(getGlobalPosition(), angle);
+    void sudo_setGlobalAngle(float angle){
+        synchronized (simulator) {
+            jbox2d_body.setTransform(getGlobalPosition(), angle);
+        }
     }
 
     public Vec2 getLocalPoint(Vec2 world){
