@@ -9,12 +9,40 @@ import platypus3000.utils.NeighborState.PublicState;
 import platypus3000.utils.NeighborState.StateManager;
 
 /**
- * Created by doms on 11/28/14.
+ * Detects thick areas of the swarm and contracts them.
+ *
+ * 1. The boundary emits a pheromone such that every robot can determine its distance to the boundary. We work on the
+ *      (delaunay) reduced neighborhood to disallow the skip of robots.
+ * 2. Each robot emits its own boundary distance but only the highest carries through. As we do not want to know what
+ *      the highest boundary distance in the swarm is, but how thick the swarm is at each boundary robot, we limit the
+ *      range of this pheromone to its boundary distance. This forms some kind of a circle around the maximum robots.
+ *      However, not all robots perceive the correct value but possible a value to small. E.g. in a square shaped swarm
+ *      only the middle points of the square edges obtain the right value while the boundary robots of the corner obtain
+ *      a value much to small
+ *
+ *      Boundary Distance  - Thickness
+ *       0 0 0 0 0 0 0 0 0 - 1 1 1 1 4 1 1 1 1
+ *       0 1 1 1 1 1 1 1 0 - 1 1 1 4 4 4 1 1 1
+ *       0 1 2 2 2 2 2 1 0 - 1 1 4 4 4 4 4 1 1
+ *       0 1 2 3 3 3 2 1 0 - 1 4 4 4 4 4 4 4 1
+ *       0 1 2 3 4 3 2 1 0 - 4 4 4 4 4 4 4 4 4
+ *       0 1 2 3 4 3 2 1 0 - 4 4 4 4 4 4 4 4 4
+ *       0 1 2 3 4 3 2 1 0 - 4 4 4 4 4 4 4 4 4
+ *       0 1 2 3 4 3 2 1 0 - 4 4 4 4 4 4 4 4 4
+ *       0 1 2 3 3 3 2 1 0 - 1 4 4 4 4 4 4 4 1
+ *       0 1 2 2 2 2 2 1 0 - 1 1 4 4 4 4 4 1 1
+ *       0 1 1 1 1 1 1 1 0 - 1 1 1 4 4 4 1 1 1
+ *       0 0 0 0 0 0 0 0 0 - 1 1 1 1 4 1 1 1 1
+ *
+ *       Fortunately the boundary tension maximizes the amount of boundary robots with the correct value.
+ *       Still, it is enough if those boundary robot contract that have perceived a high thickness (remember that the
+ *       perceived value is never too high).
  */
 public class ThicknessDetermination implements Loopable {
-    BoundaryDetection boundaryDetection;
-    StateManager stateManager;
-    ThicknessDeterminationState publicState;
+    BoundaryDetection boundaryDetection; //Detecting the boundary robots
+
+    StateManager stateManager; //For implementing the pheromone
+    ThicknessDeterminationState publicState; //The public state for the state manager
 
     public ThicknessDetermination(StateManager stateManager, BoundaryDetection boundaryDetection){
         this.stateManager = stateManager;
@@ -38,7 +66,7 @@ public class ThicknessDetermination implements Loopable {
              publicState.boundarydist = 0;
          } else {
              Integer min = null;
-             for(NeighborView n: neighbors.getNeighbors()){
+             for(NeighborView n: neighbors){
                  if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
                  ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
                  if(nstate.boundarydist!=null && (min == null || nstate.boundarydist<min)) min = nstate.boundarydist;
@@ -47,7 +75,7 @@ public class ThicknessDetermination implements Loopable {
          }
         publicState.thickness = publicState.boundarydist;
         publicState.hops = 0;
-        for(NeighborView n: neighbors.getNeighbors()){
+        for(NeighborView n: neighbors){
             if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
             ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
             if(nstate.thickness!=null && nstate.hops<=nstate.thickness && (publicState.thickness==null || nstate.thickness>publicState.thickness || (nstate.thickness.equals(publicState.thickness) && nstate.hops<publicState.hops))){

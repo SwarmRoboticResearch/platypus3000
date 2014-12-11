@@ -13,7 +13,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.util.List;
 
 /**
- * Created by doms on 5/3/14.
+ * A Flocking algorithm by Olfati-Saber, which produces an equilateral triangle 'grid' and provides some movement consensus.
  */
 public class OlfatiSaberFlocking implements Loopable {
     //TUNABLE PARAMETER
@@ -71,7 +71,7 @@ public class OlfatiSaberFlocking implements Loopable {
         consensusForce.setZero();
         gridForce.setZero();
         force.set(robot.getLocalMovement() );
-        force.addLocal(getAcceleration(robot.getNeighborhood().getNeighborViews(), gridForce, consensusForce));
+        force.addLocal(getAcceleration(robot.getNeighborhood(), gridForce, consensusForce));
     }
 
     public Vec2 getForce() {
@@ -80,13 +80,14 @@ public class OlfatiSaberFlocking implements Loopable {
 
     //ALGORITHM from Paper. Very hard to read. You should read the paper instead.
 
-    private Vec2 getAcceleration(List<NeighborView> neighborViews){
+    private Vec2 getAcceleration(Iterable<NeighborView> neighborViews){
         Vec2 gradientBased = new Vec2();
         Vec2 consensus = new Vec2();
         return getAcceleration(neighborViews, gradientBased, consensus);
     }
 
-    private Vec2 getAcceleration(List<NeighborView> neighborViews, Vec2 gradientBased, Vec2 consensus){
+    private Vec2 getAcceleration(Iterable<NeighborView> neighborViews, Vec2 gradientBased, Vec2 consensus){
+        int size = 0;
         for(NeighborView j: neighborViews){
             Vec2 qj_qi = j.getLocalPosition();
             Vec2 pj_pi = j.getLocalMovementDifference();
@@ -94,9 +95,10 @@ public class OlfatiSaberFlocking implements Loopable {
 
             gradientBased.addLocal(n_ij(qj_qi).mul(phi_alpha(omegaNorm(qj_qi))));  //Gradient based term
             consensus.addLocal(pj_pi.mul(a_ij(qj_qi)));
+            size++;
         }
 
-        if(neighborViews.size()>0) consensus.mulLocal(1f/ neighborViews.size());  //TODO: This is not Olfati-Saber and not optimal
+        if(size>0) consensus.mulLocal(1f/ size);  //TODO: This is not Olfati-Saber and not optimal
 
         return gradientBased.add(consensus);
     }

@@ -9,7 +9,7 @@ import java.util.List;
  * Created by m on 12/4/14.
  */
 public class SimulationRunner {
-    private Simulator sim;
+    private final Simulator sim;
     private volatile boolean running = false;
     public volatile boolean paused = false;
     public volatile boolean superspeed = false;

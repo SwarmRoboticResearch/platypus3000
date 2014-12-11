@@ -86,99 +86,100 @@ public class InteractiveVisualisation extends PApplet
     LinkedList<Vec2> selectedRobotTrace = new LinkedList<Vec2>();
     public void draw()
     {
-        if(HOVER) {
-            //Find robot under mouse cursor
-            hoverRobot = null;
-            if (selectedObject == null) {
-                synchronized (simRunner.getSim()) {
-                    simRunner.getSim().world.queryAABB(new QueryCallback() {
-                        @Override
-                        public boolean reportFixture(Fixture fixture) {
-                            if (fixture.getUserData() instanceof Robot) {
-                                hoverRobot = (Robot) fixture.getUserData();
-                                if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.RADIUS * simRunner.getSim().configuration.RADIUS)) {
-                                    hoverRobot = null;
-                                    return true;
+        synchronized (simRunner.getSim()) {
+            if (HOVER) {
+                //Find robot under mouse cursor
+                hoverRobot = null;
+                if (selectedObject == null) {
+                    synchronized (simRunner.getSim()) {
+                        simRunner.getSim().world.queryAABB(new QueryCallback() {
+                            @Override
+                            public boolean reportFixture(Fixture fixture) {
+                                if (fixture.getUserData() instanceof Robot) {
+                                    hoverRobot = (Robot) fixture.getUserData();
+                                    if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.RADIUS * simRunner.getSim().configuration.RADIUS)) {
+                                        hoverRobot = null;
+                                        return true;
+                                    }
+                                    return false;
                                 }
-                                return false;
+                                return true;
                             }
-                            return true;
-                        }
-                    }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+                        }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+                    }
                 }
             }
-        }
 
 
-        PGraphics usedGraphics = g;
-        if(recordPDF) {
-            System.out.println("Save Screenshot to 'frame-" + frameCount + ".pdf'");
-            usedGraphics = createGraphics(width, height, PDF, "frame-" + frameCount + ".pdf");
-            usedGraphics.beginDraw();
-        }
-        swarmVisualisation.setGraphics(usedGraphics);
-
-        //Set the zoom and move possibility and additional the dragging.
-        if(dragging && mousePressedFor(300)) {
-            //Move the selected robot to the mouse-position, if it is dragged (mouse is still clicked)
-            selectedObject.sudo_setGlobalPosition(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y);
-           // zoomPan.setMouseMask(SHIFT); //Still allow moving in the coord-system with shift
-        }
-
-        background(255); //Set background. 255->transparent/white, 0->Black
-        usedGraphics.pushMatrix();
-        zoomPan.transform(usedGraphics);
-        usedGraphics.strokeWeight(0.01f);
-
-        if(selectedObject != null) {
-            selectedRobotTrace.add(selectedObject.getGlobalPosition().clone());
-            while(selectedRobotTrace.size() > 500)
-                selectedRobotTrace.removeFirst();
-            usedGraphics.stroke(0);
-            for(int i = 0; i < selectedRobotTrace.size()-1; i++) {
-                Vec2 from = selectedRobotTrace.get(i);
-                Vec2 to = selectedRobotTrace.get(i+1);
-                usedGraphics.line(from.x, from.y, to.x, to.y);
+            PGraphics usedGraphics = g;
+            if (recordPDF) {
+                System.out.println("Save Screenshot to 'frame-" + frameCount + ".pdf'");
+                usedGraphics = createGraphics(width, height, PDF, "frame-" + frameCount + ".pdf");
+                usedGraphics.beginDraw();
             }
-        }
-        else
-            selectedRobotTrace.clear();
+            swarmVisualisation.setGraphics(usedGraphics);
 
-        //Draw a cross in the middle of the coordinate system
-        if(drawCoordCross) {
-            usedGraphics.stroke(200);
-            usedGraphics.line(-1000, 0, 1000, 0);
-            usedGraphics.line(0, -1000, 0, 1000);
-        }
-
-        swarmVisualisation.drawSimulation();
-        drawRobotsTexts();
-
-        //TODO: Freezing should happen inside the simulation. It has nothing to do with the visualisation!
-        if(dontMove){
-            for(Robot r: simRunner.getSim().getRobots()){
-                r.setMovement(0,0);
+            //Set the zoom and move possibility and additional the dragging.
+            if (dragging && mousePressedFor(300)) {
+                //Move the selected robot to the mouse-position, if it is dragged (mouse is still clicked)
+                selectedObject.sudo_setGlobalPosition(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y);
+                // zoomPan.setMouseMask(SHIFT); //Still allow moving in the coord-system with shift
             }
-        } else {
-            for (SimulatedObject so : dontMoveObjects) {
-                so.setMovement(0, 0);
-            }
-        }
 
-        if(extraDrawing != null)
-            extraDrawing.onDraw(this);
+            background(255); //Set background. 255->transparent/white, 0->Black
+            usedGraphics.pushMatrix();
+            zoomPan.transform(usedGraphics);
+            usedGraphics.strokeWeight(0.01f);
+
+            if (selectedObject != null) {
+                selectedRobotTrace.add(selectedObject.getGlobalPosition().clone());
+                while (selectedRobotTrace.size() > 500)
+                    selectedRobotTrace.removeFirst();
+                usedGraphics.stroke(0);
+                for (int i = 0; i < selectedRobotTrace.size() - 1; i++) {
+                    Vec2 from = selectedRobotTrace.get(i);
+                    Vec2 to = selectedRobotTrace.get(i + 1);
+                    usedGraphics.line(from.x, from.y, to.x, to.y);
+                }
+            } else
+                selectedRobotTrace.clear();
+
+            //Draw a cross in the middle of the coordinate system
+            if (drawCoordCross) {
+                usedGraphics.stroke(200);
+                usedGraphics.line(-1000, 0, 1000, 0);
+                usedGraphics.line(0, -1000, 0, 1000);
+            }
+
+            swarmVisualisation.drawSimulation();
+            drawRobotsTexts();
+
+            //TODO: Freezing should happen inside the simulation. It has nothing to do with the visualisation!
+            if (dontMove) {
+                for (Robot r : simRunner.getSim().getRobots()) {
+                    r.setMovement(0, 0);
+                }
+            } else {
+                for (SimulatedObject so : dontMoveObjects) {
+                    so.setMovement(0, 0);
+                }
+            }
+
+            if (extraDrawing != null)
+                extraDrawing.onDraw(this);
 //        println(frameRate);
 
-        rotator.draw(usedGraphics);
-        usedGraphics.popMatrix();
+            rotator.draw(usedGraphics);
+            usedGraphics.popMatrix();
 //        saveFrame("./movie/picture-#####.png");
-        drawTexts(usedGraphics);
-        if(recordPDF) {
-            recordPDF = false;
-            usedGraphics.endDraw();
-            usedGraphics.dispose();
-        }
+            drawTexts(usedGraphics);
+            if (recordPDF) {
+                recordPDF = false;
+                usedGraphics.endDraw();
+                usedGraphics.dispose();
+            }
 
+        }
     }
 
     private long mousePressedAt = 0;

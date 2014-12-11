@@ -44,8 +44,10 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     //<Talking> Robots in the simulator can talk. Here we store what he is currently saying.
     public String textString;
-    private long local_time_difference = (long)MathUtils.randomFloat(0,10000);
     //</Talking>
+
+    private long local_time_difference = (long)MathUtils.randomFloat(0,10000);
+    private int robotID;
 
     //-----------------------------------------------------------------------------------
 
@@ -80,12 +82,6 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
         movementsPhysics = new RobotMovementPhysics(getSimulator().configuration);
     }
-
-    public void setMovementAccuracy(float accuracy){
-        movementsPhysics.setAccuracy(accuracy);
-    }
-
-    private int robotID;
 
     /**
      * Constructor with default name
@@ -132,6 +128,10 @@ public class Robot extends SimulatedObject implements RobotInterface {
         while (outgoingMessages.size() > 0) transmit(outgoingMessages.poll());
     }
 
+
+    public void setMovementAccuracy(float accuracy){
+        movementsPhysics.setAccuracy(accuracy);
+    }
 
     public Vec2 getGlobalMovement() {
         return AngleUtils.toVector(movementsPhysics.getSpeed(), getGlobalAngle());
