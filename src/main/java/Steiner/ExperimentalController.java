@@ -61,7 +61,7 @@ public class ExperimentalController extends RobotController implements LeaderInt
 
 
         robot.setMovement(forceTuner.getForce());
-//        if(leaderset.isLeader(robot)) robot.setMovement(new Vec2());
+        if(leaderset.isLeader(robot)) robot.setMovement(leaderFollowAlgorithm.getSteerVector());
 
         stateManager.broadcast(robot);
 
