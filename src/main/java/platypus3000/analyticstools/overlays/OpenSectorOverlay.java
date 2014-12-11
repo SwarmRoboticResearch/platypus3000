@@ -22,7 +22,9 @@ public class OpenSectorOverlay extends LocalOverlay {
     }
 
     public void addOpenSector(Vec2 counterClockwise, Vec2 clockwise){
-        openSectors.add(new CircleSegment(AngleUtils.normalizeToZero_2Pi(-AngleUtils.getRadian(clockwise)),AngleUtils.normalizeToZero_2Pi(-AngleUtils.getRadian(counterClockwise))));
+        synchronized (openSectors) {
+            openSectors.add(new CircleSegment(AngleUtils.normalizeToZero_2Pi(-AngleUtils.getRadian(clockwise)), AngleUtils.normalizeToZero_2Pi(-AngleUtils.getRadian(counterClockwise))));
+        }
     }
 
     ArrayList<CircleSegment> openSectors = new ArrayList<CircleSegment>();
@@ -46,16 +48,17 @@ public class OpenSectorOverlay extends LocalOverlay {
         pGraphics.stroke(color.getColor());
         pGraphics.fill(0,0,0,0);
         int i=0;
-        for(CircleSegment c: openSectors){
-            float radius = 0.3f+i*0.1f;
-            if(c.begin>c.end){
-                pGraphics.arc(0,0,radius,radius, c.begin, 2*MathUtils.PI);
-                pGraphics.arc(0,0,radius, radius, 0, c.end);
+        for (CircleSegment c : openSectors) {
+            float radius = 0.3f + i * 0.1f;
+            if (c.begin > c.end) {
+                pGraphics.arc(0, 0, radius, radius, c.begin, 2 * MathUtils.PI);
+                pGraphics.arc(0, 0, radius, radius, 0, c.end);
             } else {
-                pGraphics.arc(0,0,radius,radius, c.begin, c.end);
+                pGraphics.arc(0, 0, radius, radius, c.begin, c.end);
             }
             ++i;
         }
+
         pGraphics.popStyle();
     }
 

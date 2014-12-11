@@ -53,18 +53,18 @@ public class SwarmVisualisation implements PConstants{
     }
 
     public void drawRobotBody(Robot r) {
+
         //Draw the robots inner color(s)
         graphics.pushStyle();
         graphics.stroke(0f,0f);
-        if(r.getColors().size() == 0) {
+        if (r.getColors().size() == 0) {
             graphics.fill(robotFillColor);
             graphics.ellipse(0, 0, simulator.configuration.RADIUS * 2, simulator.configuration.RADIUS * 2);
-        }
-        else {
-            for(int i=r.getColors().size()-1; i>=0; --i){
-                float diameter = 2* MathUtils.sqrt((simulator.configuration.RADIUS * simulator.configuration.RADIUS * (i + 1)) / (r.getColors().size()));
+        } else {
+            for (int i = r.getColors().size() - 1; i >= 0; --i) {
+                float diameter = 2 * MathUtils.sqrt((simulator.configuration.RADIUS * simulator.configuration.RADIUS * (i + 1)) / (r.getColors().size()));
                 graphics.fill(r.getColors().get(i));
-                graphics.ellipse(0,0,diameter, diameter);
+                graphics.ellipse(0, 0, diameter, diameter);
             }
 
         }
@@ -73,10 +73,10 @@ public class SwarmVisualisation implements PConstants{
         //Style of robot contour
         graphics.pushStyle();
         graphics.strokeWeight(0.015f);
-        if(r == hoveredRobot) graphics.strokeWeight(0.02f);
-        if(selectedRobots.contains(r)) graphics.stroke(selectedRobotColor);
-        else if(r.hasCollision() && showCollisions) graphics.stroke(collidingRobotColor);
-        else if(frozenRobots.contains(r)) graphics.stroke(frozenRobotColor);
+        if (r == hoveredRobot) graphics.strokeWeight(0.02f);
+        if (selectedRobots.contains(r)) graphics.stroke(selectedRobotColor);
+        else if (r.hasCollision() && showCollisions) graphics.stroke(collidingRobotColor);
+        else if (frozenRobots.contains(r)) graphics.stroke(frozenRobotColor);
         else graphics.stroke(defaultRobotColor);
 
         //Print Robot Contour

@@ -13,6 +13,7 @@ import platypus3000.simulation.Simulator;
 import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.utils.ForceTuner;
+import platypus3000.utils.LeaderInterface;
 import platypus3000.utils.NeighborState.StateManager;
 import platypus3000.visualisation.VisualisationWindow;
 
@@ -22,7 +23,7 @@ import java.io.IOException;
 /**
  * Created by doms on 11/27/14.
  */
-public class ExperimentalController extends RobotController {
+public class ExperimentalController extends RobotController implements LeaderInterface {
     OlfatiSaberFlocking flockAlgorithm;
     StateManager stateManager;
     BoundaryDetection boundaryAlgorithm;
@@ -60,7 +61,7 @@ public class ExperimentalController extends RobotController {
 
 
         robot.setMovement(forceTuner.getForce());
-        if(leaderset.isLeader(robot)) robot.setMovement(new Vec2());
+//        if(leaderset.isLeader(robot)) robot.setMovement(new Vec2());
 
         stateManager.broadcast(robot);
 
@@ -75,5 +76,10 @@ public class ExperimentalController extends RobotController {
         }
         new VisualisationWindow(sim, new Dimension(1900,800));
         ForceTuner.show();
+    }
+
+    @Override
+    public void setLocalGoal(Vec2 goalPosition) {
+        leaderFollowAlgorithm.setSteerVector(goalPosition);
     }
 }

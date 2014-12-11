@@ -49,7 +49,7 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
         super("Swarm Visualisation");
         this.simulator = simRunner.getSim();
         this.simRunner = simRunner;
-        this.simRunner.run(30);
+
         simulator.configuration.setConfigurationChangeListener(this);
 
         //PApplet embedding
@@ -75,11 +75,11 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
             });
             menu_simulation.add(menuItem_playpause);
             //Superspeed
-            menuItem_superspeed.setState(simRunner.superspeed);
+            menuItem_superspeed.setState(visualisation.simulationSpeed > 1);
             menuItem_superspeed.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    simRunner.superspeed = menuItem_superspeed.getState();
+                    visualisation.simulationSpeed = menuItem_superspeed.getState() ? 20 : 1;
                 }
             });
             menu_simulation.add(menuItem_superspeed);
