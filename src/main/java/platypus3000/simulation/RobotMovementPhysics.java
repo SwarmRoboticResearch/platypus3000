@@ -69,7 +69,7 @@ public class RobotMovementPhysics {
             }
         }
         if(Math.abs(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian((desiredSpeed>0?v:v.mul(-1)))))>accuracy) desiredSpeed = 0;
-        desiredRotationSpeed*=-5;
+        desiredRotationSpeed*=-10;
     }
 
     public float getNewVelocity(float oldVelocity){

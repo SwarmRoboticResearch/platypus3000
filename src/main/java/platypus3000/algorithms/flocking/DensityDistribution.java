@@ -7,6 +7,7 @@ import platypus3000.algorithms.Boundary.BoundaryDetection;
 import platypus3000.algorithms.Boundary.Sector;
 import platypus3000.analyticstools.overlays.ContinuousColorOverlay;
 import platypus3000.analyticstools.overlays.VectorOverlay;
+import platypus3000.simulation.Configuration;
 import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.simulation.neighborhood.LocalNeighborhood;
@@ -31,6 +32,8 @@ public class DensityDistribution implements Loopable {
     final ContinuousColorOverlay strengthOverlay;
     final Vec2 force = new Vec2();
 
+    Configuration conf;
+
     public DensityDistribution(RobotController controller, BoundaryDetection boundaryAlgorithm, StateManager stateManager){
         this.boundaryAlgorithm = boundaryAlgorithm;
         this.stateManager = stateManager;
@@ -39,6 +42,7 @@ public class DensityDistribution implements Loopable {
         strengthOverlay = new ContinuousColorOverlay(controller, "New Density", 0,6);
         RANGE = controller.getConfiguration().RANGE;
         RADIUS = controller.getConfiguration().RADIUS;
+        conf = controller.getConfiguration();
     }
 
     @Override
@@ -75,8 +79,17 @@ public class DensityDistribution implements Loopable {
                 }
             }
         }
+
+        float weightedRobotCount = 0;
+        for(NeighborView n: robot.getNeighborhood()){
+            weightedRobotCount += 1;
+            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.25)*(conf.RANGE*0.25)) weightedRobotCount+=0.1f;
+            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.2)*(conf.RANGE*0.2)) weightedRobotCount+=0.2f;
+            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.15)*(conf.RANGE*0.15)) weightedRobotCount+=0.3f;
+        }
+
         if(boundaryRobot!=null && sectorCount>0) sectorAreas += sectorAreas/sectorCount;
-        publicState.density = (robot.getNeighborhood().size())/(robotAreas+sectorAreas-intersectingAreas);
+        publicState.density = (weightedRobotCount)/(robotAreas+sectorAreas-intersectingAreas);
 
         force.setZero();
         float maxNeighborDensity = -1;

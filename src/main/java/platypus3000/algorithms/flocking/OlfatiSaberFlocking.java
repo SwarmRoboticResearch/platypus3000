@@ -70,7 +70,7 @@ public class OlfatiSaberFlocking implements Loopable {
     public void loop(RobotInterface robot) {
         consensusForce.setZero();
         gridForce.setZero();
-        force.set(robot.getLocalMovement() );
+        force.set(robot.getLocalMovement().mul(0.8f) );
         force.addLocal(getAcceleration(robot.getNeighborhood(), gridForce, consensusForce));
     }
 

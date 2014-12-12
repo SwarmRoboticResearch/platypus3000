@@ -1,7 +1,10 @@
 package Steiner;
 
+import org.jbox2d.common.Vec2;
 import platypus3000.algorithms.Boundary.BoundaryDetection;
 import platypus3000.algorithms.neighborhood.DelaunayNeighborhoodReduction;
+import platypus3000.analyticstools.overlays.VectorOverlay;
+import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.simulation.neighborhood.NeighborView;
 import platypus3000.utils.Loopable;
@@ -44,11 +47,16 @@ public class ThicknessDetermination implements Loopable {
     StateManager stateManager; //For implementing the pheromone
     ThicknessDeterminationState publicState; //The public state for the state manager
 
-    public ThicknessDetermination(StateManager stateManager, BoundaryDetection boundaryDetection){
+    float smoothval = 0;
+
+    Vec2 force = new Vec2();
+
+    public ThicknessDetermination(RobotController controller, StateManager stateManager, BoundaryDetection boundaryDetection){
         this.stateManager = stateManager;
         this.boundaryDetection = boundaryDetection;
         this.publicState = new ThicknessDeterminationState();
         stateManager.setLocalState(ThicknessDetermination.class.getName(), publicState);
+        new VectorOverlay(controller, "Thickness", force);
     }
 
     @Override
@@ -78,13 +86,26 @@ public class ThicknessDetermination implements Loopable {
         for(NeighborView n: neighbors){
             if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
             ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
-            if(nstate.thickness!=null && nstate.hops<=nstate.thickness && (publicState.thickness==null || nstate.thickness>publicState.thickness || (nstate.thickness.equals(publicState.thickness) && nstate.hops<publicState.hops))){
+            if(nstate.thickness!=null && nstate.hops<=nstate.thickness && (publicState.thickness==null || nstate.thickness>publicState.thickness || (0+nstate.thickness == publicState.thickness && nstate.hops<publicState.hops))){
                 publicState.thickness = nstate.thickness;
                 publicState.hops = nstate.hops+1;
                 predecessor = nstate.getRobotID();
             }
         }
+        if(publicState.thickness!=null){ smoothval = 0.98f*smoothval+0.02f*publicState.thickness; } else {
+            smoothval = 0.98f*smoothval+0.02f*0;
+        }
         if(publicState.thickness!=null) robot.say(Integer.toString(publicState.thickness));
+
+        if(boundaryDetection.isLargeBoundary() && predecessor!=null && publicState.thickness!=null && publicState.thickness>1){
+            if(robot.getNeighborhood().contains(predecessor)) force.set(robot.getNeighborhood().getById(predecessor).getLocalPosition().mul(smoothval));
+        } else {
+            force.setZero();
+        }
+    }
+
+    public Vec2 getForce(){
+        return force.clone();
     }
 
 
