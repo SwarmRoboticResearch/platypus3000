@@ -36,7 +36,7 @@ public class ExperimentalSetup {
     }
 
     public static void runUntilConnectivityOrControlLoss(SimulationRunner simRun, final LeaderSet leaderSet) {
-        simRun.listeners.add(new ExperimentSupervisor(simRun, leaderSet, 3, 1.0001f, 0.0001f));
+        simRun.listeners.add(new ExperimentSupervisor(simRun, leaderSet, 3, 1.0001f, 0.00001f));
     }
 
     static class ExperimentSupervisor implements SimulationRunner.SimStepListener {
@@ -68,7 +68,12 @@ public class ExperimentalSetup {
             //Give direction to the leaders
             leaderUpscaling *= leaderUpscalingRate;
             for(int l = 0; l < leaderSet.numLeaders(); l++) {
-                ((LeaderInterface) sim.getRobot(leaderSet.getLeader(l)).getController()).setLocalGoal(initialLeaderPositions[l].mul(leaderUpscaling));
+                Robot r = sim.getRobot(leaderSet.getLeader(l));
+                Vec2 v = r.getLocalPoint(initialLeaderPositions[l].mul(leaderUpscaling));
+                if(v.lengthSquared()>0.05f) {
+                     v.mulLocal(0.25f/v.length());
+                }
+                ((LeaderInterface) r.getController()).setLocalGoal(v);
             }
 
             //Kill some robots
@@ -82,6 +87,7 @@ public class ExperimentalSetup {
 //                            robot.setMovement(new Vec2());
 //                        }
 //                    });
+                    System.out.println("Killed Robot "+r.getID());
                     killedRobots.add(r);
                 }
             for(Robot r : killedRobots) sim.remove(r);
@@ -90,7 +96,7 @@ public class ExperimentalSetup {
             boolean isWellControlled = true;
             for(int l = 0; l < leaderSet.numLeaders(); l++) {
                 if(initialLeaderPositions[l].mul(leaderUpscaling).sub(sim.getRobot(leaderSet.getLeader(l)).getGlobalPosition()).length() > maxLeaderGoalDistance) {
-                    isWellControlled = false;
+                    //isWellControlled = false;
                     break;
                 }
             }
@@ -103,7 +109,7 @@ public class ExperimentalSetup {
             if(!isConnected)
                 System.out.println("Is not connected!");
 
-            simRun.paused = !(isConnected && isWellControlled);
+            simRun.paused = simRun.paused || !(isConnected && isWellControlled);
         }
     }
 }

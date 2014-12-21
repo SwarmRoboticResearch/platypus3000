@@ -23,6 +23,8 @@ import java.awt.*;
  * Created by doms on 7/27/14.
  */
 public class DensityDistribution implements Loopable {
+    private static final String STATE_KEY = "DensityDistribution";
+
     public static float DESIRED_DENSITY = 3;
     public static float RANGE;
     public static float RADIUS;
@@ -37,7 +39,7 @@ public class DensityDistribution implements Loopable {
     public DensityDistribution(RobotController controller, BoundaryDetection boundaryAlgorithm, StateManager stateManager){
         this.boundaryAlgorithm = boundaryAlgorithm;
         this.stateManager = stateManager;
-        stateManager.setLocalState(DensityDistribution.class.getName(), publicState);
+        stateManager.setLocalState(STATE_KEY, publicState);
         new VectorOverlay(controller, "New Density Force", force);
         strengthOverlay = new ContinuousColorOverlay(controller, "New Density", 0,6);
         RANGE = controller.getConfiguration().RANGE;
@@ -95,7 +97,7 @@ public class DensityDistribution implements Loopable {
         float maxNeighborDensity = -1;
         float minNeighborDensity = -1;
         for(NeighborView n: robot.getNeighborhood()){
-            DensityState nstate = (DensityState)stateManager.getState(n.getID(), DensityDistribution.class.getName());
+            DensityState nstate = (DensityState)stateManager.getState(n.getID(), STATE_KEY);
             if(nstate!=null){
                 if(maxNeighborDensity<0 || nstate.density>maxNeighborDensity){
                     maxNeighborDensity = nstate.density;

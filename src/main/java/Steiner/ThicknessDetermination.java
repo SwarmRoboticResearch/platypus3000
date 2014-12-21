@@ -42,6 +42,7 @@ import platypus3000.utils.NeighborState.StateManager;
  *       perceived value is never too high).
  */
 public class ThicknessDetermination implements Loopable {
+    private static final String STATE_KEY = "ThicknessDetermination";
     BoundaryDetection boundaryDetection; //Detecting the boundary robots
 
     StateManager stateManager; //For implementing the pheromone
@@ -55,7 +56,7 @@ public class ThicknessDetermination implements Loopable {
         this.stateManager = stateManager;
         this.boundaryDetection = boundaryDetection;
         this.publicState = new ThicknessDeterminationState();
-        stateManager.setLocalState(ThicknessDetermination.class.getName(), publicState);
+        stateManager.setLocalState(ThicknessDetermination.STATE_KEY, publicState);
         new VectorOverlay(controller, "Thickness", force);
     }
 
@@ -75,8 +76,8 @@ public class ThicknessDetermination implements Loopable {
          } else {
              Integer min = null;
              for(NeighborView n: neighbors){
-                 if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
-                 ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
+                 if(!stateManager.contains(n.getID(), ThicknessDetermination.STATE_KEY)) continue;
+                 ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.STATE_KEY);
                  if(nstate.boundarydist!=null && (min == null || nstate.boundarydist<min)) min = nstate.boundarydist;
              }
              if(min!=null)publicState.boundarydist = min+1; else publicState.boundarydist = null;
@@ -84,8 +85,8 @@ public class ThicknessDetermination implements Loopable {
         publicState.thickness = publicState.boundarydist;
         publicState.hops = 0;
         for(NeighborView n: neighbors){
-            if(!stateManager.contains(n.getID(), ThicknessDetermination.class.getName())) continue;
-            ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.class.getName());
+            if(!stateManager.contains(n.getID(), ThicknessDetermination.STATE_KEY)) continue;
+            ThicknessDeterminationState nstate = stateManager.<ThicknessDeterminationState>getState(n.getID(), ThicknessDetermination.STATE_KEY);
             if(nstate.thickness!=null && nstate.hops<=nstate.thickness && (publicState.thickness==null || nstate.thickness>publicState.thickness || (0+nstate.thickness == publicState.thickness && nstate.hops<publicState.hops))){
                 publicState.thickness = nstate.thickness;
                 publicState.hops = nstate.hops+1;

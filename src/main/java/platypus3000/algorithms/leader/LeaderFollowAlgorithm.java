@@ -123,6 +123,7 @@ public class LeaderFollowAlgorithm implements Loopable {
     }
 
     class LeaderPheromone implements Loopable{
+        final String STATE_KEY;
         StateManager stateManager;
         Integer id;
         boolean induce;
@@ -131,7 +132,8 @@ public class LeaderFollowAlgorithm implements Loopable {
             this.stateManager = stateManager;
             this.id=id;
             this.induce = induce;
-            stateManager.setLocalState(LeaderPheromone.class.getSimpleName()+id, publicState);
+            STATE_KEY = "LeaderPheromone"+id;
+            stateManager.setLocalState(STATE_KEY, publicState);
         }
 
 
@@ -151,7 +153,7 @@ public class LeaderFollowAlgorithm implements Loopable {
                 Integer pred = null;
                 Vec2 shortestPathDirection = null;
                 Vec2 movement = null;
-                for (LeaderPheromoneState nstate : stateManager.<LeaderPheromoneState>getStates(LeaderPheromone.class.getSimpleName() + id)) {
+                for (LeaderPheromoneState nstate : stateManager.<LeaderPheromoneState>getStates(STATE_KEY)) {
                     if (nstate.value != null && (min == null || nstate.value < min)) {
                         if(!robot.getNeighborhood().contains(nstate.getRobotID())) continue;
                         min = nstate.value;

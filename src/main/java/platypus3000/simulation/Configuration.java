@@ -73,6 +73,12 @@ public class Configuration {
     public void setConfigurationChangeListener(ConfigurationChangeListener configurationChangeListener){
         this.changeListener = configurationChangeListener;
     }
+
+    public boolean drawTexts = true;
+    public boolean drawTexts() {
+        return drawTexts;
+    }
+
     public interface ConfigurationChangeListener{
         public void onChange(Configuration configuration);
     }

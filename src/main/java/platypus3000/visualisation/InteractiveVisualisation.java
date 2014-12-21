@@ -172,7 +172,9 @@ public class InteractiveVisualisation extends PApplet
         rotator.draw(usedGraphics);
         usedGraphics.popMatrix();
 //        saveFrame("./movie/picture-#####.png");
-        drawTexts(usedGraphics);
+        if(simRunner.getSim().configuration.drawTexts()) {
+            drawTexts(usedGraphics);
+        }
         if (recordPDF) {
             recordPDF = false;
             usedGraphics.endDraw();

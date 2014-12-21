@@ -195,6 +195,16 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
                 }
             });
             menu_visualisation.add(menuItem_showNeighborhood);
+            //Say
+            final JCheckBoxMenuItem menuItem_showTexts = new JCheckBoxMenuItem("Show Texts (Say)");
+            menuItem_showTexts.setState(true);
+            menuItem_showTexts.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                       simulator.configuration.drawTexts = menuItem_showTexts.getState();
+                }
+            });
+            menu_visualisation.add(menuItem_showTexts);
             //Show Range
             JMenu submenu_range = new JMenu("Show robot range");
             JMenuItem submenuitem_range_none = new JMenuItem("None");

@@ -8,6 +8,8 @@ import platypus3000.utils.Loopable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Created by doms on 6/26/14.
@@ -19,9 +21,17 @@ public class StateManager implements Loopable {
 
     @Override
     public void loop(RobotInterface robot){
-        for(StateMap neighborStateMap: neighborStateMaps.values()){
-            neighborStateMap.increaseAge();
+        Stack<Integer> toRemove = new Stack<Integer>();
+        for(Map.Entry<Integer,StateMap> e: neighborStateMaps.entrySet()){
+            e.getValue().increaseAge();
+            if(e.getValue().getAge()>3){
+                toRemove.add(e.getKey());
+            }
         }
+        for(Integer i: toRemove){
+            neighborStateMaps.remove(i);
+        }
+
         if(MathUtils.randomFloat(0,1)<0.01f) clearOld();
         assert localStates.getAge() == 0;
 

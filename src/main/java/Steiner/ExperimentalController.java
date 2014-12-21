@@ -57,8 +57,8 @@ public class ExperimentalController extends RobotController implements LeaderInt
         helpSignal.loop(robot);
 
         if(!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Denisty", densityDistribution.getForce(), robot);
-        forceTuner.addForce("Boundary", boundaryAlgorithm.getBoundaryForce(), robot);
-        forceTuner.addForce("DynBoundary", boundaryAlgorithm.getDynamicBoundaryForce(), 0f, robot);
+        forceTuner.addForce("Boundary", boundaryAlgorithm.getBoundaryForce(), 5f, robot);
+        forceTuner.addForce("DynBoundary", boundaryAlgorithm.getDynamicBoundaryForce(), 5f, robot);
         forceTuner.addForce("Flocking", flockAlgorithm.getForce(), robot);
         if(!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Leader", leaderFollowAlgorithm.getForce(), robot);
         forceTuner.addForce("Help", helpSignal.getForce(), robot);
@@ -91,13 +91,14 @@ public class ExperimentalController extends RobotController implements LeaderInt
 }
 
 class HelpSignal implements Loopable{
+    private static final String STATE_KEY = "HelpSignal";
     StateManager stateManager;
     HelpSignalState publicState = new HelpSignalState();
     boolean leader;
 
     HelpSignal(StateManager stateManager, boolean isLeader){
         this.stateManager = stateManager;
-        stateManager.setLocalState(HelpSignal.class.getSimpleName(), publicState);
+        stateManager.setLocalState(HelpSignal.STATE_KEY, publicState);
         this.leader = isLeader;
     }
 
@@ -112,10 +113,10 @@ class HelpSignal implements Loopable{
     public void loop(RobotInterface robot) {
         v.setZero();
         if(leader){
-           publicState.value = (robot.getNeighborhood().size()<5?1:0)*(5-robot.getNeighborhood().size());
+           publicState.value = (robot.getNeighborhood().size()<3?1:0)*(3-robot.getNeighborhood().size());
         }  else {
             float max = 0;
-            for (HelpSignalState hss : stateManager.<HelpSignalState>getStates(HelpSignal.class.getSimpleName())) {
+            for (HelpSignalState hss : stateManager.<HelpSignalState>getStates(HelpSignal.STATE_KEY)) {
                 if (hss.value > 0 && robot.getNeighborhood().contains(hss.getRobotID())) {
                     if(max < hss.value){
                         max = hss.value;
