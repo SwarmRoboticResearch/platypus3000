@@ -62,7 +62,7 @@ public class DensityDistribution implements Loopable {
         Sector b = boundaryAlgorithm.getLargestOpenSector();
         NeighborView boundaryRobot = null;
         if(b!=null){
-           boundaryRobot = b.getCounterClockwiseNeighbor();
+           boundaryRobot = robot.getNeighborhood().getById(b.getCounterClockwiseNeighbor());
         }
         float robotAreas = 0;
         float sectorAreas = 0;

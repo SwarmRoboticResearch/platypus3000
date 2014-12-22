@@ -51,50 +51,6 @@ public class GlobalNeighborhood {
         return neighbors;
     }
 
-    public Set<Robot> getVisibleRobots(final Vec2 location, float range) { //TODO: Is this method realy needed?
-        final Set<Robot> robotsInRange = new HashSet<Robot>();
-
-        //Get robots in range
-        sim.world.queryAABB(new QueryCallback() {
-            @Override
-            public boolean reportFixture(Fixture fixture) {
-                if (fixture.getUserData() instanceof Robot) {
-                    final Robot closeRobot = (Robot) fixture.getUserData();
-                    if (location.sub(closeRobot.getGlobalPosition()).lengthSquared() < sim.configuration.RANGE*sim.configuration.RANGE) {
-                        robotsInRange.add(closeRobot); //Add the robot to the neighbours list for now
-                    }
-                }
-                return true;
-            }
-        }, new AABB(new Vec2(location.x - sim.configuration.RANGE, location.y - sim.configuration.RANGE), new Vec2(location.x + sim.configuration.RANGE, location.y + sim.configuration.RANGE)));
-
-        final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
-
-        //Remove neighbors not in visual contact.
-        if(sim.configuration.isLineOfSightConstraintActive()) {
-            for (final Robot closeRobot : robotsInRange) {
-                raycastCount++;
-                if (location.sub(closeRobot.getGlobalPosition()).lengthSquared() > 0) {
-                    sim.world.raycast(new RayCastCallback() {
-                        @Override
-                        public float reportFixture(Fixture fixture, Vec2 point, Vec2 normal, float fraction) {
-                            if (fixture.getUserData() == closeRobot) //Ignore hits with this (no need-> check doc) and the other robot
-                            {
-                                return 1;
-                            } else //We hit something between source robot and close robot -> closeRobot can not be visible!
-                            {
-                                visibleRobots.remove(closeRobot);
-                                return -1;
-                            }
-                        }
-                    }, location, closeRobot.getGlobalPosition());
-                }
-            }
-        }
-
-        return visibleRobots;
-    }
-
     private Set<Robot> getVisibleRobots(final Robot sourceRobot) {
         final Vec2 location = sourceRobot.getGlobalPosition();
         final Set<Robot> robotsInRange = new HashSet<Robot>();

@@ -15,11 +15,11 @@ public class Sector {
 
     public final RobotInterface owner;
 
-    NeighborView clockwiseNeighbor;
+
     Vec2 clockwisePosition;
     int clockwiseId;
 
-    NeighborView counterClockwiseNeighbor;
+
     Vec2 counterclockwisePosition;
     int counterclockwiseId;
 
@@ -37,17 +37,17 @@ public class Sector {
     private Float counterClockwiseAverage;
     private int counterClockwiseCount;
 
-    public Sector clockwiseBoundaryGraphPredecessor = null;
-    public Sector counterclockwiseBoundaryGraphPredecessor = null;
+
 
     public Sector(RobotInterface owner, NeighborView counterClockwise, PublicBoundaryState counterClockwiseState, NeighborView clockwise, PublicBoundaryState clockwiseState){
         this.owner = owner;
-        this.clockwiseNeighbor = clockwise;
         this.clockwisePosition = clockwise.getLocalPosition();
         this.clockwiseId = clockwise.getID();
-        this.counterClockwiseNeighbor = counterClockwise;
         this.counterclockwisePosition = counterClockwise.getLocalPosition();
         this.counterclockwiseId = counterClockwise.getID();
+        Sector clockwiseBoundaryGraphPredecessor = null;
+        Sector counterclockwiseBoundaryGraphPredecessor = null;
+
 
 
         this.angle = AngleUtils.normalizeToZero_2Pi(AngleUtils.getClockwiseRadian(counterclockwisePosition, clockwisePosition));
@@ -145,14 +145,14 @@ public class Sector {
     }
 
     public Vec2 getForce() {
-        return clockwiseNeighbor.getLocalPosition().add(counterClockwiseNeighbor.getLocalPosition());
+        return clockwisePosition.add(counterclockwisePosition);
     }
 
-    public NeighborView getClockwiseNeighbor() {
-        return clockwiseNeighbor;
+    public Integer getClockwiseNeighbor() {
+        return clockwiseId;
     }
 
-    public NeighborView getCounterClockwiseNeighbor() {
-        return counterClockwiseNeighbor;
+    public Integer getCounterClockwiseNeighbor() {
+        return counterclockwiseId;
     }
 }
