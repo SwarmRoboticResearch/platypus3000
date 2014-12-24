@@ -17,6 +17,7 @@ import platypus3000.visualisation.VisualisationWindow;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 /**
@@ -24,23 +25,54 @@ import java.util.ArrayList;
  */
 public class ExperimentalSetup {
     public static void main(String[] args) throws IOException {
+
+
+
+//        new VisualisationWindow(simRun, new Dimension(1000,800));
+//        ForceTuner.show();
+//        runUntilConnectivityOrControlLoss(simRun, );
+        for(int i = 0; i < 50; i++)
+            doExperiment(0f, System.out);
+    }
+
+    public static void doExperiment(float failrate, PrintStream out) throws IOException {
+        // Initialize the simulation
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
         for(int i = 1; i<400; i++){
             new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5,5),MathUtils.randomFloat(0, MathUtils.TWOPI));
         }
-        SimulationRunner simRun = new SimulationRunner(sim);
-        new VisualisationWindow(simRun, new Dimension(1000,800));
-        ForceTuner.show();
-        runUntilConnectivityOrControlLoss(simRun, new LeaderSet(0, 1, 2, 3, 4));
-        System.out.println("Experiment finished!");
-    }
 
-    public static void runUntilConnectivityOrControlLoss(SimulationRunner simRun, final LeaderSet leaderSet) {
-        simRun.listeners.add(new ExperimentSupervisor(simRun, leaderSet, 3, 1.0001f, 0.00001f));
+        LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
+
+        // Compute length and number of steiner points for this leader configuration
+        ArrayList<Vec2> initialLeaderPositions = new ArrayList<Vec2>(leaderSet.numLeaders());
+        for(int l = 0; l < leaderSet.numLeaders(); l++) {
+            initialLeaderPositions.add(sim.getRobot(leaderSet.getLeader(l)).getGlobalPosition());
+        }
+        float initialSteinerLength = GeoSteinerInterface.getSteinerLength(initialLeaderPositions);
+        int numSteinerpoints = GeoSteinerInterface.getNumSteinerpoints(initialLeaderPositions);
+
+        // Setup a simRunner with a listener, that pauses, when the connectivity is lost
+        SimulationRunner simRun = new SimulationRunner(sim);
+        ExperimentSupervisor supervisor = new ExperimentSupervisor(simRun, leaderSet, -1, 1.0001f, failrate);
+        simRun.listeners.add(supervisor);
+
+        // Run the simulation until the connectivity is lost
+        while(!simRun.paused)
+            simRun.loop();
+
+        // Compute the actual and maximal upscaling factors and the upscaling performance
+        // TODO: Figure out how to compute this, this is just a bad heuristic which might produce results, that are waaay to good!
+        float actualUpscalingFactor = supervisor.leaderUpscaling;
+        float maximalUpscalingFactor = sim.configuration.RANGE * sim.getRobots().size() / initialSteinerLength;
+//        float upscalingPerformance = actualUpscalingFactor/maximalUpscalingFactor;
+
+        // Write the interesting data to the output stream
+        out.printf("%f %f %f %d %d\n", failrate, actualUpscalingFactor, maximalUpscalingFactor, numSteinerpoints, sim.getTime());
     }
 
     static class ExperimentSupervisor implements SimulationRunner.SimStepListener {
-        private float leaderUpscaling = 1f;
+        float leaderUpscaling = 1f;
         private final SimulationRunner simRun;
         private final LeaderSet leaderSet;
         private final Vec2[] initialLeaderPositions;
@@ -87,29 +119,28 @@ public class ExperimentalSetup {
 //                            robot.setMovement(new Vec2());
 //                        }
 //                    });
-                    System.out.println("Killed Robot "+r.getID());
+//                    System.out.println("Killed Robot "+r.getID());
                     killedRobots.add(r);
                 }
             for(Robot r : killedRobots) sim.remove(r);
 
             //Check if the simulation should continue
-            boolean isWellControlled = true;
-            for(int l = 0; l < leaderSet.numLeaders(); l++) {
-                if(initialLeaderPositions[l].mul(leaderUpscaling).sub(sim.getRobot(leaderSet.getLeader(l)).getGlobalPosition()).length() > maxLeaderGoalDistance) {
-                    //isWellControlled = false;
-                    break;
-                }
-            }
+//            boolean isWellControlled = true;
+//            for(int l = 0; l < leaderSet.numLeaders(); l++) {
+//                if(initialLeaderPositions[l].mul(leaderUpscaling).sub(sim.getRobot(leaderSet.getLeader(l)).getGlobalPosition()).length() > maxLeaderGoalDistance) {
+//                    //isWellControlled = false;
+//                }
+//            }
+
+//            if(!isWellControlled)
+//                System.out.println("Is not well controlled!");
 
             boolean isConnected = new ConnectivityInspector(sim.getGlobalNeighborhood().getGraph()).isGraphConnected();
-
-            if(!isWellControlled)
-                System.out.println("Is not well controlled!");
 
             if(!isConnected)
                 System.out.println("Is not connected!");
 
-            simRun.paused = simRun.paused || !(isConnected && isWellControlled);
+            simRun.paused = !isConnected;
         }
     }
 }
