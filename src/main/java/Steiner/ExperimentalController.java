@@ -70,9 +70,6 @@ public class ExperimentalController extends RobotController implements LeaderInt
         if(leaderset.isLeader(robot)) robot.setMovement(leaderFollowAlgorithm.getSteerVector());
 
         stateManager.broadcast(robot);
-
-
-
     }
 
     public static void main(String[] args) throws IOException{

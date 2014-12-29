@@ -141,6 +141,7 @@ public class BoundaryDetection implements Loopable {
     }
 
     public Sector getLargestOpenSector() {
+        if(!isLargeBoundary()) return null;
         return largestOpenSector;
     }
 

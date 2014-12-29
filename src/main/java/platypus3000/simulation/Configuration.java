@@ -37,6 +37,8 @@ public class Configuration {
         return LINE_OF_SIGHT_CONSTRAINT;
     }
 
+    public final int THREADS;
+
     //Robot Options
     public final float RADIUS; //radius of robot in m
     public final float RANGE; //range of the communication in m from the center of the robot
@@ -91,6 +93,8 @@ public class Configuration {
         Properties prop = new Properties();
         InputStream inputStream = new BufferedInputStream(new FileInputStream(prop_file));
         prop.load(inputStream);
+        THREADS = Integer.parseInt(prop.getProperty("Threads"));
+
         RADIUS = Float.parseFloat(prop.getProperty("Radius"));
         RANGE = Float.parseFloat(prop.getProperty("Range"));
         MESSAGE_BUFFER_SIZE = Integer.parseInt(prop.getProperty("MessageBufferSize"));

@@ -31,10 +31,11 @@ public class Simulator {
     private long time = 0;
     GlobalNeighborhood globalNeighborhood = new GlobalNeighborhood(this);
 
-    private static ExecutorService executor = Executors.newFixedThreadPool(16);
+    private final ExecutorService executor;
 
     public Simulator(Configuration conf) {
         this.configuration = conf;
+        executor  = Executors.newFixedThreadPool(configuration.THREADS);
 
         world = new World(new Vec2(0, 0));  //World without gravity.
         //Dynamically allow/disallow overlapping of robots. For Testing you maybe want to allow overlapping.

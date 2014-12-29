@@ -86,8 +86,9 @@ public class DensityDistribution implements Loopable {
         for(NeighborView n: robot.getNeighborhood()){
             weightedRobotCount += 1;
             if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.25)*(conf.RANGE*0.25)) weightedRobotCount+=0.1f;
-            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.2)*(conf.RANGE*0.2)) weightedRobotCount+=0.2f;
-            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.15)*(conf.RANGE*0.15)) weightedRobotCount+=0.3f;
+            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.2)*(conf.RANGE*0.2)) weightedRobotCount+=0.3f;
+            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.15)*(conf.RANGE*0.15)) weightedRobotCount+=0.9f;
+            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.1)*(conf.RANGE*0.15)) weightedRobotCount+=2.7f;
         }
 
         if(boundaryRobot!=null && sectorCount>0) sectorAreas += sectorAreas/sectorCount;
@@ -105,12 +106,15 @@ public class DensityDistribution implements Loopable {
                 if(minNeighborDensity<0 || nstate.density<minNeighborDensity){
                     minNeighborDensity = nstate.density;
                 }
-                Vec2 d = n.getLocalPosition(); d.normalize();//d.mulLocal(1/(n.getDistance()));
+                Vec2 d = n.getLocalPosition();
+                float dist = d.normalize();//d.mulLocal(1/(n.getDistance()));
                 float diff = (DESIRED_DENSITY-nstate.density);
+                dist = dist/conf.RANGE;
+                if(diff<0) dist = 1- dist;
                 //if(diff<0) diff*=(1/n.getDistance());
                 //else diff*=n.getDistance();
                 diff*=(diff<0?-diff:diff);
-                force.addLocal(d.mul(diff));
+                force.addLocal(d.mul(diff).mul(dist*2));
             }
         }
         if(maxNeighborDensity>0 && minNeighborDensity>0) publicState.density = (maxNeighborDensity+minNeighborDensity+publicState.density)/3;
