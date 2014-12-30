@@ -13,9 +13,15 @@ import java.util.List;
  * Created by m on 12/23/14.
  */
 public class GeoSteinerInterface {
-    public static final String geosteinerPath = "/home/m/misc/geosteiner-3.1";
+    private static String geosteinerPath = null;
     private static String efst = geosteinerPath + "/efst";
     private static String bb = geosteinerPath + "/bb";
+
+    public static void setGeosteinerPath(String path) {
+        geosteinerPath = path;
+        efst = geosteinerPath + "/efst";
+        bb = geosteinerPath + "/bb";
+    }
 
     public static int getNumSteinerpoints(Collection<Vec2> points) {
         String command = makeBasicCommandString(points) + " | grep @C | wc -l";
@@ -25,8 +31,11 @@ public class GeoSteinerInterface {
 
     public static float getSteinerLength(Collection<Vec2> points) {
         String command = makeBasicCommandString(points) + " | grep @UN | tail -n 1";
+//        System.out.printf("Command is: %s\n", command);
         String commandResult = execShellCommand(command);
-        return Float.parseFloat(commandResult.split(" ")[6]);
+//        System.out.printf("Command Result is: %s\n", commandResult);
+//        System.out.printf("#################Final return value is: %s\n", commandResult.split(" ")[4]);
+        return Float.parseFloat(commandResult.split(" +")[4]);
     }
 
     private static String execShellCommand(String command){

@@ -8,7 +8,9 @@ import platypus3000.simulation.Robot;
 import platypus3000.simulation.Simulator;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.pdf.PGraphicsPDF;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -194,4 +196,24 @@ public class SwarmVisualisation implements PConstants{
     public int defaultRobotColor;
     public int robotRangeColor;
     public int obstacleColor;
+
+    public static void drawSwarmToPDF(String filename, Simulator sim) {
+
+
+        // Create a new graphics object, that draws to pdf
+        PGraphics graphics = new PGraphicsPDF();
+        graphics.setPrimary(false);
+        graphics.setPath(new File(filename).getAbsolutePath());
+        graphics.setSize(500, 500);
+        graphics.beginDraw();
+
+        // Create a new visualisation and prepare for drawing
+        SwarmVisualisation visualisation = new SwarmVisualisation(sim, graphics);
+        visualisation.transformToSwarm();
+
+        // Draw the stuff
+        visualisation.drawSimulation();
+        graphics.endDraw();
+        graphics.dispose();
+    }
 }

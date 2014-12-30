@@ -26,6 +26,11 @@ import java.io.IOException;
  * Created by doms on 11/27/14.
  */
 public class ExperimentalController extends RobotController implements LeaderInterface {
+    public static boolean leadersFollowActivated = true;
+    public static boolean leadersInfluenceActivated = true;
+    public static boolean densityActivated = true;
+    public static boolean thicknessActivated = true;
+
     OlfatiSaberFlocking flockAlgorithm;
     StateManager stateManager;
     BoundaryDetection boundaryAlgorithm;
@@ -56,18 +61,23 @@ public class ExperimentalController extends RobotController implements LeaderInt
         densityDistribution.loop(robot);
         helpSignal.loop(robot);
 
-        if(!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Denisty", densityDistribution.getForce(), robot);
+        if(densityActivated)
+            if(!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Denisty", densityDistribution.getForce(), robot);
         forceTuner.addForce("Boundary", boundaryAlgorithm.getBoundaryForce(), 5f, robot);
         forceTuner.addForce("DynBoundary", boundaryAlgorithm.getDynamicBoundaryForce(), 5f, robot);
         forceTuner.addForce("Flocking", flockAlgorithm.getForce(), robot);
-        if(!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Leader", leaderFollowAlgorithm.getForce(), robot);
-        forceTuner.addForce("Help", helpSignal.getForce(), robot);
-        forceTuner.addForce("Thickness", thicknessDetermination.getForce(), robot);
+        if(leadersInfluenceActivated) {
+            if (!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Leader", leaderFollowAlgorithm.getForce(), robot);
+            forceTuner.addForce("Help", helpSignal.getForce(), robot);
+        }
 
-
+        if(thicknessActivated)
+            forceTuner.addForce("Thickness", thicknessDetermination.getForce(), robot);
 
         robot.setMovement(forceTuner.getForce());
-        if(leaderset.isLeader(robot)) robot.setMovement(leaderFollowAlgorithm.getSteerVector());
+
+        if(leadersInfluenceActivated || leadersFollowActivated)
+            if(leaderset.isLeader(robot)) robot.setMovement(leaderFollowAlgorithm.getSteerVector());
 
         stateManager.broadcast(robot);
     }

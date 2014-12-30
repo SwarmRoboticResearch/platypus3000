@@ -8,67 +8,133 @@ import platypus3000.simulation.Configuration;
 import platypus3000.simulation.Robot;
 import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.Simulator;
-import platypus3000.simulation.control.RobotController;
-import platypus3000.simulation.control.RobotInterface;
-import platypus3000.utils.ForceTuner;
 import platypus3000.utils.LeaderInterface;
-import platypus3000.visualisation.Colors;
-import platypus3000.visualisation.VisualisationWindow;
+import platypus3000.visualisation.SwarmVisualisation;
 
-import java.awt.*;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by m on 12/4/14.
  */
 public class ExperimentalSetup {
+
     public static void main(String[] args) throws IOException {
 
+        if(args.length < 1) {
+            System.out.println("Usage: <geosteinerpath>");
+            System.exit(0);
+        }
 
+        GeoSteinerInterface.setGeosteinerPath(args[0]);
 
 //        new VisualisationWindow(simRun, new Dimension(1000,800));
 //        ForceTuner.show();
 //        runUntilConnectivityOrControlLoss(simRun, );
-        for(int i = 0; i < 50; i++)
-            doExperiment(0f, System.out);
+
+        PrintStream out = new PrintStream(new FileOutputStream("zerofail_thickness_results.log"));
+        for(int i = 0; i < 1; i++) {
+//            doExperiment(0.0001f, out);
+//            out.flush();
+//            doExperiment(0.00001f, out);
+//            out.flush();
+            doExperiment(0, System.out);
+            out.flush();
+        }
+        out.close();
+        System.exit(0);
     }
 
     public static void doExperiment(float failrate, PrintStream out) throws IOException {
+        // Retry the experiment until it succeeds
+        while (!tryExperiment(failrate, out)) {}
+    }
+
+    public static boolean tryExperiment(float failrate, PrintStream out) throws IOException {
         // Initialize the simulation
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        Random random = new Random(0);
         for(int i = 1; i<400; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5,5),MathUtils.randomFloat(0, MathUtils.TWOPI));
+            new Robot(Integer.toString(i), new ExperimentalController(), sim, random.nextFloat() * 5 - 10, random.nextFloat() * 5 - 10,random.nextFloat() * MathUtils.TWOPI);
         }
 
         LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
+        SimulationRunner simRun = new SimulationRunner(sim);
 
-        // Compute length and number of steiner points for this leader configuration
+        // Do a warmup phase with no leader forces
+        ExperimentalController.leadersInfluenceActivated = false;
+        ExperimentalController.leadersFollowActivated = false;
+        ExperimentalController.thicknessActivated = false;
+        ExperimentalController.densityActivated = true;
+        for(int i = 0; i < 100; i++) simRun.loop();
+        ExperimentalController.leadersInfluenceActivated = true;
+        ExperimentalController.leadersFollowActivated = true;
+        ExperimentalController.thicknessActivated = true;
+
+        // do the settings for the actual algorithm
+        //BASE
+        ExperimentalController.leadersInfluenceActivated = false;
+        ExperimentalController.thicknessActivated = false;
+        ExperimentalController.densityActivated = false;
+        ExperimentalController.leadersFollowActivated = true;
+
+        //LEADER
+//        ExperimentalController.leadersInfluenceActivated = true;
+//        ExperimentalController.thicknessActivated = false;
+//        ExperimentalController.densityActivated = false;
+//        ExperimentalController.leadersFollowActivated = true;
+
+        //DENSITY
+//        ExperimentalController.leadersInfluenceActivated = true;
+//        ExperimentalController.thicknessActivated = false;
+//        ExperimentalController.densityActivated = true;
+//        ExperimentalController.leadersFollowActivated = true;
+
+        //THICKNESS
+//        ExperimentalController.leadersInfluenceActivated = true;
+//        ExperimentalController.thicknessActivated = true;
+//        ExperimentalController.densityActivated = true;
+//        ExperimentalController.leadersFollowActivated = true;
+
+        // Setup a simRunner with a listener, that pauses, when the connectivity is lost
+        ExperimentSupervisor supervisor = new ExperimentSupervisor(simRun, leaderSet, -1, 1.0001f, failrate);
+        simRun.listeners.add(supervisor);
+
+        System.out.println("Experiment starts ...");
+        // Run the simulation until the connectivity is lost
+        while(!simRun.paused) {
+            simRun.loop();
+            System.out.println(sim.getTime());
+        }
+
+        //Abort the experiment if the connectivity was lost immediately at the beginning because of bad initialization
+        if(sim.getTime() < 110)
+            return false;
+
+        // Compute the size of the steiner tree
         ArrayList<Vec2> initialLeaderPositions = new ArrayList<Vec2>(leaderSet.numLeaders());
         for(int l = 0; l < leaderSet.numLeaders(); l++) {
             initialLeaderPositions.add(sim.getRobot(leaderSet.getLeader(l)).getGlobalPosition());
         }
-        float initialSteinerLength = GeoSteinerInterface.getSteinerLength(initialLeaderPositions);
+        float steinerTreeLength = GeoSteinerInterface.getSteinerLength(initialLeaderPositions);
         int numSteinerpoints = GeoSteinerInterface.getNumSteinerpoints(initialLeaderPositions);
 
-        // Setup a simRunner with a listener, that pauses, when the connectivity is lost
-        SimulationRunner simRun = new SimulationRunner(sim);
-        ExperimentSupervisor supervisor = new ExperimentSupervisor(simRun, leaderSet, -1, 1.0001f, failrate);
-        simRun.listeners.add(supervisor);
-
-        // Run the simulation until the connectivity is lost
-        while(!simRun.paused)
-            simRun.loop();
-
-        // Compute the actual and maximal upscaling factors and the upscaling performance
-        // TODO: Figure out how to compute this, this is just a bad heuristic which might produce results, that are waaay to good!
-        float actualUpscalingFactor = supervisor.leaderUpscaling;
-        float maximalUpscalingFactor = sim.configuration.RANGE * sim.getRobots().size() / initialSteinerLength;
-//        float upscalingPerformance = actualUpscalingFactor/maximalUpscalingFactor;
+        // Create a pdf of the final state of the swarm
+        String pdfOutputPath = Math.round(Math.random() * 10000 * 10000) + ".pdf";
+        SwarmVisualisation.drawSwarmToPDF(pdfOutputPath, sim);
 
         // Write the interesting data to the output stream
-        out.printf("%f %f %f %d %d\n", failrate, actualUpscalingFactor, maximalUpscalingFactor, numSteinerpoints, sim.getTime());
+        out.printf("%f %f %d %d %d \"%s\"\n",
+                failrate,
+                steinerTreeLength,
+                numSteinerpoints,
+                sim.getTime(),
+                sim.getRobots().size(),
+                pdfOutputPath);
+        return true;
     }
 
     static class ExperimentSupervisor implements SimulationRunner.SimStepListener {
@@ -137,8 +203,8 @@ public class ExperimentalSetup {
 
             boolean isConnected = new ConnectivityInspector(sim.getGlobalNeighborhood().getGraph()).isGraphConnected();
 
-            if(!isConnected)
-                System.out.println("Is not connected!");
+//            if(!isConnected)
+//                System.out.println("Is not connected!");
 
             simRun.paused = !isConnected;
         }
