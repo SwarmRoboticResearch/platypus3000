@@ -210,6 +210,7 @@ public class SwarmVisualisation implements PConstants{
         // Create a new visualisation and prepare for drawing
         SwarmVisualisation visualisation = new SwarmVisualisation(sim, graphics);
         visualisation.transformToSwarm();
+        visualisation.showNeighborhood = true;
 
         // Draw the stuff
         visualisation.drawSimulation();
