@@ -33,32 +33,56 @@ public class ExperimentalSetup {
         GeoSteinerInterface.setGeosteinerPath(args[0]);
 
         PrintStream out = new PrintStream(new FileOutputStream(args[1]));
-        for(int i = 0; i < 25; i++) {
-            for(int c = 0; c < 4; c++) {
-                doExperiment(0.00002f, c, out);
-                out.flush();
-                doExperiment(0.00001f, c, out);
-                out.flush();
-                doExperiment(0.000005f, c, out);
-                out.flush();
-                doExperiment(0, c, out);
-                out.flush();
+        for(int iteration = 0; iteration < 25; iteration++) {
+            for(int controllerConfigID = 0; controllerConfigID < 4; controllerConfigID++) {
+//              TODO: the maximalUpscalingSpeeds are just random values for now. We need to think of some proper values here.
+//              The unit is meters per timestep
+                for(float maximalUpscalingSpeed : new float[]{0.1f, 0.2f}) {
+                    doExperiment(0.00002f, maximalUpscalingSpeed, controllerConfigID, out);
+                    out.flush();
+                    doExperiment(0.00001f, maximalUpscalingSpeed, controllerConfigID, out);
+                    out.flush();
+                    doExperiment(0.000005f, maximalUpscalingSpeed, controllerConfigID, out);
+                    out.flush();
+                    doExperiment(0, maximalUpscalingSpeed, controllerConfigID, out);
+                    out.flush();
+                }
             }
         }
         out.close();
         System.exit(0);
     }
 
-    public static void doExperiment(float failrate, int controllerStage, PrintStream out) throws IOException {
+    /**
+     * Runs an experiment with the specified parameters.
+     * It does so be retrying the experiment until it succeeds.
+     * @param failrate The probability of a robot to fail in each timestep.
+     * @param maxUpscalingSpeed The maximal upscaling speed for the leaders in meters/timestep.
+     * @param controllerStage The settings for the controller to use.
+     * @param out The output stream to write the results of the experiment to.
+     * @throws IOException
+     */
+    public static void doExperiment(float failrate, float maxUpscalingSpeed, int controllerStage, PrintStream out) throws IOException {
         // Retry the experiment until it succeeds
-        while (!tryExperiment(failrate, controllerStage, out)) {}
+        while (!tryExperiment(failrate, maxUpscalingSpeed, controllerStage, out)) {}
     }
 
-    public static boolean tryExperiment(float failrate, int controllerStage, PrintStream out) throws IOException {
+    /**
+     * Trys to run an experiment with the given parameters. If it fails (because the initial configuration was not
+     * connected it returns false, otherwise true.
+     * @param failrate The probability of a robot to fail in each timestep.
+     * @param maxUpscalingSpeed The maximal upscaling speed for the leaders in meters/timestep.
+     * @param controllerStage The settings for the controller to use.
+     * @param out The output stream to write the results of the experiment to.
+     * @return Whether the experiment was successful or not.
+     * @throws IOException
+     */
+    public static boolean tryExperiment(float failrate, float maxUpscalingSpeed, int controllerStage, PrintStream out) throws IOException {
         // Initialize the simulation
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        float robotSquareSidelength = 10;
         for(int i = 1; i<400; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(0, MathUtils.TWOPI));
+            new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-robotSquareSidelength/2, robotSquareSidelength), MathUtils.randomFloat(-robotSquareSidelength/2, robotSquareSidelength), MathUtils.randomFloat(0, MathUtils.TWOPI));
         }
 
         LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
@@ -108,7 +132,7 @@ public class ExperimentalSetup {
         }
 
         // Setup a simRunner with a listener, that pauses, when the connectivity is lost
-        ExperimentSupervisor supervisor = new ExperimentSupervisor(simRun, leaderSet, -1, 0.005f, failrate);
+        ExperimentSupervisor supervisor = new ExperimentSupervisor(simRun, leaderSet, (float) (maxUpscalingSpeed * Math.sqrt(2) / robotSquareSidelength), failrate);
         simRun.listeners.add(supervisor);
 
         // Run the simulation until the connectivity is lost
@@ -144,21 +168,31 @@ public class ExperimentalSetup {
         return true;
     }
 
+    /**
+     * The ExperimentSupervisor does three things:
+     * - It gives directions to the leaders in order to scale the initial leader configuration
+     * - It watches the swarms connectivity and pauses the simulation runner if connectivity is lost
+     * - It randomly removes some robots from the simulation to simulate robot failure
+     */
     static class ExperimentSupervisor implements SimulationRunner.SimStepListener {
         float leaderUpscaling = 1f;
         private final SimulationRunner simRun;
         private final LeaderSet leaderSet;
         private final Vec2[] initialLeaderPositions;
-        private final float maxLeaderGoalDistance;
         private final float leaderUpscalingRate;
         private final float robotFailureRate;
 
-
-
-        public ExperimentSupervisor(SimulationRunner simRun, LeaderSet leaderSet, float maxLeaderGoalDistance, float leaderUpscalingRate, float robotFailureRate) {
+        /**
+         * Creates a new ExperimentSupervisor and marks the current position of the leader robots as the initial leader
+         * configuration to be scaled up.
+         * @param simRun The simulation runner (to pause the simulation when connectivity is lost)
+         * @param leaderSet The set of leaders that should be scaled up
+         * @param leaderUpscalingRate The scale (starting at 1) of the leader setpoints will be increased in each timestep by this amount.
+         * @param robotFailureRate The probability of each individual robot of failing at each timestep.
+         */
+        public ExperimentSupervisor(SimulationRunner simRun, LeaderSet leaderSet, float leaderUpscalingRate, float robotFailureRate) {
             this.simRun = simRun;
             this.leaderSet = leaderSet;
-            this.maxLeaderGoalDistance = maxLeaderGoalDistance;
             this.robotFailureRate = robotFailureRate;
             this.leaderUpscalingRate = leaderUpscalingRate;
             initialLeaderPositions = new Vec2[leaderSet.numLeaders()];
@@ -169,53 +203,30 @@ public class ExperimentalSetup {
 
         @Override
         public void simStep(Simulator sim) {
-
-            //Give direction to the leadersentalController.leadersInfluenceActivated = true;
-//        ExperimentalController.thicknessActivated = true;
-//        ExperimentalController.densityActivated = true;
-//        ExperimentalController.leadersFollowActivated = true;
+            //Advance the upscaling of the setpoints according to the upscaling rate
             leaderUpscaling += leaderUpscalingRate;
+
+            //Give directions to the leader robots according to the computed setpoints
             for(int l = 0; l < leaderSet.numLeaders(); l++) {
-                Robot r = sim.getRobot(leaderSet.getLeader(l));
-                Vec2 v = r.getLocalPoint(initialLeaderPositions[l].mul(leaderUpscaling));
-                if(v.lengthSquared()>0.05f) {
-                     v.mulLocal(0.25f/v.length());
+                Robot leader = sim.getRobot(leaderSet.getLeader(l));
+                Vec2 globalSetpoint = initialLeaderPositions[l].mul(leaderUpscaling);
+                Vec2 localSetpoint = leader.getLocalPoint(globalSetpoint);
+                if(localSetpoint.lengthSquared()>0.05f) { //TODO: @Dominik is this still neccecary? It still looks wierd to me.
+                     localSetpoint.mulLocal(0.25f / localSetpoint.length());
                 }
-                ((LeaderInterface) r.getController()).setLocalGoal(v);
+                ((LeaderInterface) leader.getController()).setLocalGoal(localSetpoint);
             }
 
-            //Kill some robots
+            //Kill some robots according to the failure rate
             ArrayList<Robot> killedRobots = new ArrayList<Robot>();
             for(Robot r : sim.getRobots())
                 if(Math.random() < robotFailureRate && !leaderSet.isLeader(r)) {
-//                    r.setController(new RobotController() {
-//                        @Override
-//                        public void loop(RobotInterface robot) {
-//                            robot.setColor(Colors.RED);
-//                            robot.setMovement(new Vec2());
-//                        }
-//                    });
-//                    System.out.println("Killed Robot "+r.getID());
                     killedRobots.add(r);
                 }
             for(Robot r : killedRobots) sim.remove(r);
 
-            //Check if the simulation should continue
-//            boolean isWellControlled = true;
-//            for(int l = 0; l < leaderSet.numLeaders(); l++) {
-//                if(initialLeaderPositions[l].mul(leaderUpscaling).sub(sim.getRobot(leaderSet.getLeader(l)).getGlobalPosition()).length() > maxLeaderGoalDistance) {
-//                    //isWellControlled = false;
-//                }
-//            }
-
-//            if(!isWellControlled)
-//                System.out.println("Is not well controlled!");
-
+            //Pause the simulation if the swarm is not connected any more
             boolean isConnected = new ConnectivityInspector(sim.getGlobalNeighborhood().getGraph()).isGraphConnected();
-
-//            if(!isConnected)
-//                System.out.println("Is not connected!");
-
             simRun.paused = !isConnected;
         }
     }
