@@ -14,7 +14,7 @@ import java.awt.event.ActionListener;
  * The content of the MenuBar is at the moment elaborately filled in by hand.
  */
 public class VisualisationWindow extends JFrame implements Configuration.ConfigurationChangeListener {
-    InteractiveVisualisation visualisation;
+    public InteractiveVisualisation visualisation;
     SettingsWindow settingsWindow;
     JMenuBar menuBar;
 
@@ -93,7 +93,7 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
             });
             menu_simulation.add(menuItem_overlapping);
             //Screenshot-Entry
-            menuItem_playpause.addActionListener(new ActionListener() {
+            menuItem_screenshot.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     visualisation.makeScreenshot();

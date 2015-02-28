@@ -172,9 +172,8 @@ public class InteractiveVisualisation extends PApplet
         rotator.draw(usedGraphics);
         usedGraphics.popMatrix();
 //        saveFrame("./movie/picture-#####.png");
-        if(simRunner.getSim().configuration.drawTexts()) {
+
             drawTexts(usedGraphics);
-        }
         if (recordPDF) {
             recordPDF = false;
             usedGraphics.endDraw();
@@ -198,7 +197,7 @@ public class InteractiveVisualisation extends PApplet
         //Draw help text
         graphics.textAlign(LEFT);
         graphics.fill(0);
-        graphics.textSize(10);
+        graphics.textSize(20);
         if(!recordPDF) text("RIGHT mouse to zoom\nLEFT mouse to pan", 10, 20);
 
         //Draw the texts we put in the texts map
@@ -277,6 +276,7 @@ public class InteractiveVisualisation extends PApplet
         for(Robot r : simRunner.getSim().getRobots()) {
             //Prints the name under the robot
             if (showNamesOfAllRobots) {
+
                 texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.toString());
             } else {
                 if (showNameOfSelectedRobot && r == selectedObject)
@@ -285,7 +285,7 @@ public class InteractiveVisualisation extends PApplet
                     texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.getName());
             }
 
-            if (r.textString != null)
+            if (simRunner.getSim().configuration.drawTexts() &&  r.textString != null)
                 texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - simRunner.getSim().configuration.RADIUS * 2), r.textString);
         }
     }

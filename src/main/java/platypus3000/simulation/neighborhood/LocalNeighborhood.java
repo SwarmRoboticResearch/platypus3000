@@ -35,6 +35,7 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
         positionOfId = new HashMap<Integer, Integer>(neighborViews.size());
         Collections.sort(neighborViews, NeighborView.angularComparator);
         for(int i=0; i<neighborViews.size(); ++i){
+            assert !positionOfId.containsKey(neighborViews.get(i).getID());
             positionOfId.put(neighborViews.get(i).getID(), i);
         }
     }

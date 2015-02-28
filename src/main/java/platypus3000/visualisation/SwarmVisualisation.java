@@ -198,23 +198,27 @@ public class SwarmVisualisation implements PConstants{
     public int obstacleColor;
 
     public static void drawSwarmToPDF(String filename, Simulator sim) {
+        //Try-Catch to avoid crashes during experiments.
+        try {
+            // Create a new graphics object, that draws to pdf
+            PGraphics graphics = new PGraphicsPDF();
+            graphics.setPrimary(false);
+            graphics.setPath(new File(filename).getAbsolutePath());
+            graphics.setSize(500, 500);
+            graphics.beginDraw();
 
+            // Create a new visualisation and prepare for drawing
+            SwarmVisualisation visualisation = new SwarmVisualisation(sim, graphics);
+            visualisation.transformToSwarm();
+            visualisation.showNeighborhood = true;
 
-        // Create a new graphics object, that draws to pdf
-        PGraphics graphics = new PGraphicsPDF();
-        graphics.setPrimary(false);
-        graphics.setPath(new File(filename).getAbsolutePath());
-        graphics.setSize(500, 500);
-        graphics.beginDraw();
-
-        // Create a new visualisation and prepare for drawing
-        SwarmVisualisation visualisation = new SwarmVisualisation(sim, graphics);
-        visualisation.transformToSwarm();
-        visualisation.showNeighborhood = true;
-
-        // Draw the stuff
-        visualisation.drawSimulation();
-        graphics.endDraw();
-        graphics.dispose();
+            // Draw the stuff
+            visualisation.drawSimulation();
+            graphics.endDraw();
+            graphics.dispose();
+        } catch (Exception e){
+            System.out.println("Could not draw swarm to pdf. This is a known bug if you use ssh -X and screen");
+            e.printStackTrace();
+        }
     }
 }

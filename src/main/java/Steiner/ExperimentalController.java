@@ -36,10 +36,14 @@ public class ExperimentalController extends RobotController implements LeaderInt
     BoundaryDetection boundaryAlgorithm;
     ThicknessDetermination thicknessDetermination;
     LeaderFollowAlgorithm leaderFollowAlgorithm;
-    LeaderSet leaderset =  new LeaderSet(0,1,2,3,4);
+    LeaderSet leaderset;
     DensityDistribution densityDistribution;
     ForceTuner forceTuner = new ForceTuner("Basic", this);
     HelpSignal helpSignal;
+
+    public ExperimentalController(LeaderSet l){
+        this.leaderset = l;
+    }
 
     public void init(RobotInterface robot){
         flockAlgorithm = new OlfatiSaberFlocking(this);
@@ -85,7 +89,7 @@ public class ExperimentalController extends RobotController implements LeaderInt
     public static void main(String[] args) throws IOException{
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
         for(int i = 1; i<400; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(0, 10), MathUtils.randomFloat(0,10),0);
+            new Robot(Integer.toString(i), new ExperimentalController(new LeaderSet(0,1,2,3,4)), sim, MathUtils.randomFloat(0, 10), MathUtils.randomFloat(0,10),0);
         }
         new VisualisationWindow(sim, new Dimension(1900,800));
         ForceTuner.show();

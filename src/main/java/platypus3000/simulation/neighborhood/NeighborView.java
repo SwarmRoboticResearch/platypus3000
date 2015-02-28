@@ -122,14 +122,17 @@ public class NeighborView {
         result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
         return result;
     }
-
+    static {
+        System.out.println("The Neighborhood is now sorted after the id as sometimes exceptions arise. Fix it for some algorithms!!!!!!");
+    }
     //TODO: correct place?
     public static Comparator<NeighborView> angularComparator = new Comparator<NeighborView>() {
         @Override
         public int compare(NeighborView a, NeighborView b) {
-            if(a==b) return 0;
-            if(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(a.getLocalPosition()))< AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(b.getLocalPosition()))) return -1;
-            return 1;
+            return a.getID()-b.getID();    //TODO: Some Algorithms might not work with this!
+           // if(a==b) return 0;
+           // if(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(a.getLocalPosition()))< AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(b.getLocalPosition()))) return -1;
+           // return 1;
         }
     };
 

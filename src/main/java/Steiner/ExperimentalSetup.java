@@ -57,11 +57,12 @@ public class ExperimentalSetup {
     public static boolean tryExperiment(float failrate, int controllerStage, PrintStream out) throws IOException {
         // Initialize the simulation
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
         for(int i = 1; i<400; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(0, MathUtils.TWOPI));
+            new Robot(Integer.toString(i), new ExperimentalController(leaderSet), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(0, MathUtils.TWOPI));
         }
 
-        LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
+
         SimulationRunner simRun = new SimulationRunner(sim);
 
         // Do a warmup phase with no leader forces
@@ -178,7 +179,7 @@ public class ExperimentalSetup {
             for(int l = 0; l < leaderSet.numLeaders(); l++) {
                 Robot r = sim.getRobot(leaderSet.getLeader(l));
                 Vec2 v = r.getLocalPoint(initialLeaderPositions[l].mul(leaderUpscaling));
-                if(v.lengthSquared()>0.05f) {
+                if(v.length()>0.25f) {
                      v.mulLocal(0.25f/v.length());
                 }
                 ((LeaderInterface) r.getController()).setLocalGoal(v);

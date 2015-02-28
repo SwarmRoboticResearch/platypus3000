@@ -20,11 +20,12 @@ public class PictureMaker {
     public static void main(String[] args) throws IOException {
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
         Random rand = new Random(15);
+        LeaderSet l = new LeaderSet(0, 1, 2, 3, 4);
         for(int i = 1; i<200; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
+            new Robot(Integer.toString(i), new ExperimentalController(l), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
         }
         SimulationRunner simRunner = new SimulationRunner(sim);
-        simRunner.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRunner, new LeaderSet(0, 1, 2, 3, 4), -1, 0.005f, 0.00001f));
+        simRunner.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRunner, l, -1, 0.005f, 0.00001f));
         new VisualisationWindow(simRunner);
 //        for(Integer i : Arrays.asList(0, 1, 3))
 //            doPicture(i, "stage" + i + ".pdf");
@@ -65,12 +66,13 @@ public class PictureMaker {
         }
 
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
         Random rand = new Random(15);
         for(int i = 1; i<200; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
+            new Robot(Integer.toString(i), new ExperimentalController(leaderSet), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
         }
 
-        LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
+
         SimulationRunner simRun = new SimulationRunner(sim);
         simRun.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRun, leaderSet, -1, 0.005f, 0));
 

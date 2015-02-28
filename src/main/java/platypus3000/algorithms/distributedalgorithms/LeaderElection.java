@@ -8,6 +8,7 @@ import platypus3000.simulation.control.RobotInterface;
 import platypus3000.simulation.neighborhood.NeighborView;
 import platypus3000.utils.NeighborState.PublicState;
 import platypus3000.utils.NeighborState.StateManager;
+import platypus3000.visualisation.Colors;
 
 import java.util.Comparator;
 
@@ -31,10 +32,12 @@ public class LeaderElection <T> {
     VectorOverlay predOverlay;
     Vec2  pred_vec = new Vec2();
     DiscreteStateColorOverlay done_overlay;
+    DiscreteStateColorOverlay maximum;
 
     public LeaderElection(RobotController controller, StateManager stateManager, Comparator<T> comparator,T value, RobotInterface robot, String key){
         predOverlay = new VectorOverlay(controller, "Predecessor", pred_vec);
         done_overlay = new DiscreteStateColorOverlay(controller, "Leader State", 3);
+        maximum = new DiscreteStateColorOverlay(controller, "Extremal", new String[]{"None", "Local", "Global"}, new int[]{Colors.WHITE, Colors.BLACK, Colors.RED});
         this.stateManager = stateManager;
         this.comparator = comparator;
         this.key = key;
@@ -71,7 +74,14 @@ public class LeaderElection <T> {
             publicState.done = true;
         }
 
+
+        maximum.setState(0);
+        if(own_value.equals(publicState.max_value)){
+            maximum.setState(1);
+        }
+
         if(isLeader()){
+            maximum.setState(2);
             publicState.done = true;
             for(NeighborView n: robot.getNeighborhood()){
                 LeaderElectionState<T> neighborState = stateManager.<LeaderElectionState<T>>getState(n.getID(), state_key);
@@ -80,6 +90,8 @@ public class LeaderElection <T> {
                 if(neighborState.hops> publicState.hops && !neighborState.lowerLevelDone){ publicState.done = false; break;}
             }
         }
+
+
 
 
         pred_vec.setZero();
@@ -134,6 +146,8 @@ public class LeaderElection <T> {
             return cloned;
         }
     }
+
+
 }
 
 

@@ -29,7 +29,7 @@ import java.util.concurrent.BlockingQueue;
  * the constructor.
  */
 public class Robot extends SimulatedObject implements RobotInterface {
-    private static final boolean CLEAN_OLD_MESSAGES = true; //TODO false leads to unpredictable behaviors (but could be the algorithm)
+    private static final boolean CLEAN_OLD_MESSAGES = false; //TODO false leads to unpredictable behaviors (but could be the algorithm)
     //<R-One Properties>
     final RobotMovementPhysics movementsPhysics;
     public final NoiseModel noiseModel;
@@ -46,7 +46,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     public String textString;
     //</Talking>
 
-    private long local_time_difference = (long)MathUtils.randomFloat(0,10000);
+    private long local_time_difference = 0;//(long)MathUtils.randomFloat(0,10000);
     private int robotID;
 
     //-----------------------------------------------------------------------------------

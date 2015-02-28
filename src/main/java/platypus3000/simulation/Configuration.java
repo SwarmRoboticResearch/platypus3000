@@ -90,6 +90,7 @@ public class Configuration {
     }
 
     public Configuration(String prop_file) throws IOException{
+        System.out.println("Loading configuration from "+prop_file);
         Properties prop = new Properties();
         InputStream inputStream = new BufferedInputStream(new FileInputStream(prop_file));
         prop.load(inputStream);
