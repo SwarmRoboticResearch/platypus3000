@@ -56,7 +56,8 @@ public class MultiVectorOverlay extends LocalOverlay {
                  pGraphics.stroke(colors.get(i).getColor());
                  pGraphics.fill(colors.get(i).getColor());
 
-                 VectorOverlay.drawVector(pGraphics, drawnVector);
+                 VectorOverlay.drawVector(pGraphics, drawnVector, 0.07f);
+                 pGraphics.popStyle();
              }
          }
     }

@@ -37,12 +37,13 @@ public class VectorOverlay extends LocalOverlay {
             pGraphics.pushStyle();
             pGraphics.stroke(color.getColor());
             pGraphics.fill(color.getColor());
-            drawVector(pGraphics, drawnVector);
+            drawVector(pGraphics, drawnVector, 0.07f);
+            pGraphics.popStyle();
         }
     }
 
-    public static void drawVector(PGraphics pGraphics, Vec2 vector) {
-        float size = 0.07f;
+    public static void drawVector(PGraphics pGraphics, Vec2 vector, float size) {
+
         if(vector.lengthSquared() > size*size) {
             Vec2 shortenedvec = new Vec2(vector);
             shortenedvec.normalize();
@@ -55,6 +56,5 @@ public class VectorOverlay extends LocalOverlay {
         pGraphics.noStroke();
         pGraphics.triangle(-size, -size / 2, 0, 0, -size, size / 2);
         pGraphics.popMatrix();
-        pGraphics.popStyle();
     }
 }

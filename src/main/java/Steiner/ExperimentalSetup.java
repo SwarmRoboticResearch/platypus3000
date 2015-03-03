@@ -25,26 +25,27 @@ import java.util.Random;
 public class ExperimentalSetup {
 
     public static void main(String[] args) throws IOException {
-        if(args.length < 2) {
-            System.out.println("Usage: <geosteinerpath> <logfilename>");
-            System.exit(0);
+        Float failureRate = null;
+        try {
+            if(args.length < 3) throw new Exception();
+            failureRate = Float.parseFloat(args[2]);
+        } catch (Exception e) {
+            System.out.println("Usage: <geosteinerpath> <logfilename> <failure rate>");
+            if(e instanceof NumberFormatException)
+                System.out.print("Hing: choose a floating point value for the failure rate");
+            System.exit(-1);
         }
 
         GeoSteinerInterface.setGeosteinerPath(args[0]);
 
         PrintStream out = new PrintStream(new FileOutputStream(args[1]));
-        for(int iteration = 0; iteration < 25; iteration++) {
-            for(int controllerConfigID = 0; controllerConfigID < 4; controllerConfigID++) {
-//              TODO: the maximalUpscalingSpeeds are just random values for now. We need to think of some proper values here.
+        for(int iteration = 0; iteration < 100; iteration++) {
+            for(int controllerConfigID: new int[] {0,1,3}) { // We leave out the density controller
+//              for the maximal upscaling speed we choose a value which is about 60% of the maximal robot speed
 //              The unit is meters per timestep
-                for(float maximalUpscalingSpeed : new float[]{0.1f, 0.2f}) {
-                    doExperiment(0.00002f, maximalUpscalingSpeed, controllerConfigID, out);
-                    out.flush();
-                    doExperiment(0.00001f, maximalUpscalingSpeed, controllerConfigID, out);
-                    out.flush();
-                    doExperiment(0.000005f, maximalUpscalingSpeed, controllerConfigID, out);
-                    out.flush();
-                    doExperiment(0, maximalUpscalingSpeed, controllerConfigID, out);
+                for(float maximalUpscalingSpeed : new float[]{0.001f}) {
+                    System.out.printf("it: %d\tcontroller: %d\n", iteration, controllerConfigID);
+                    doExperiment(failureRate, maximalUpscalingSpeed, controllerConfigID, out, iteration);
                     out.flush();
                 }
             }
@@ -62,9 +63,9 @@ public class ExperimentalSetup {
      * @param out The output stream to write the results of the experiment to.
      * @throws IOException
      */
-    public static void doExperiment(float failrate, float maxUpscalingSpeed, int controllerStage, PrintStream out) throws IOException {
+    public static void doExperiment(float failrate, float maxUpscalingSpeed, int controllerStage, PrintStream out, int seed) throws IOException {
         // Retry the experiment until it succeeds
-        while (!tryExperiment(failrate, maxUpscalingSpeed, controllerStage, out)) {}
+        while (!tryExperiment(failrate, maxUpscalingSpeed, controllerStage, out, seed)) {}
     }
 
     /**
@@ -77,12 +78,20 @@ public class ExperimentalSetup {
      * @return Whether the experiment was successful or not.
      * @throws IOException
      */
-    public static boolean tryExperiment(float failrate, float maxUpscalingSpeed, int controllerStage, PrintStream out) throws IOException {
+    public static boolean tryExperiment(float failrate, float maxUpscalingSpeed, int controllerStage, PrintStream out, int seed) throws IOException {
         // Initialize the simulation
         Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        sim.configuration.overlayManager.getSharedProperties("Leader Highlight").show_all = true;
         float robotSquareSidelength = 10;
+        float robotSquareExtent = robotSquareSidelength/2f;
+        Random rand = new Random(seed);
         for(int i = 1; i<400; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-robotSquareSidelength/2, robotSquareSidelength), MathUtils.randomFloat(-robotSquareSidelength/2, robotSquareSidelength), MathUtils.randomFloat(0, MathUtils.TWOPI));
+            new Robot(Integer.toString(i),
+                    new ExperimentalController(),
+                    sim,
+                    rand.nextFloat()*robotSquareSidelength - robotSquareExtent,
+                    rand.nextFloat()*robotSquareSidelength - robotSquareExtent,
+                    rand.nextFloat() * MathUtils.TWOPI);
         }
 
         LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
@@ -135,14 +144,33 @@ public class ExperimentalSetup {
         ExperimentSupervisor supervisor = new ExperimentSupervisor(simRun, leaderSet, (float) (maxUpscalingSpeed * Math.sqrt(2) / robotSquareSidelength), failrate);
         simRun.listeners.add(supervisor);
 
+
+        // Create a pdf of the final state of the swarm
+        String pdfOutputPath = controllerStage + "_" + failrate + "_" + Math.round(Math.random() * 10000 * 10000) + ".pdf";
+
+//        try {
+//            new VisualisationWindow(simRun);
+//            Object o = new Object();
+//            synchronized (o) {
+//                o.wait();
+//            }
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         // Run the simulation until the connectivity is lost
         while(!simRun.paused) {
             simRun.loop();
+//            System.out.printf("Simstep: %d\n", sim.getTime());
+//            if(sim.getTime()%200 == 0)
+//                SwarmVisualisation.drawSwarmToPDF(sim.getTime() + "_" + pdfOutputPath, sim);
         }
 
         //Abort the experiment if the connectivity was lost immediately at the beginning because of bad initialization
         if(sim.getTime() < 110)
             return false;
+
+
 
         // Compute the size of the steiner tree
         ArrayList<Vec2> initialLeaderPositions = new ArrayList<Vec2>(leaderSet.numLeaders());
@@ -152,13 +180,13 @@ public class ExperimentalSetup {
         float steinerTreeLength = GeoSteinerInterface.getSteinerLength(initialLeaderPositions);
         int numSteinerpoints = GeoSteinerInterface.getNumSteinerpoints(initialLeaderPositions);
 
-        // Create a pdf of the final state of the swarm
-        String pdfOutputPath = controllerStage + "_" + failrate + "_" + Math.round(Math.random() * 10000 * 10000) + ".pdf";
-        SwarmVisualisation.drawSwarmToPDF(pdfOutputPath, sim);
+
+        SwarmVisualisation.drawSwarmToPDF("final_" + pdfOutputPath, sim);
 
         // Write the interesting data to the output stream
-        out.printf("%f %d %f %d %d %d \"%s\"\n",
+        out.printf("%f %f %d %f %d %d %d \"%s\"\n",
                 failrate,
+                maxUpscalingSpeed,
                 controllerStage,
                 steinerTreeLength,
                 numSteinerpoints,

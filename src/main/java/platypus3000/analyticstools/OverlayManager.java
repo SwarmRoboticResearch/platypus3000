@@ -33,7 +33,7 @@ public class OverlayManager {
      * @param name The unique name of the overlay
      * @return The SharedOverlayProperties Object, which is the same for same names.
      */
-    protected synchronized SharedOverlayProperties getSharedProperties(String name){
+    public synchronized SharedOverlayProperties getSharedProperties(String name){
         if(!propertiesMap.containsKey(name)){
             SharedOverlayProperties properties = new SharedOverlayProperties(name);
             propertiesMap.put(name, properties);

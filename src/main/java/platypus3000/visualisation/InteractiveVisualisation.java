@@ -38,7 +38,6 @@ public class InteractiveVisualisation extends PApplet
     public boolean showNamesOfAllRobots = false; //For all robots
     public boolean showNameOfSelectedRobot = true; //Only for the selected robot
     //This enables the coordination system cross. Only for visualisation, does not influence the simulator.
-    public boolean drawCoordCross = true;
     public boolean allowRobotDragging = true;
     public boolean HOVER = true;
 
@@ -78,7 +77,7 @@ public class InteractiveVisualisation extends PApplet
         zoomPan.setMouseMask(0);
         frameRate(30);
 
-        swarmVisualisation = new SwarmVisualisation(simRunner.getSim(), g);
+        swarmVisualisation.setGraphics(g);
     }
 
 
@@ -143,13 +142,6 @@ public class InteractiveVisualisation extends PApplet
             }
         } else
             selectedRobotTrace.clear();
-
-        //Draw a cross in the middle of the coordinate system
-        if (drawCoordCross) {
-            usedGraphics.stroke(200);
-            usedGraphics.line(-1000, 0, 1000, 0);
-            usedGraphics.line(0, -1000, 0, 1000);
-        }
 
         swarmVisualisation.drawSimulation();
         drawRobotsTexts();
@@ -364,6 +356,7 @@ public class InteractiveVisualisation extends PApplet
         instance = this;
         this.simRunner = simRunner;
         WINDOW_SIZE = size;
+        swarmVisualisation = new SwarmVisualisation(simRunner.getSim(), g);
     }
 
     /**

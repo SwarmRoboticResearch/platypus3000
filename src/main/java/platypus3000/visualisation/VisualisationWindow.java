@@ -147,11 +147,11 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
             menu_visualisation.add(submenu_robotnames);
             //ShowHide Coordcross
             final JCheckBoxMenuItem menuItem_coordcross = new JCheckBoxMenuItem("Show Coordination Cross");
-            menuItem_coordcross.setState(visualisation.drawCoordCross);
+            menuItem_coordcross.setState(visualisation.swarmVisualisation.showCoordinateCross);
             menuItem_coordcross.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
-                    visualisation.drawCoordCross = menuItem_coordcross.getState();
+                    visualisation.swarmVisualisation.showCoordinateCross = menuItem_coordcross.getState();
                 }
             });
             menu_visualisation.add(menuItem_coordcross);

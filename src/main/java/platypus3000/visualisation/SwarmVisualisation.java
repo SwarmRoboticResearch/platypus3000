@@ -1,5 +1,6 @@
 package platypus3000.visualisation;
 
+import org.jbox2d.collision.AABB;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
 import platypus3000.simulation.neighborhood.GlobalNeighborhood.RobotVisibilityEdge;
@@ -25,6 +26,7 @@ public class SwarmVisualisation implements PConstants{
     public boolean showCollisions = false;
     public boolean showSelectedRobotsRanges = true;
     public boolean showAllRobotsRanges = false;
+    public boolean showCoordinateCross = true;
 
     public Set<Robot> selectedRobots = new HashSet<Robot>();
     public Set<Robot> frozenRobots = new HashSet<Robot>();
@@ -33,15 +35,25 @@ public class SwarmVisualisation implements PConstants{
     public SwarmVisualisation(Simulator simulator, PGraphics graphics) {
         this.simulator = simulator;
         this.graphics = graphics;
-        setDefaultColors();
+        if(graphics != null)
+            setDefaultColors();
     }
 
     public void setGraphics(PGraphics graphics) {
         this.graphics = graphics;
+        setDefaultColors();
     }
 
     public void drawSimulation() {
         graphics.strokeWeight(0.01f);
+        //Draw a cross in the middle of the coordinate system
+        if (showCoordinateCross) {
+            AABB swarmBox = getSwarmBox();
+            graphics.stroke(200);
+            graphics.line(swarmBox.lowerBound.x * 1.2f, 0, swarmBox.upperBound.x * 1.2f, 0);
+            graphics.line(0, swarmBox.lowerBound.y * 1.2f, 0, swarmBox.upperBound.y * 1.2f);
+        }
+
         drawNeighborhoodGraph();
         simulator.configuration.overlayManager.loopBackgroundOverlays(graphics, simulator.getRobots(), selectedRobots);
         for(Robot r: selectedRobots) drawRobot(r);
@@ -112,6 +124,15 @@ public class SwarmVisualisation implements PConstants{
     }
 
     public void transformToSwarm() {
+      transformToBBox(getSwarmBox());
+
+//        graphics.strokeWeight(0.01f);
+//        graphics.noFill();
+//        graphics.stroke(0);
+//        graphics.rect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    public AABB getSwarmBox() {
         float minX, minY, maxX, maxY;
         minX = minY = Float.POSITIVE_INFINITY;
         maxX = maxY = Float.NEGATIVE_INFINITY;
@@ -122,20 +143,16 @@ public class SwarmVisualisation implements PConstants{
             maxX = Math.max(maxX, pos.x);
             maxY = Math.max(maxY, pos.y);
         }
-        float centerX = (maxX + minX) / 2;
-        float centerY = (maxY + minY) / 2;
-        float width = (maxX - minX);
-        float height = (maxY - minY);
-
-        transformToBBox(centerX, centerY, width*1.1f, height * 1.1f);
-
-//        graphics.strokeWeight(0.01f);
-//        graphics.noFill();
-//        graphics.stroke(0);
-//        graphics.rect(minX, minY, maxX - minX, maxY - minY);
+        return new AABB(new Vec2(minX, minY), new Vec2(maxX, maxY));
     }
 
 
+    public void transformToBBox(AABB box) {
+        AABB swarmBBox = getSwarmBox();
+        Vec2 swarmCenter = swarmBBox.getCenter();
+        Vec2 extents = swarmBBox.getExtents();
+        transformToBBox(swarmCenter.x, swarmCenter.y, extents.x*2.1f, extents.y*2.1f);
+    }
 
     public void transformToBBox(float x, float y, float width, float height) {
         graphics.resetMatrix();
@@ -177,7 +194,7 @@ public class SwarmVisualisation implements PConstants{
         return graphics;
     }
 
-    private void setDefaultColors() {
+    private void setDefaultColors() { //TODO: the default colors mechanism should not depend on a graphics object!!!
         graphLineColor = graphics.color(150f);
         robotFillColor = graphics.color(255);
         selectedRobotColor = graphics.color(0,0,255);
@@ -209,7 +226,8 @@ public class SwarmVisualisation implements PConstants{
 
         // Create a new visualisation and prepare for drawing
         SwarmVisualisation visualisation = new SwarmVisualisation(sim, graphics);
-        visualisation.transformToSwarm();
+//        visualisation.transformToSwarm();
+        visualisation.transformToBBox(0, 0, 100, 100);
         visualisation.showNeighborhood = true;
 
         // Draw the stuff

@@ -18,66 +18,97 @@ import java.util.Random;
  */
 public class PictureMaker {
     public static void main(String[] args) throws IOException {
-        Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
-        Random rand = new Random(15);
-        for(int i = 1; i<200; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
-        }
-        SimulationRunner simRunner = new SimulationRunner(sim);
-        simRunner.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRunner, new LeaderSet(0, 1, 2, 3, 4), 0.005f, 0.00001f));
-        new VisualisationWindow(simRunner);
-//        for(Integer i : Arrays.asList(0, 1, 3))
-//            doPicture(i, "stage" + i + ".pdf");
-//        System.exit(0);
+//        Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+//        Random rand = new Random(15);
+//        for(int i = 1; i<200; i++){
+//            new Robot(Integer.toString(i), new ExperimentalController(), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
+//        }
+//        SimulationRunner simRunner = new SimulationRunner(sim);
+//        simRunner.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRunner, new LeaderSet(0, 1, 2, 3, 4), 0.005f, 0.00001f));
+//        new VisualisationWindow(simRunner);
+        for(Integer i : Arrays.asList(0,1,3))
+            doPicture(i, "stage" + i + ".pdf");
+        System.exit(0);
     }
 
     public static void doPicture(int controllerStage, String filename) throws IOException {
-        //BASE
-        if(controllerStage == 0) {
+
+        while(true) {
+            Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        Random rand = new Random(13);
+//        for(int i = 1; i<200; i++){
+//            new Robot(Integer.toString(i), new ExperimentalController(), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
+//        }
+
+            float robotSquareSidelength = 10;
+            float maxUpscalingSpeed = 0.001f;
+            for (int i = 1; i < 5; i++) {
+                new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-robotSquareSidelength / 2, robotSquareSidelength/2), MathUtils.randomFloat(-robotSquareSidelength / 2, robotSquareSidelength/2), MathUtils.randomFloat(0, MathUtils.TWOPI));
+            }
+
+            for (int i = 1; i < 400-5; i++) {
+                new Robot(Integer.toString(i), new ExperimentalController(), sim, MathUtils.randomFloat(-robotSquareSidelength / 2, robotSquareSidelength/2), MathUtils.randomFloat(-robotSquareSidelength / 2, robotSquareSidelength/2), MathUtils.randomFloat(0, MathUtils.TWOPI));
+            }
+
+            LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
+            SimulationRunner simRun = new SimulationRunner(sim);
+
+            // Do a warmup phase with no leader forces
             ExperimentalController.leadersInfluenceActivated = false;
-            ExperimentalController.thicknessActivated = false;
-            ExperimentalController.densityActivated = false;
-            ExperimentalController.leadersFollowActivated = true;
-        }
-
-        //LEADER
-        if(controllerStage == 1) {
-            ExperimentalController.leadersInfluenceActivated = true;
-            ExperimentalController.thicknessActivated = false;
-            ExperimentalController.densityActivated = false;
-            ExperimentalController.leadersFollowActivated = true;
-        }
-
-        //DENSITY
-        if(controllerStage == 2) {
-            ExperimentalController.leadersInfluenceActivated = true;
+            ExperimentalController.leadersFollowActivated = false;
             ExperimentalController.thicknessActivated = false;
             ExperimentalController.densityActivated = true;
-            ExperimentalController.leadersFollowActivated = true;
-        }
-
-        //THICKNESS
-        if(controllerStage == 3) {
+            for (int i = 0; i < 100; i++) simRun.loop();
             ExperimentalController.leadersInfluenceActivated = true;
+            ExperimentalController.leadersFollowActivated = true;
             ExperimentalController.thicknessActivated = true;
-            ExperimentalController.densityActivated = true;
-            ExperimentalController.leadersFollowActivated = true;
-        }
 
-        Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
-        Random rand = new Random(15);
-        for(int i = 1; i<200; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(), sim, rand.nextFloat()*5-2.5f, rand.nextFloat()*5-2.5f, rand.nextFloat()*MathUtils.TWOPI);
-        }
 
-        LeaderSet leaderSet = new LeaderSet(0, 1, 2, 3, 4);
-        SimulationRunner simRun = new SimulationRunner(sim);
-        simRun.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRun, leaderSet, 0.005f, 0));
 
-        for(int i = 0; !simRun.paused ;i++) {
-            simRun.loop();
-            if(i % 500 == 0)
-                SwarmVisualisation.drawSwarmToPDF(i + "_" + filename, sim);
+            //BASE
+            if (controllerStage == 0) {
+                ExperimentalController.leadersInfluenceActivated = false;
+                ExperimentalController.thicknessActivated = false;
+                ExperimentalController.densityActivated = false;
+                ExperimentalController.leadersFollowActivated = true;
+            }
+
+            //LEADER
+            if (controllerStage == 1) {
+                ExperimentalController.leadersInfluenceActivated = true;
+                ExperimentalController.thicknessActivated = false;
+                ExperimentalController.densityActivated = false;
+                ExperimentalController.leadersFollowActivated = true;
+            }
+
+            //DENSITY
+            if (controllerStage == 2) {
+                ExperimentalController.leadersInfluenceActivated = true;
+                ExperimentalController.thicknessActivated = false;
+                ExperimentalController.densityActivated = true;
+                ExperimentalController.leadersFollowActivated = true;
+            }
+
+            //THICKNESS
+            if (controllerStage == 3) {
+                ExperimentalController.leadersInfluenceActivated = true;
+                ExperimentalController.thicknessActivated = true;
+                ExperimentalController.densityActivated = true;
+                ExperimentalController.leadersFollowActivated = true;
+            }
+
+
+            simRun.listeners.add(new ExperimentalSetup.ExperimentSupervisor(simRun, leaderSet, (float) (maxUpscalingSpeed * Math.sqrt(2) / robotSquareSidelength), 0));
+            int i = 0;
+            for (; !simRun.paused; i++) {
+                simRun.loop();
+                if (i % 200 == 0)
+                    SwarmVisualisation.drawSwarmToPDF(i + "_" + filename, sim);
+            }
+            if(sim.getTime() < 110)
+                continue;
+            SwarmVisualisation.drawSwarmToPDF(i + "_" + filename, sim);
+            return;
         }
     }
 }

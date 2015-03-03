@@ -35,11 +35,13 @@ public class ExperimentalController extends RobotController implements LeaderInt
     StateManager stateManager;
     BoundaryDetection boundaryAlgorithm;
     ThicknessDetermination thicknessDetermination;
-    LeaderFollowAlgorithm leaderFollowAlgorithm;
+    public LeaderFollowAlgorithm leaderFollowAlgorithm;
     LeaderSet leaderset =  new LeaderSet(0,1,2,3,4);
     DensityDistribution densityDistribution;
     ForceTuner forceTuner = new ForceTuner("Basic", this);
     HelpSignal helpSignal;
+
+
 
     public void init(RobotInterface robot){
         flockAlgorithm = new OlfatiSaberFlocking(this);
@@ -49,6 +51,8 @@ public class ExperimentalController extends RobotController implements LeaderInt
         leaderFollowAlgorithm = new LeaderFollowAlgorithm(this, robot, stateManager, leaderset);
         densityDistribution = new DensityDistribution(this, boundaryAlgorithm, stateManager);
         helpSignal  = new HelpSignal(stateManager, leaderset.isLeader(robot.getID()));
+        if(leaderset.isLeader(robot))
+            new LeaderOverlay(this);
     }
 
     @Override
