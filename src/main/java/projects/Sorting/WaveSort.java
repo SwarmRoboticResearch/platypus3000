@@ -1,4 +1,4 @@
-package RobotSorting;
+package projects.Sorting;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
@@ -180,7 +180,7 @@ public class WaveSort {
                             odometer = robot.getOdometryVector();
                             intermediatePosition = VectorUtils.rotate(moveToPosition, 0.5f*MathUtils.PI);
                             intermediatePosition.normalize();
-                            intermediatePosition.mulLocal(0.15f).addLocal(moveToPosition.mul(0.5f));
+                            intermediatePosition.mulLocal(0.25f).addLocal(moveToPosition.mul(0.5f));
 
                         }
                         if(intermediatePosition==null) {
@@ -209,7 +209,7 @@ public class WaveSort {
                             odometer = robot.getOdometryVector();
                             intermediatePosition = VectorUtils.rotate(moveToPosition, 0.5f*MathUtils.PI);
                             intermediatePosition.normalize();
-                            intermediatePosition.mulLocal(0.15f).addLocal(moveToPosition.mul(0.5f));
+                            intermediatePosition.mulLocal(0.25f).addLocal(moveToPosition.mul(0.5f));
 
                         }
                         if(intermediatePosition==null) {
@@ -280,7 +280,6 @@ public class WaveSort {
             }
         } else if(isMax()){
 
-            SortingController.abort = true;//TODO
 
             if(isNeighborAvailable(robot, left)){
 

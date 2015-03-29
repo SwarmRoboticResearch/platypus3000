@@ -86,7 +86,7 @@ public class Configuration {
     }
 
     public Configuration() throws IOException{
-        this("/home/doms/Code/SwarmRoboticResearch/platypus3000/src/main/java/platypus3000/simulation.properties"); //TODO
+        this("src/main/java/platypus3000/simulation.properties"); //TODO
     }
 
     public Configuration(String prop_file) throws IOException{

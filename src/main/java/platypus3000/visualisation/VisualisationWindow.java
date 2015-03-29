@@ -27,6 +27,7 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
 
     final JMenuItem menuItem_playpause = new JMenuItem( "Pause");
     final JCheckBoxMenuItem menuItem_superspeed = new JCheckBoxMenuItem("Enable Superspeed");
+    final JCheckBoxMenuItem menuItem_record = new JCheckBoxMenuItem("Record");
     final JCheckBoxMenuItem menuItem_overlapping = new JCheckBoxMenuItem("Allow Overlapping");
     final JMenuItem menuItem_screenshot = new JMenuItem("Screenshot");
     final JMenuItem menuItem_exit = new JMenuItem("Exit");
@@ -83,6 +84,19 @@ public class VisualisationWindow extends JFrame implements Configuration.Configu
                 }
             });
             menu_simulation.add(menuItem_superspeed);
+            menuItem_record.setState(false);
+            menuItem_record.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    if(visualisation.recording_iteration==null && menuItem_record.getState()){
+                        visualisation.recordVideoTo("Video/");
+
+                    } else if (!menuItem_record.getState()){
+                        visualisation.stopRecording();
+                    }
+                }
+            });
+            menu_simulation.add(menuItem_record);
             //Overlapping
             menuItem_overlapping.setState(simulator.configuration.isOverlappingAllowed());
             menuItem_overlapping.addActionListener(new ActionListener() {

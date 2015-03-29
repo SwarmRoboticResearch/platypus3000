@@ -1,4 +1,4 @@
-package Steiner;
+package projects.Steiner;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
@@ -10,14 +10,11 @@ import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.Simulator;
 import platypus3000.utils.LeaderInterface;
 import platypus3000.visualisation.SwarmVisualisation;
-import platypus3000.visualisation.VisualisationWindow;
 
-import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * Created by m on 12/4/14.

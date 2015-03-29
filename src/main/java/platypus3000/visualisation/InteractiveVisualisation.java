@@ -3,6 +3,7 @@ package platypus3000.visualisation;
 
 import org.jbox2d.callbacks.QueryCallback;
 import org.jbox2d.collision.AABB;
+import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Fixture;
 import platypus3000.simulation.*;
@@ -81,6 +82,56 @@ public class InteractiveVisualisation extends PApplet
         swarmVisualisation = new SwarmVisualisation(simRunner.getSim(), g);
     }
 
+    public void scaleToSwarm(){
+        float simToVisScaling = 100;
+
+        //Find Size of Swarm
+        Float minX=null, minY=null, maxX=null, maxY=null;
+        for(Robot r: simRunner.getSim().getRobots()){
+            if(minX==null || minX>r.getGlobalPosition().x){
+                minX = r.getGlobalPosition().x;
+            }
+            if(minY==null || minY>r.getGlobalPosition().y){
+                minY = r.getGlobalPosition().y;
+            }
+            if(maxX == null || maxX < r.getGlobalPosition().x){
+                maxX =r.getGlobalPosition().x;
+            }
+            if(maxY == null || maxY< r.getGlobalPosition().y){
+                maxY = r.getGlobalPosition().y;
+            }
+        }
+
+        //Abort resize if invalid size (size zero, ....)
+        if(minX==null || minY == null || maxX == null || maxY == null) return;
+
+        float MARGIN = 1; //Add some additional space around swarm
+        minX+=MARGIN; minY+=MARGIN; maxX+=MARGIN; maxY+=MARGIN;
+
+        //Set Offset
+        //zoomPan.setPanOffset((minX+maxX)/2, (minY+maxY)/2);
+        System.out.println(maxX+" "+minX+" "+width * simToVisScaling);
+        float scaleX = (width/simToVisScaling)/(maxX-minX);
+        float scaleY = (height/simToVisScaling)/(maxY-minY);
+        System.out.println(""+MathUtils.min(scaleX, scaleY));
+
+        zoomPan.setZoomScale(MathUtils.max(scaleX, scaleY)*simToVisScaling);
+        //zoomPan.setPanOffset(width * simToVisScaling / 2, height * simToVisScaling / 2);
+
+
+    }
+
+    Integer recording_iteration = null;
+    String recording_path;
+    public void recordVideoTo(String path){
+        recording_iteration =0;
+        recording_path = path;
+    }
+    public void stopRecording(){
+        recording_iteration = null;
+    }
+
+
 
     Robot hoverRobot = null;
     LinkedList<Vec2> selectedRobotTrace = new LinkedList<Vec2>();
@@ -115,6 +166,14 @@ public class InteractiveVisualisation extends PApplet
             System.out.println("Save Screenshot to 'frame-" + frameCount + ".pdf'");
             usedGraphics = createGraphics(width, height, PDF, "frame-" + frameCount + ".pdf");
             usedGraphics.beginDraw();
+        } else if(recording_iteration !=null){
+            if(recording_iteration %2==0) {
+                recordPDF = true;
+                System.out.println("Recording frame" + recording_iteration / 2);
+                usedGraphics = createGraphics(width, height, PDF, recording_path + "frame-" + recording_iteration / 2 + ".pdf");
+                usedGraphics.beginDraw();
+            }
+            recording_iteration++;
         }
         swarmVisualisation.setGraphics(usedGraphics);
 
@@ -197,7 +256,7 @@ public class InteractiveVisualisation extends PApplet
         //Draw help text
         graphics.textAlign(LEFT);
         graphics.fill(0);
-        graphics.textSize(20);
+        graphics.textSize(12);
         if(!recordPDF) text("RIGHT mouse to zoom\nLEFT mouse to pan", 10, 20);
 
         //Draw the texts we put in the texts map

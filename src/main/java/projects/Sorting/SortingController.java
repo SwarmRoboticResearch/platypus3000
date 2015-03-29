@@ -1,4 +1,4 @@
-package RobotSorting;
+package projects.Sorting;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
@@ -14,17 +14,15 @@ import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.simulation.neighborhood.LocalNeighborhood;
 import platypus3000.simulation.neighborhood.NeighborView;
+import platypus3000.utils.AngleUtils;
 import platypus3000.utils.NeighborState.PublicState;
 import platypus3000.utils.NeighborState.StateManager;
 import platypus3000.visualisation.Colors;
-import platypus3000.visualisation.SwarmVisualisation;
 import platypus3000.visualisation.VisualisationWindow;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Created by doms on 10/2/14.
@@ -87,7 +85,7 @@ public class SortingController extends RobotController {
     EchoWaveLeaderElection<Integer> minLeaderElection;
 
 
-     MinimalSpanningTree mqst;
+    MinimalSpanningTree mqst;
     MinimalSpanningTree contractionTree;
     EchoWave initialPathIsDetermined = new EchoWave("InitialPathIsDetermined");
     boolean waitingForIntegrationAcc = false;
@@ -238,19 +236,14 @@ public class SortingController extends RobotController {
                     if(!waitingForIntegrationAcc && publicSortingState.right!=null) {
                         for (PublicSortingState nbrState : stateManager.<PublicSortingState>getStates(SortingController.class.getName())) {
                             if(nbrState.path == null) continue; //Some synchronization issues....
-                            if ( !nbrState.path){
-                                if(robot.getNeighborhood().contains(nbrState.getRobotID()) && publicSortingState.rightIntegrationPos!=null){
-                                    boolean a=(robot.getNeighborhood().getById(nbrState.getRobotID()).getLocalPosition().sub(publicSortingState.rightIntegrationPos).lengthSquared() < 0.06f*0.06f );
-                                    boolean b =(getAmountOfExteriorNeighbors(robot)==1 && robot.getNeighborhood().getById(nbrState.getRobotID()).getDistance()<publicSortingState.rightIntegrationPos.mul(2).length());
-                                if(a||b){
+                            if (!nbrState.path &&
+                                    robot.getNeighborhood().contains(nbrState.getRobotID()) &&
+                                    robot.getNeighborhood().getById(nbrState.getRobotID()).getLocalPosition().sub(publicSortingState.rightIntegrationPos).lengthSquared() < 0.1f*0.1f) {
                                 robot.send(new OfferMsg(robot.getID(), publicSortingState.right), nbrState.getRobotID());
                                 //publicSortingState.right = null;
                                 waitingForIntegrationAcc = true;
                                 break;
-                             }
-                                }
                             }
-
                         }
                     }
 
@@ -260,7 +253,7 @@ public class SortingController extends RobotController {
                         NeighborView left = robot.getNeighborhood().getById(publicSortingState.left);
                         NeighborView right = robot.getNeighborhood().getById(publicSortingState.right);
                         if (left != null && right != null) {
-                           robot.setMovement(left.getLocalPosition().add(right.getLocalPosition()).add(getCollisionAvoidanceVector(robot,robot.getNeighborhood())).mul((hasExteriorNeighbor(robot)?1:100)));
+                            robot.setMovement(left.getLocalPosition().add(right.getLocalPosition()).mul(4));
                             if(robot.hasCollision() && MathUtils.randomFloat(0,1)<0.5f){
                                 robot.setMovement(robot.getLocalPositionOfCollision().mul(-30));
                             }
@@ -293,14 +286,6 @@ public class SortingController extends RobotController {
                             }
                         }
                     }
-                    for(Integer i: contractionTree.getChildren()){
-                        if(robot.getNeighborhood().contains(i) && robot.getNeighborhood().getById(i).getDistance()>0.9*getConfiguration().RANGE){
-                            if(!stateManager.contains(i,  SortingController.class.getName()) || !stateManager.<PublicSortingState>getState(i, SortingController.class.getName()).path) {
-                                robot.setMovement(new Vec2());
-                                //System.err.println("WAIT");
-                            }
-                        }
-                    }
 
                 } else {
                     VISUALISATION_LEADERPATHETC.setState(7);//Distanced, change if close
@@ -320,99 +305,73 @@ public class SortingController extends RobotController {
                                 m.delete();
                                 gotAcc = true;
                             }
-                           m.delete();
+                            m.delete();
                         }
                     }
                     if(publicSortingState.path) break;
 
-                    NeighborView parent = null;
-                    PublicSortingState parentState = null;
-                    Vec2 contractionMovement = new Vec2();
-                    if(robot.getNeighborhood().contains(contractionTree.getPredecessor())){
-                        parent = robot.getNeighborhood().getById(contractionTree.getPredecessor());
-                        if(stateManager.contains(parent.getID(), SortingController.class.getName())){
-                            parentState = stateManager.<PublicSortingState>getState(parent.getID(), SortingController.class.getName());
-                        }
-                    }
-                    for(NeighborView n: robot.getNeighborhood()){
-                        PublicSortingState nbrState = null;
-                        if(!stateManager.contains(n.getID(), SortingController.class.getName())) break;
-                        nbrState = stateManager.<PublicSortingState>getState(n.getID(),SortingController.class.getName());
-                        if(nbrState.path==null || !nbrState.path) break;
-                        if(n.getLocalPosition().lengthSquared()<0.5f*0.5f*getConfiguration().RANGE*getConfiguration().RANGE && (!parentState.path || n.getLocalPosition().lengthSquared()<parent.getLocalPosition().lengthSquared())){
-                            parent = n;
-                            parentState = nbrState;
-                        }
-                    }
+                    //find best neighbor
+                    Integer bstNbr = null;
+                    Float bestNbr_hops = null;
+                    Vec2 bestNbrPos = null;
+                    for (PublicSortingState nbrState : stateManager.<PublicSortingState>getStates(SortingController.class.getName())) {
+                        if(robot.getNeighborhood().contains(nbrState.getRobotID())){
+                            NeighborView nbr = robot.getNeighborhood().getById(nbrState.getRobotID());
 
+                            if(nbrState.path_hops == null) continue;
+                            float nbrDistanceValue = nbrState.path_hops+nbr.getDistance();
+                            if(bstNbr == null || bestNbr_hops>nbrDistanceValue){
+                                bestNbr_hops = nbrDistanceValue;
+                                bstNbr = nbrState.getRobotID();
+                                if(nbrState.path && (nbrState.getRobotID() == contractionTree.getPredecessor() || robot.getNeighborhood().getById(nbrState.getRobotID()).getDistance()<0.8*getConfiguration().RANGE)) {
+                                    if (nbrState.rightIntegrationPos != null && (nbrState.leftIntegrationPos == null || (nbr.transformPointToObserversViewpoint(nbrState.rightIntegrationPos.mul(1/nbrState.rightIntegrationPos.length())).lengthSquared() < nbr.transformPointToObserversViewpoint(nbrState.leftIntegrationPos.mul(1/nbrState.leftIntegrationPos.length())).lengthSquared()))) {
+                                        //if (nbrState.rightIntegrationPos != null && (nbrState.leftIntegrationPos == null || (nbr.transformPointToObserversViewpoint(nbrState.rightIntegrationPos).lengthSquared() < nbr.transformPointToObserversViewpoint(nbrState.leftIntegrationPos).lengthSquared()))) {
+                                        bestNbrPos = nbr.transformPointToObserversViewpoint(nbrState.rightIntegrationPos);
+                                    } else if (nbrState.leftIntegrationPos != null) {
+                                        bestNbrPos = nbr.transformPointToObserversViewpoint(nbrState.leftIntegrationPos);
 
-                    if(parent!=null){
-                        if(parentState!=null){
-                            if(parentState.path!=null && parentState.path){
-                                if (parentState.rightIntegrationPos != null &&
-                                        (parentState.leftIntegrationPos == null ||
-                                                parent.transformPointToObserversViewpoint(parentState.rightIntegrationPos).lengthSquared() < parent.transformPointToObserversViewpoint(parentState.leftIntegrationPos).lengthSquared())) {
-                                    contractionMovement = parent.transformPointToObserversViewpoint(parentState.rightIntegrationPos);
-                                } else if (parentState.leftIntegrationPos != null) {
-                                    contractionMovement = parent.transformPointToObserversViewpoint(parentState.leftIntegrationPos);
+                                    }
+                                    VISUALISATION_LEADERPATHETC.setState(6);//Close
+                                } else {
+                                    if(robot.getNeighborhood().contains(contractionTree.getPredecessor())){
+                                        bestNbrPos = robot.getNeighborhood().getById(contractionTree.getPredecessor()).getLocalPosition();
+                                    } else {
+                                        bestNbrPos = robot.getNeighborhood().getById(bstNbr).getLocalPosition();
+                                    }
+                                    if(bestNbrPos.lengthSquared()<0.1f) bestNbrPos = new Vec2();
                                 }
-                            } else {
-                                contractionMovement = parent.getLocalPosition();//.add(parent.getLocalMovement());
-                                if(parent.getDistance()<3*getConfiguration().RADIUS) contractionMovement = new Vec2();
-                            }
-                        } else {
-                            contractionMovement = parent.getLocalPosition();//.add(parent.getLocalMovement());
-                            if(parent.getDistance()<3*getConfiguration().RADIUS) contractionMovement = new Vec2();
-                        }
-                    } else {
-                        System.err.println("HELP!!!");
-                        addResultSorting(1);
-                        abort = true;
-                    }
-
-
-
-                    Vec2 collisionAvoidance = new Vec2();
-                    Float closestNbr = null;
-                    for(NeighborView n: robot.getNeighborhood()){
-                        if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.03f)*(2*getConfiguration().RADIUS+0.03f) || retreating){
-                            if(n.getLocalPosition().sub(contractionMovement).lengthSquared()<contractionMovement.lengthSquared() || !stateManager.contains(n.getID(), SortingController.class.getName()) || !stateManager.<PublicSortingState>getState(n.getID(), SortingController.class.getName()).path){
-                                float x = 1f/n.getLocalPosition().lengthSquared();
-                                collisionAvoidance.addLocal(n.getLocalPosition().mul(-x));
-                                if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.03f)*(2*getConfiguration().RADIUS+0.03f)) retreating = true;
-                                if(closestNbr == null || n.getLocalPosition().lengthSquared()<closestNbr) closestNbr = n.getLocalPosition().lengthSquared();
                             }
                         }
                     }
-                    if(closestNbr == null || closestNbr>0.25f*0.25f) retreating = false;
+                    integrationOverlay.drawnVector = bestNbrPos;
+                    if(bestNbrPos!=null){
+                        VISUALISATION_CONTRACTION.drawnVector = bestNbrPos.clone();
 
-
-
-
-                    robot.setMovement(contractionMovement.mul(3).add(collisionAvoidance));
-
-                    VISUALISATION_CONTRACTION.drawnVector = contractionMovement.clone();
-
-
-                    for(Integer i: contractionTree.getChildren()){
-                        if(robot.getNeighborhood().contains(i) && !contractionTree.getPredecessor().equals(i) && robot.getNeighborhood().getById(i).getDistance()>0.9*getConfiguration().RANGE && !i.equals(contractionTree.getPredecessor())){
-                            if(!stateManager.contains(i,  SortingController.class.getName()) || !stateManager.<PublicSortingState>getState(i, SortingController.class.getName()).path) {
-                                robot.setMovement(new Vec2());
-                                //System.err.println("WAIT");
+                        publicSortingState.path_hops = bestNbr_hops;
+                        Vec2 collisionAvoidance = new Vec2();
+                        Float closestNbr = null;
+                        for(NeighborView n: robot.getNeighborhood()){
+                            if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.03f)*(2*getConfiguration().RADIUS+0.03f) || retreating){
+                                if(n.getLocalPosition().sub(bestNbrPos).lengthSquared()<bestNbrPos.lengthSquared() || (stateManager.contains(n.getID(), SortingController.class.getName()) && stateManager.<PublicSortingState>getState(n.getID(), SortingController.class.getName()).path)){
+                                    float x = 1f/n.getLocalPosition().lengthSquared();
+                                    collisionAvoidance.addLocal(n.getLocalPosition().mul(-x));
+                                    if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.03f)*(2*getConfiguration().RADIUS+0.03f)) retreating = true;
+                                    if(closestNbr == null || n.getLocalPosition().lengthSquared()<closestNbr) closestNbr = n.getLocalPosition().lengthSquared();
+                                }
                             }
                         }
+                        if(closestNbr == null || closestNbr>0.2f*0.2f) retreating = false;
+
+                        bestNbrPos.mulLocal(5);
+                        //applyCollisionAvoidance(robot.getNeighborhood(), bestNbrPos);
+                        robot.setMovement(bestNbrPos.add(collisionAvoidance));
+
+                        if(publicSortingState.path == null && robot.hasCollision() && MathUtils.randomFloat(0,1)<0.5f){
+                            //robot.setMovement(robot.getLocalPositionOfCollision().mul(-3));
+                        }
+
                     }
-
-
-
-
-                    if(publicSortingState.path == null && robot.hasCollision() && MathUtils.randomFloat(0,1)<0.5f){
-                        robot.setMovement(robot.getLocalPositionOfCollision().mul(-3));
-                    }
-
                 }
-                //Vec2 collAvoidVec = getCollisionAvoidanceVector(robot, robot.getNeighborhood());
-                //if(!maxLeaderElection.isLeader() && !minLeaderElection.isLeader() && collAvoidVec.lengthSquared()>0.3f) robot.setMovement(collAvoidVec);
                 break;
             case 5:
                 integrationOverlay.drawnVector = null;
@@ -443,13 +402,13 @@ public class SortingController extends RobotController {
                     float attrRepLeft = 10;
                     float attrRepRight = 10;
 
-                     straighteningOverlay.drawnVector.set(left.getLocalPosition().add(right.getLocalPosition()));
+                    straighteningOverlay.drawnVector.set(left.getLocalPosition().add(right.getLocalPosition()));
 
                     Vec2 v = new Vec2();
                     //v.addLocal(getCollisionAvoidanceVector(robot.getNeighborhood()));
 
                     if (left != null && right != null) {
-                        robot.setMovement(v.add(left.getLocalPosition().mul(attrRepLeft).add(right.getLocalPosition().mul(attrRepRight))).add(getCollisionAvoidanceVector(robot,robot.getNeighborhood()).mul(10)));
+                        robot.setMovement(v.add(left.getLocalPosition().mul(attrRepLeft).add(right.getLocalPosition().mul(attrRepRight))).mul(3));
                     }
                 }
                 if (publicSortingState.left == null) {
@@ -459,7 +418,7 @@ public class SortingController extends RobotController {
                     publicSortingState.right_straight = stateManager.getState(publicSortingState.left, SortingController.class.getName()) != null && stateManager.<PublicSortingState>getState(publicSortingState.left, SortingController.class.getName()).left_straight;
                     publicSortingState.left_straight = publicSortingState.right_straight;
                 } else {
-                    if (robot.getNeighborhood().getById(publicSortingState.left).getLocalPosition().add(robot.getNeighborhood().getById(publicSortingState.right).getLocalPosition()).lengthSquared() < 0.0005f) {
+                    if (robot.getNeighborhood().getById(publicSortingState.left).getLocalPosition().add(robot.getNeighborhood().getById(publicSortingState.right).getLocalPosition()).lengthSquared() < 0.000005f) {
                         if (stateManager.getState(publicSortingState.left, SortingController.class.getName()) != null && stateManager.<PublicSortingState>getState(publicSortingState.left, SortingController.class.getName()).left_straight) {
                             publicSortingState.left_straight = publicSortingState.left == null || publicSortingState.right == null || (robot.getNeighborhood().getById(publicSortingState.left).getDistance()>0.2f && robot.getNeighborhood().getById(publicSortingState.right).getDistance() > 0.2f);
                             if (publicSortingState.left_straight && stateManager.getState(publicSortingState.right, SortingController.class.getName()) != null && stateManager.<PublicSortingState>getState(publicSortingState.right, SortingController.class.getName()).right_straight) {
@@ -477,8 +436,6 @@ public class SortingController extends RobotController {
                     }
                     STATE = 6;
                 }
-                //Vec2 collAvoidVec2 = getCollisionAvoidanceVector(robot, robot.getNeighborhood());
-                //if(!maxLeaderElection.isLeader() && !minLeaderElection.isLeader() && collAvoidVec2.lengthSquared()>0.3f) robot.setMovement(collAvoidVec2);
                 break;
             case 6:
                 if(waveSort==null) waveSort = new WaveSort(this, stateManager, publicSortingState.left, publicSortingState.right);
@@ -510,22 +467,14 @@ public class SortingController extends RobotController {
             pathLeftVis.setZero();
         }
     }
-    boolean hasExteriorNeighbor(RobotInterface r){
-        for(NeighborView n: r.getNeighborhood()){
-            if(stateManager.contains(n.getID(), SortingController.class.getName())){
-                  if(stateManager.<PublicSortingState>getState(n.getID(), SortingController.class.getName()).path) return true;
-            }
-        }
-        return false;
-    }
-
     int substate =0;
     boolean retreating = false;
 
     public static int integrated = 0;
     public static boolean abort =false;
-     public static int SIZE = 15;
+    public static int SIZE = 75;
     public static int SIZE_MAX = 130;
+    public static float HIGHT = 10;
 
     public static long[] times_integration = new long[SIZE_MAX];
     public static long[] times_straightening = new long[SIZE_MAX];
@@ -533,83 +482,71 @@ public class SortingController extends RobotController {
 
     public static void main(String[] args) throws IOException{
 
-        loop:
-        while(SIZE<=SIZE_MAX) {
-            integrated = 0;
-            Simulator sim = new Simulator(new Configuration(args[1]));
-            new Robot(Integer.toString(0), new SortingController(0), sim, 0, 0f, 0);
+         loop:
+         while(SIZE<=SIZE_MAX) {
+         integrated = 0;
+         Simulator sim = new Simulator(new Configuration(args[1]));
+         new Robot(Integer.toString(0), new SortingController(0), sim, 0, 0f, 0);
 
-            System.out.println("EXPERIMENT WITH " + SIZE + " ROBOTS");
-            abort = false;
-            float l = MathUtils.sqrt(SIZE * 0.4f * SIZE * 0.4f * 0.5f * 4);
-            for (int i = 1; i < SIZE - 1; i++) {
-                new Robot(Integer.toString(i), new SortingController(i), sim, MathUtils.randomFloat(0, l), MathUtils.randomFloat(0, l), 0);
-            }
-            new Robot(Integer.toString(SIZE - 1), new SortingController(SIZE), sim, l, l, 0);
-            SimulationRunner runner = new SimulationRunner(sim);
-            runner.loop(10);
-            for (Robot r : sim.getRobots()) {
-                if (r.hasCollision()) {
-                    System.out.println("Colliding initial configuration, skip");
-                    abort = true;
-                }
-            }
-            if (!(new ConnectivityInspector(sim.getGlobalNeighborhood().getGraph())).isGraphConnected()) {
-                System.out.println("Not connected");
-                abort = true;
-            }
-            boolean printed = false;
+         System.out.println("EXPERIMENT WITH "+SIZE+" ROBOTS");
+         abort = false;
+         float l = SIZE*0.4f;// MathUtils.sqrt(SIZE*0.4f*SIZE*0.4f*0.5f);
+         for (int i = 1; i < SIZE - 1; i++) {
+         new Robot(Integer.toString(i), new SortingController(i), sim, MathUtils.randomFloat(0, l), MathUtils.randomFloat(0, HIGHT), 0);
+         }
+         new Robot(Integer.toString(SIZE - 1), new SortingController(SIZE), sim, l, 0, 0);
+         SimulationRunner runner = new SimulationRunner(sim);
+         //runner.loop(10);
+         for(Robot r: sim.getRobots()){
+         if(r.hasCollision()){
+         System.out.println("Colliding initial configuration, skip");
+         abort = true;
+         }
+         }
+         if(!(new ConnectivityInspector(sim.getGlobalNeighborhood().getGraph())).isGraphConnected()){
+         System.out.println("Not connected");
+         abort = true;
+         }
+         boolean printed = false;
 
-            while (!abort) {
-                if (SIZE != integrated && sim.getTime() > 4000) {
-                    System.out.println("Abort" + integrated);
-                    abort = true;
-                    try {
-                        System.err.println("Not terminated");
-                        new VisualisationWindow(sim, new Dimension(1800,1000));
-                        return;
-                        //break loop;
-                        //SwarmVisualisation.drawSwarmToPDF("Screenshot-Abort" + integrated + "-" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
-                    } catch (Throwable e){
-                        System.err.println("Couldn't draw pdf "+e);
-                    }
-                    //System.exit(1);
-                }
-                runner.loop(100);
-                if(sim.getTime()>20000 && times_straightening[SIZE-1]==0 && !printed){
-                    try {
-                        System.err.println("Not terminated");
-                        new VisualisationWindow(sim, new Dimension(1800,1000));
-                        return;
-                        //break loop;
-                        //SwarmVisualisation.drawSwarmToPDF("Screenshot-toolongstraightening" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
-                    } catch(Throwable e){
-                        System.err.println("Couldn't draw pdf"+e);
-                    }
-                        printed = true;
-                    abort = true;
-                }
-            }
-            if(integrated==SIZE) SIZE++;
-            else if(times_straightening[SIZE-1]>0 && times_sorting[SIZE-1]==0){
-                System.out.println("Abort, Integration Mismatch");
-                try {
-                    System.err.println("Not finished");
-                    //new VisualisationWindow(sim, new Dimension(1800,1000));
-                    //break loop;
-                    SwarmVisualisation.drawSwarmToPDF("Screenshot-Mismatch" + integrated + "-" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
-                } catch (Throwable e){
-                    System.err.println("Couldn't draw pdf "+e);
-                }
-            }
-        }
-        for(int i=14; i<SIZE_MAX; i++){
-            System.out.println((i+1)+"\t"+times_integration[i]+"\t"+times_straightening[i]+"\t"+times_sorting[i]);
-
-        }
-         System.exit(0);
-
+         new VisualisationWindow(runner, new Dimension(1920,1100));
+             runner.paused = true;
+             return; }/**
+         while (!abort) {
+         if (SIZE != integrated && sim.getTime() > 90) {
+         System.out.println("Abort" + integrated);
+         abort = true;
+         try {
+         System.err.println("Not terminated");
+         new VisualisationWindow(sim, new Dimension(1800,1000));   return;
+         //break loop;
+         //SwarmVisualisation.drawSwarmToPDF("Screenshot-Abort" + integrated + "-" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
+         } catch (Throwable e){
+         System.err.println("Couldn't draw pdf "+e);
+         }
+         //System.exit(1);
+         }
+         runner.loop(100);
+         if(sim.getTime()>100000 && times_straightening[SIZE-1]==0 && !printed){
+         try {
+         System.err.println("Not terminated");
+         //new VisualisationWindow(sim, new Dimension(1800,1000));
+         //break loop;
+         SwarmVisualisation.drawSwarmToPDF("Screenshot-toolongstraightening" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
+         } catch(Throwable e){
+         System.err.println("Couldn't draw pdf"+e);
+         }
+         printed = true;
+         }
+         }
+         if(integrated==SIZE) SIZE++;
+         }
+         for(int i=14; i<SIZE_MAX; i++){
+         System.out.println((i+1)+"\t"+times_integration[i]+"\t"+times_straightening[i]+"\t"+times_sorting[i]);
+         }
+         System.exit(0);         **/
          /**
+
         integrated = 0;
         Simulator sim = new Simulator(new Configuration("/home/doms/Projects/SwarmRoboticResearch/platypus3000/src/main/java/RobotSorting/simulation.properties"));
         new Robot(Integer.toString(0), new SortingController(0), sim, 0, 0f, 0);
@@ -621,18 +558,9 @@ public class SortingController extends RobotController {
             new Robot(Integer.toString(i), new SortingController(i), sim, MathUtils.randomFloat(0, (1.6f)*l), MathUtils.randomFloat(0, (1/1.6f)*l), 0);
         }
         new Robot(Integer.toString(SIZE - 1), new SortingController(SIZE), sim, (1.6f)*l, 0, 0);
-        //int[] arrangement = {18,4,12,56,16,8,1,57,31,14,47,6,3,2,54,10,25,19,53,9,28,11,58,37,5,21,44,52,50,32,48,15,22,35,42,20,17,13,33,38,55,51,27,30,49,45,46,24,23,40,41,26,7,43,36,29,34,39};
-       // float var = 0;
-       // for(int i = 0; i < arrangement.length; i++){
-       //     var += MathUtils.randomFloat(-0.2f,0.2f);
-       //     sim.beamObject(sim.getRobot(arrangement[i]), (i+1)*1.6f*(l/(60-1)),0f+var);
-       // }
-        SimulationRunner runner = new SimulationRunner(sim);
-        runner.paused=true;
-        VisualisationWindow w = new VisualisationWindow(runner, new Dimension(1800,1000));
-
+        VisualisationWindow w = new VisualisationWindow(sim, new Dimension(1800,1000));
         //w.visualisation.simulationSpeed=40;
-        **/
+         **/
 
     }
 
@@ -649,25 +577,14 @@ public class SortingController extends RobotController {
 
     Vec2 getCollisionAvoidanceVector(RobotInterface r, LocalNeighborhood neighborhood){
         Vec2 v = new Vec2();
-        float nettoDist = 0.05f;
-        float squaredRepulsionDistance =  (2*getConfiguration().RADIUS+nettoDist)*(2*getConfiguration().RADIUS+nettoDist);
         for(NeighborView n: neighborhood){
-            if(n.getLocalPosition().lengthSquared() < squaredRepulsionDistance){
-                float x = 1-((n.getLocalPosition().length()-2*getConfiguration().RADIUS)*(n.getLocalPosition().length()-2*getConfiguration().RADIUS)/(nettoDist*nettoDist));
-                v.addLocal(n.getLocalPosition().mul(1/n.getDistance()).mul(-x));
+            if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.01f)*(2*getConfiguration().RADIUS+0.01f)){
+                float x = 1f/n.getLocalPosition().lengthSquared();
+                if(n.getID()< r.getID()) x*=5;
+                v.addLocal(n.getLocalPosition().mul(-x));
             }
         }
         return v;
-    }
-
-    int getAmountOfExteriorNeighbors(RobotInterface r){
-        int i=0;
-        for(NeighborView n: r.getNeighborhood()){
-            if(stateManager.contains(n.getID(), SortingController.class.getName())){
-                if(stateManager.<PublicSortingState>getState(n.getID(), SortingController.class.getName()).path) ++i;
-            }
-        }
-        return i;
     }
 
 
@@ -677,8 +594,8 @@ public class SortingController extends RobotController {
         int right;
 
         public OfferMsg(int left, int right) {
-           this.left = left;
-           this.right = right;
+            this.left = left;
+            this.right = right;
         }
 
         @Override
@@ -716,6 +633,37 @@ public class SortingController extends RobotController {
             return new PathMessage();
         }
     }
+    public void applyCollisionAvoidance(LocalNeighborhood ln, Vec2 dir) {
+        ArrayList<NeighborView> possibleCollisions = new ArrayList<NeighborView>();
+        for(NeighborView n : ln) {
+            if(Math.abs(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getClockwiseRadian(dir, n.getLocalPosition()))) < Math.PI/2 &&
+                    getPointLineVector(n, dir).length() < getConfiguration().RADIUS*2 &&
+                    n.getLocalPosition().lengthSquared() <= dir.lengthSquared())
+                possibleCollisions.add(n);
+        }
+
+        if(possibleCollisions.size() > 0) {
+            NeighborView closestCollision = Collections.min(possibleCollisions, NeighborView.distanceComparator);
+            Vec2 avoidVector = getPointLineVector(closestCollision, dir);
+            avoidVector.normalize();
+            avoidVector.mulLocal(0.3f);
+//            avoidVector.negateLocal();
+            //d.drawArrow(new Vec2TOPVector(closestCollision.getLocalPosition()), new Vec2TOPVector(closestCollision.getLocalPosition().add(avoidVector)));
+            dir.set(closestCollision.getLocalPosition().add(avoidVector));
+        }
+    }
+
+    public static Vec2 getPointLineVector(NeighborView n, Vec2 dir) {
+        Vec2 v = new Vec2(dir.y, -dir.x); //perpendicular to dir
+        Vec2 r = n.getLocalPosition().negate(); //vector from n to origin
+
+        //we project r onto v
+        v.normalize();
+        float dLenght = Vec2.dot(r, v);
+        Vec2 d = v.mul(dLenght);
+        return d;
+    }
+
 }
 
 
@@ -774,10 +722,12 @@ class PublicSortingState extends PublicState {
         cloned.avgDistRight = avgDistRight;
         cloned.avgDistRight_i = avgDistRight_i;
 
-        cloned.rightIntegrationPos = (rightIntegrationPos!=null?rightIntegrationPos.clone():null);
-        cloned.leftIntegrationPos = (leftIntegrationPos!=null?leftIntegrationPos.clone():null);
+        cloned.rightIntegrationPos = rightIntegrationPos;
+        cloned.leftIntegrationPos = leftIntegrationPos;
         cloned.path_hops = path_hops;
 
         return cloned;
     }
+
+
 }

@@ -1,4 +1,4 @@
-package Steiner;
+package projects.Steiner;
 
 import org.jbox2d.common.MathUtils;
 import platypus3000.algorithms.leader.LeaderSet;
@@ -10,7 +10,6 @@ import platypus3000.visualisation.SwarmVisualisation;
 import platypus3000.visualisation.VisualisationWindow;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Random;
 
 /**

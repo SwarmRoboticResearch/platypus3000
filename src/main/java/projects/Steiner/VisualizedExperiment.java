@@ -1,4 +1,4 @@
-package Steiner;
+package projects.Steiner;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
@@ -8,14 +8,10 @@ import platypus3000.simulation.Configuration;
 import platypus3000.simulation.Robot;
 import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.Simulator;
-import platypus3000.simulation.control.RobotController;
-import platypus3000.simulation.control.RobotInterface;
 import platypus3000.utils.ForceTuner;
 import platypus3000.utils.LeaderInterface;
-import platypus3000.visualisation.Colors;
 import platypus3000.visualisation.VisualisationWindow;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -24,7 +20,7 @@ import java.util.ArrayList;
  */
 public class VisualizedExperiment {
     public static void main(String[] args) throws IOException {
-        Simulator sim = new Simulator(new Configuration("src/main/java/Steiner/simulation.properties"));
+        Simulator sim = new Simulator(new Configuration("src/main/java/projects/Steiner/simulation.properties"));
         LeaderSet l  =  new LeaderSet(0, 1, 2, 3, 4);
         for(int i = 1; i<400; i++){
             new Robot(Integer.toString(i), new ExperimentalController(l), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5,5),MathUtils.randomFloat(0, MathUtils.TWOPI));

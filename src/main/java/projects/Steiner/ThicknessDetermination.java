@@ -1,4 +1,4 @@
-package Steiner;
+package projects.Steiner;
 
 import org.jbox2d.common.Vec2;
 import platypus3000.algorithms.Boundary.BoundaryDetection;

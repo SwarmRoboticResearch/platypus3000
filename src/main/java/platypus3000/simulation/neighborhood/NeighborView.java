@@ -125,14 +125,22 @@ public class NeighborView {
     static {
         System.out.println("The Neighborhood is now sorted after the id as sometimes exceptions arise. Fix it for some algorithms!!!!!!");
     }
-    //TODO: correct place?
+
+    /**
+     * This comparator sorts the neighborhood clockwise(TODO check).
+     * Some degenerated cases have been observed if there is a large neighborhood and the angles are nearly the same angle.
+     * The comparator has been updated but as these degenerated cases only happen rarely, we still don't know if it really
+     * has been fixed.
+     * TODO: Check if degenerated cases have been fixed.
+     */
     public static Comparator<NeighborView> angularComparator = new Comparator<NeighborView>() {
         @Override
         public int compare(NeighborView a, NeighborView b) {
-            return a.getID()-b.getID();    //TODO: Some Algorithms might not work with this!
-           // if(a==b) return 0;
-           // if(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(a.getLocalPosition()))< AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(b.getLocalPosition()))) return -1;
-           // return 1;
+            if(a==b) return 0;
+            float angleA = AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(a.getLocalPosition()));
+            float angleB = AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(b.getLocalPosition()));
+            if(angleA< angleB || (angleA == angleB && a.getID()<b.getID())) return -1;
+            else return 1;
         }
     };
 
