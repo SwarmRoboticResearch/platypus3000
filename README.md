@@ -2,6 +2,10 @@ Platypus3000
 ============
 
 Platypus3000 is a non-generic swarm robotics simulator for the R-One Swarm robots.
+It is made for rapid prototyping and simple debugging by providing simple visualisation tools.
+It is NOT made for speed but still can handle up to a few thousend robots depending on the complexity of their `controllers' (your code for the robot).
+
+*This Simulator is still under development but already in active use. Unfortunately the documentation is still very bad and often outdated or not even available. It takes a lot of time to make it useable for foreign people and we are only two fulltime students.*
 
 Build Setup
 -----------
