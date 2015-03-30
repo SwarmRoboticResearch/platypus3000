@@ -1,4 +1,4 @@
-package platypus3000.examples;
+package examples;
 
 import org.jbox2d.common.Vec2;
 import platypus3000.simulation.*;

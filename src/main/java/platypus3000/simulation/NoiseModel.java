@@ -25,6 +25,10 @@ public class NoiseModel {
         return random.nextFloat() < configuration.messageFailureProbability;
     }
 
+    public float noiseOrientation(float orienation){
+        return orienation+ MathUtils.randomFloat(-configuration.POSITION_ANGLE_NOISE, configuration.POSITION_ANGLE_NOISE);
+    }
+
     public void noisePosition(Vec2 q){
         if(configuration.POSITION_ANGLE_NOISE > 0 || configuration.POSITION_DISTANCE_NOISE > 0){
             float a = MathUtils.randomFloat(-configuration.POSITION_ANGLE_NOISE, configuration.POSITION_ANGLE_NOISE);

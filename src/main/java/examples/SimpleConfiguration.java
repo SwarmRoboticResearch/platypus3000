@@ -1,4 +1,4 @@
-package platypus3000.examples;
+package examples;
 
 import platypus3000.simulation.Simulator;
 import platypus3000.visualisation.VisualisationWindow;

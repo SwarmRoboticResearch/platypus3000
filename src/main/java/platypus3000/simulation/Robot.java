@@ -265,7 +265,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
         if (neighborRobots == null) {
             ArrayList<NeighborView> neighborViews = new ArrayList<NeighborView>(noisedNeighbors.size());
             for (Robot r : noisedNeighbors)
-                neighborViews.add(new NeighborView(this, r, getSimulator().getTime()));
+                neighborViews.add(new NeighborView(this, r));
 
             neighborRobots = new LocalNeighborhood(neighborViews);
         }

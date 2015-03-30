@@ -38,9 +38,10 @@ public class GlobalNeighborhoodTest {
 
     @Before
     public void setUp() throws Exception {
-        float R = 1;//Robot.RANGE*1.1f;       TODO
+
 
         sim = new Simulator(new Configuration());
+        float R = sim.configuration.RANGE;
 
         A = new Robot("A", null, sim,      0,     0, 0);
         B = new Robot("B", null, sim,    R/2,  -R/2, 0);
@@ -50,6 +51,8 @@ public class GlobalNeighborhoodTest {
         F = new Robot("F", null, sim,    2*R,  -R/2, 0);
         G = new Robot("G", null, sim,    2*R,   R/2, 0);
         H = new Robot("H", null, sim, 2.5f*R,     0, 0);
+
+
 
         allRobots = new HashSet<Robot>(8);
         allRobots.addAll(Arrays.asList(A, B, C, D, E, F, G, H));
