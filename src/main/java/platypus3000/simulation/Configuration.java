@@ -62,6 +62,8 @@ public class Configuration {
     public float POSITION_ANGLE_NOISE; // 0-0.25Pi may be rational
     public float POSITION_DISTANCE_NOISE;//0-0.5f may be rational
     public float messageFailureProbability; // good 0<=x<1 bad
+    public float SPEED_DEVIATION_CHANGE;
+    public float ROTATIONSPEED_DEVIATION_CHANGE;
     //</Noise>
 
     public final int GUI_WIDTH;
@@ -110,6 +112,10 @@ public class Configuration {
         connectivityProbability = Float.parseFloat(prop.getProperty("ConnectivityProbability"));
         POSITION_ANGLE_NOISE = Float.parseFloat(prop.getProperty("NeighborPositionAngleNoise"));
         POSITION_DISTANCE_NOISE = Float.parseFloat(prop.getProperty("NeighborPositionDistanceNoise"));
+        SPEED_DEVIATION_CHANGE = Float.parseFloat(prop.getProperty("SpeedDeviationChange","0"));
+        System.out.println("SpeedDeviationChange = "+SPEED_DEVIATION_CHANGE+(SPEED_DEVIATION_CHANGE==0f?" (No Noise)":" (Noisy)"));
+        ROTATIONSPEED_DEVIATION_CHANGE = Float.parseFloat(prop.getProperty("RotationSpeedDeviationChange","0"));
+        System.out.println("RotationSpeedDeviationChange = "+ROTATIONSPEED_DEVIATION_CHANGE+(ROTATIONSPEED_DEVIATION_CHANGE==0f?" (No Noise)":" (Noisy)"));
 
         LINE_OF_SIGHT_CONSTRAINT = Boolean.parseBoolean(prop.getProperty("LineOfSightConstraint"));
         ALLOW_OVERLAPPING = Boolean.parseBoolean(prop.getProperty("AllowOverlappingOfShapes"));

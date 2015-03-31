@@ -7,7 +7,7 @@ import platypus3000.visualisation.ParameterPlayground;
 import java.util.Random;
 
 /**
- * This class disturbs the sensors of the robots for testing, how robust the algorithms are
+ * This class disturbs the sensors of the robots for testing how robust the algorithms are
  */
 public class NoiseModel {
     public static Random random = new Random(0);
@@ -36,6 +36,22 @@ public class NoiseModel {
             float l = MathUtils.randomFloat(-configuration.POSITION_DISTANCE_NOISE, configuration.POSITION_DISTANCE_NOISE);
             q.mulLocal(1+l);
         }
+    }
+
+    /**
+     * noises the observed speed
+     * @return
+     */
+    public float getSpeedDeviationChange(){
+        return MathUtils.randomFloat(-configuration.SPEED_DEVIATION_CHANGE,configuration.SPEED_DEVIATION_CHANGE);
+    }
+
+    /**
+     * Noises the observed rotation speed
+     * @return
+     */
+    public float getRotationSpeedDeviationChange(){
+        return MathUtils.randomFloat(-configuration.ROTATIONSPEED_DEVIATION_CHANGE, configuration.ROTATIONSPEED_DEVIATION_CHANGE);
     }
 
     private static void rotate(Vec2 v, float a){

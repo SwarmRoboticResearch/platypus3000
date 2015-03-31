@@ -46,7 +46,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     public String textString;
     //</Talking>
 
-    private long local_time_difference = 0;//(long)MathUtils.randomFloat(0,10000);
+    private long local_time_difference = (long)MathUtils.randomFloat(0,10000);
     private int robotID;
 
     //-----------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
         simulator.addRobot(this);
         setController(controller);
 
-        movementsPhysics = new RobotMovementPhysics(getSimulator().configuration);
+        movementsPhysics = new RobotMovementPhysics(noiseModel,getSimulator().configuration);
     }
 
     /**
@@ -123,7 +123,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     void updateOutput() {
         //Set the movement
         movementsPhysics.step(getMovement());
-        super.setMovement(movementsPhysics.getSpeed(), movementsPhysics.getRotationSpeed());
+        super.setMovement(movementsPhysics.getRealSpeed(), movementsPhysics.getRealRotationSpeed());
 
         while (outgoingMessages.size() > 0) transmit(outgoingMessages.poll());
     }
@@ -134,7 +134,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     }
 
     public Vec2 getGlobalMovement() {
-        return AngleUtils.toVector(movementsPhysics.getSpeed(), getGlobalAngle());
+        return AngleUtils.toVector(movementsPhysics.getObservedSpeed(), getGlobalAngle());
     }
 
     public void setMovement(Vec2 direction) {
@@ -153,7 +153,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     @Override
     public Vec2 getLocalMovement() {
-        return new Vec2(movementsPhysics.getSpeed(), 0);
+        return new Vec2(movementsPhysics.getObservedSpeed(), 0);
     }
 
     @Override
@@ -399,23 +399,10 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //******************************************************************
 
 
-    //******************************************************************
-    // Debugging
-    //******************************************************************
 
-    public String toDebug() {
-        StringBuilder builder = new StringBuilder("Debug-Information of Robot " + name + '\n');
-        builder.append("Global Position: " + getGlobalPosition() + '\n');
-        builder.append("Global Angle: " + getGlobalAngle() + '\n');
-        builder.append("Global Movement" + getGlobalMovement() + '\n');
-        builder.append("Speed=" + movementsPhysics.getSpeed() + '\n');
-        builder.append("RotationSpeed=" + movementsPhysics.getRotationSpeed() + '\n');
-        builder.append(getNeighborhood().toDebug());
-        return builder.toString();
-    }
 
     public float getSpeed() {
-        return movementsPhysics.getSpeed();
+        return movementsPhysics.getObservedSpeed();
     }
 
     @Override

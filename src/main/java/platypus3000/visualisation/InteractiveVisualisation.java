@@ -404,11 +404,6 @@ public class InteractiveVisualisation extends PApplet
                 swarmVisualisation.frozenRobots.addAll(simRunner.getSim().getRobots());
         }
 
-        if(key== '~' && selectedObject!=null){
-            if(selectedObject instanceof Robot){
-                System.out.println(((Robot) selectedObject).toDebug());
-            }
-        }
 
         if(key == 's') {
             simulationSpeed = simulationSpeed == 1 ? 20 : 1;

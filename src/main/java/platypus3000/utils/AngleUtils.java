@@ -91,6 +91,12 @@ public class AngleUtils {
         return PVector.angleBetween(new PVector(a.x, b.y), new PVector(b.x, b.y));
     }
 
+    /**
+     * Clockwise starting at North
+     * @param length
+     * @param angle
+     * @return
+     */
     public static Vec2 toVector(float length, float angle){
         return new Vec2(MathUtils.cos(angle)*length, MathUtils.sin(angle)*length);
     }

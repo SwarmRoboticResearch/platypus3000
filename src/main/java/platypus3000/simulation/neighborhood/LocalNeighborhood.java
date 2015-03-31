@@ -82,22 +82,5 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     }
 
 
-    //******************************************************************
-    // Debugging
-    //******************************************************************
-
-    /**
-     * This function is used for detailed debug output in visualisation with selecting a robot and pressing '~'
-     * @return Human-Readable information of this object
-     */
-    public String toDebug(){
-        StringBuilder builder = new StringBuilder("LocalNeighborhood \n");
-        for(NeighborView n: neighborViews){
-            builder.append(n.toDebug());
-            builder.append('\n');
-        }
-        return builder.toString();
-    }
-
 
 }

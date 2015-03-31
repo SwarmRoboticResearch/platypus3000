@@ -12,44 +12,16 @@ import java.util.Comparator;
  * This objects represents the local knowledge of a robot about one of its neighbors.
  */
 public class NeighborView {
-    private Robot observerRobot;
-    public final int ID;
-    long timestamp;
+    private final Robot observerRobot; //The robot that uses this view
+    public final int ID; //The ID of the neighbor
+    private final long timestamp; //The time this NeighborView has been created (local time of observer robot)
 
-    private Float distance;
-    private float speed;
+    private final float speed; //The speed of the neighbor
 
-    private Vec2 relativePosition;
-    private float relativeOrientation;
+    private final Vec2 relativePosition; //The relative position of the neighbor in reference to the observer
+    private final float relativeOrientation; //The relative clockwise rotation of the neighbor in reference to the observer
     private float[] transformationMatrix; //classic 2x2 rotation matrix
 
-    /**
-     * Transforms a vector of the neighbor to the coordinate system of the observer robot.
-     * The rotation matrix is created lazy and if you used this method once, all further usages are rather cheap.
-     * @param v Vector to be transformed. Is not modified.
-     * @return The transformed vector
-     */
-    public Vec2 transform(Vec2 v){
-       return transformRelativeVector(v).add(relativePosition);
-    }
-
-    /**
-     * Transforms a relative vector (e.g. direction) of the neighbors coordinate system into the coordinate system
-     * of the observer robot.
-     * The rotation matrix is created lazy and if you used this method once, all further usages are rather cheap.
-     * @param v Vector to be transformed. Is not modified.
-     * @return The transformed vector
-     */
-    public Vec2 transformRelativeVector(Vec2 v){
-        if(transformationMatrix==null){  //lazy rotation matrix
-            transformationMatrix = new float[4];
-            transformationMatrix[0]=MathUtils.cos(-relativeOrientation);
-            transformationMatrix[1]=MathUtils.sin(-relativeOrientation);
-            transformationMatrix[2]=-transformationMatrix[1];
-            transformationMatrix[3]=transformationMatrix[0];
-        }
-        return new Vec2(transformationMatrix[0]*v.x+transformationMatrix[1]*v.y, transformationMatrix[2]*v.x+transformationMatrix[3]*v.y);
-    }
 
     public NeighborView(Robot observerRobot, Robot neighborRobot) {
         this.observerRobot = observerRobot;
@@ -70,64 +42,83 @@ public class NeighborView {
         return relativePosition.clone();
     }
 
-    Vec2 localMovement = null;
+
     /**
      * The movement/acceleration of the neighborRobot translated to the orientation of the viewpoint robot
      * @return
      */
     public Vec2 getLocalMovement() {
-        if(localMovement==null) {
+        if(localMovement==null) { //Lazy Evaluation
             localMovement = AngleUtils.toVector(speed, relativeOrientation);
         }
         return localMovement.clone();
     }
+    Vec2 localMovement = null;
 
     /**
-     * Transforms a local point of the neighborRobot to a local point of the viewpoint robot.
-     * @param point Local Point of Neighbor
-     * @return Local Point of sppource
+     * Transforms a vector of the neighbor to the coordinate system of the observer robot.
+     * The rotation matrix is created lazy and if you used this method once, all further usages are rather cheap.
+     * @param point Vector to be transformed. Is not modified.
+     * @return The transformed vector
      */
     public Vec2 transformPointToObserversViewpoint(Vec2 point) {
-        return transform(point);
+        return transformDirToObserversViewpoint(point).add(relativePosition);
     }
 
     /**
-     * Transforms a local direction of the neighborRobot to a local direction of the viewpoint robot.
-     * @param point Local direction of Neighbor
-     * @return Local direction of viewpoint robot
+     * Transforms a relative vector (e.g. direction) of the neighbors coordinate system into the coordinate system
+     * of the observer robot.
+     * The rotation matrix is created lazy and if you used this method once, all further usages are rather cheap.
+     * @param v Vector to be transformed. Is not modified.
+     * @return The transformed vector
      */
-    public Vec2 transformDirToObserversViewpoint(Vec2 point) {
-        return transformRelativeVector(point);
+    public Vec2 transformDirToObserversViewpoint(Vec2 v) {
+        if(transformationMatrix==null){  //lazy rotation matrix
+            transformationMatrix = new float[4];
+            transformationMatrix[0]=MathUtils.cos(-relativeOrientation);
+            transformationMatrix[1]=MathUtils.sin(-relativeOrientation);
+            transformationMatrix[2]=-transformationMatrix[1];
+            transformationMatrix[3]=transformationMatrix[0];
+        }
+        return new Vec2(transformationMatrix[0]*v.x+transformationMatrix[1]*v.y, transformationMatrix[2]*v.x+transformationMatrix[3]*v.y);
     }
 
 
-    Vec2 localDirection = null;
+
     /**
      * The difference of the movement of the observerRobot and the neighborRobot. Needed for example for consensus.
      * @return
      */
     public Vec2 getLocalMovementDifference() {
-        checkIfValid();
-        if(localDirection == null) {
+        if(localDirection == null) { //lazy evaluation
             localDirection = getLocalMovement().sub(observerRobot.getLocalMovement());  //TODO no need for lazy
         }
         return localDirection.clone();
     }
+    Vec2 localDirection = null;
 
-    //https://www.clear.rice.edu/comp551/rone_api/roneos/BearingOrientationPic.png
+
+    /**
+     *  https://www.clear.rice.edu/comp551/rone_api/roneos/BearingOrientationPic.png
+     *  The bearing is the angle the neighbor position has relative to the observer robot
+     * @return
+     */
     public float getLocalBearing(){
-        return AngleUtils.getRadian(this.getLocalPosition());
+        if(bearing == null){ //lazy evaluation
+           bearing = AngleUtils.getRadian(this.getLocalPosition());
+        }
+        return bearing;
     }
+    Float bearing = null;
 
-    //https://www.clear.rice.edu/comp551/rone_api/roneos/BearingOrientationPic.png
+    /** https://www.clear.rice.edu/comp551/rone_api/roneos/BearingOrientationPic.png
+     * The orientation is the relative direction the neighbor is rotated at.
+     * @return
+     */
     public float getLocalOrientation(){
         return relativeOrientation;
     }
 
-    //Checks if it is not outdated. Maybe not that important and could be removed.
-    private void checkIfValid() {
-        if(timestamp != observerRobot.getSimulator().getTime()) throw new RuntimeException("Don't use old NeighborRobots!");
-    }
 
     /**
      * Returns the robot-id of the neighborRobot
@@ -137,6 +128,21 @@ public class NeighborView {
         return ID;
     }
 
+
+    /**
+     * Lazy evaluated distance to neighbor
+     * @return distance to neighbor in meter (middle point to middle point)
+     */
+    public float getDistance() {
+        if(distance==null){
+            distance = getLocalPosition().length();
+        }
+        return distance;
+    }
+    private Float distance;
+
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -144,11 +150,8 @@ public class NeighborView {
 
         NeighborView that = (NeighborView) o;
 
-        if (timestamp != that.timestamp) return false;
-        if (ID!=that.ID) return false;
-        if (!observerRobot.equals(that.observerRobot)) return false;
+        return !(timestamp != that.timestamp || ID != that.ID || !observerRobot.equals(that.observerRobot));
 
-        return true;
     }
 
     @Override
@@ -189,36 +192,4 @@ public class NeighborView {
         }
     };
 
-
-    //******************************************************************
-    // Debugging
-    //******************************************************************
-
-    public String toDebug() {
-        StringBuilder builder = new StringBuilder(new String(""+ getID()));
-        builder.append(": ");
-        builder.append("LP=");
-        builder.append(getLocalPosition());
-        builder.append(" , LM=");
-        builder.append(getLocalMovement());
-        builder.append(", LMD=");
-        builder.append(getLocalMovementDifference());
-        builder.append(", Bearing=");
-        builder.append(getLocalBearing());
-        builder.append(", Orientation=");
-        builder.append(getLocalOrientation());
-        return builder.toString();
-    }
-
-    @Override
-    public String toString() {
-        return "NeighborView "+observerRobot.getID()+"->"+ID;
-    }
-
-    public float getDistance() {
-        if(distance==null){
-            distance = getLocalPosition().length();
-        }
-        return distance;
-    }
 }

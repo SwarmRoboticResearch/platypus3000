@@ -12,10 +12,12 @@ import platypus3000.utils.AngleUtils;
  */
 public class RobotMovementPhysics {
     Configuration configuration;
+    NoiseModel noiseModel;
     private float accuracy = MathUtils.PI;
 
-    public RobotMovementPhysics(Configuration configuration){
+    public RobotMovementPhysics(NoiseModel noiseModel, Configuration configuration){
         this.configuration = configuration;
+        this.noiseModel = noiseModel;
     }
 
 
@@ -24,18 +26,33 @@ public class RobotMovementPhysics {
     private float desiredRotationSpeed;
     private float actual_speed=0;
     private float actual_roationSpeed=0;
+    private float deviation = 0;
+    private float deviation_rotation = 0;
 
     public void step(Vec2 actualMovement){
         actual_speed = actualMovement.x;
         actual_speed = getNewVelocity(actual_speed);
         actual_roationSpeed = getRotationVelocity(actual_roationSpeed);
+
+        deviation += noiseModel.getSpeedDeviationChange();
+        deviation_rotation += noiseModel.getRotationSpeedDeviationChange();
+
     }
 
-    public float getSpeed(){
+    public float getObservedSpeed(){
         return actual_speed;
     }
-    public float getRotationSpeed(){
+
+    public float getRealSpeed(){
+        return actual_speed+deviation;
+    }
+
+    public float getObservedRotationSpeed(){
         return actual_roationSpeed;
+    }
+
+    public float getRealRotationSpeed(){
+        return actual_roationSpeed+deviation_rotation;
     }
 
     public void setLocalMovement(Vec2 v){

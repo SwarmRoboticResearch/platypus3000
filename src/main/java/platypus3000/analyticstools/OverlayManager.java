@@ -63,11 +63,13 @@ public class OverlayManager {
             graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
             graphics.rotate(r.getGlobalAngle());
             graphics.pushStyle();
-                for(LocalOverlay overlay:r.getController().overlays){
-                    if(overlay.showAll() || (overlay.showSelected() &&selectedRobots.contains(r))) {
+            if(r.getController()!=null) {
+                for (LocalOverlay overlay : r.getController().overlays) {
+                    if (overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
                         overlay.drawBackground(graphics, r);
                     }
                 }
+            }
             graphics.popStyle();
             graphics.popMatrix();
         }
@@ -93,14 +95,14 @@ public class OverlayManager {
             graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
             graphics.rotate(r.getGlobalAngle());
             graphics.pushStyle();
-
-                for (LocalOverlay overlay :r.getController().overlays){
-                    if(overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
+            if(r.getController()!=null) {
+                for (LocalOverlay overlay : r.getController().overlays) {
+                    if (overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
                         overlay.drawForeground(graphics);
                     }
                     overlay.reset();
                 }
-
+            }
             graphics.popStyle();
             graphics.popMatrix();
         }
