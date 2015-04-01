@@ -43,14 +43,14 @@ public class GlobalNeighborhoodTest {
         sim = new Simulator(new Configuration());
         float R = sim.configuration.RANGE;
 
-        A = new Robot("A", null, sim,      0,     0, 0);
-        B = new Robot("B", null, sim,    R/2,  -R/2, 0);
-        C = new Robot("C", null, sim,    R/2,   R/2, 0);
-        D = new Robot("D", null, sim,      R,     0, 0);
-        E = new Robot("E", null, sim,  R+R/2,     0, 0);
-        F = new Robot("F", null, sim,    2*R,  -R/2, 0);
-        G = new Robot("G", null, sim,    2*R,   R/2, 0);
-        H = new Robot("H", null, sim, 2.5f*R,     0, 0);
+        A = sim.createRobot("A",0,0,0);
+        B = sim.createRobot("B", R/2,  -R/2, 0);
+        C = sim.createRobot("C",    R/2,   R/2, 0);
+        D = sim.createRobot("D",      R,     0, 0);
+        E = sim.createRobot("E",  R+R/2,     0, 0);
+        F = sim.createRobot("F",    2*R,  -R/2, 0);
+        G = sim.createRobot("G",    2*R,   R/2, 0);
+        H = sim.createRobot("H",  2.5f*R,     0, 0);
 
 
 

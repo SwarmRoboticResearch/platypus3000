@@ -486,15 +486,16 @@ public class SortingController extends RobotController {
          while(SIZE<=SIZE_MAX) {
          integrated = 0;
          Simulator sim = new Simulator(new Configuration(args[1]));
-         new Robot(Integer.toString(0), new SortingController(0), sim, 0, 0f, 0);
+         sim.createRobot(0, 0,0,0).setController(new SortingController(0));
+
 
          System.out.println("EXPERIMENT WITH "+SIZE+" ROBOTS");
          abort = false;
          float l = SIZE*0.4f;// MathUtils.sqrt(SIZE*0.4f*SIZE*0.4f*0.5f);
          for (int i = 1; i < SIZE - 1; i++) {
-         new Robot(Integer.toString(i), new SortingController(i), sim, MathUtils.randomFloat(0, l), MathUtils.randomFloat(0, HIGHT), 0);
+             sim.createRobot(i, MathUtils.randomFloat(0, l), MathUtils.randomFloat(0, HIGHT), 0).setController(new SortingController(i));
          }
-         new Robot(Integer.toString(SIZE - 1), new SortingController(SIZE), sim, l, 0, 0);
+         sim.createRobot(SIZE-1, l, 0, 0).setController(new SortingController(SIZE-1));
          SimulationRunner runner = new SimulationRunner(sim);
          //runner.loop(10);
          for(Robot r: sim.getRobots()){

@@ -10,54 +10,16 @@ import java.util.ArrayList;
  * This class represents an polygon as obstacle
  */
 public class Obstacle extends SimulatedObject{
-    World world;
     final public PolygonShape shape;
     FixtureDef fixtureDef;
 
-//    Vec2[] points;
-    float x, y;
-
-    /**
-     * Give the points in World coordinates
-     * @param simulator
-     * @param points
-     */
-    public Obstacle(Simulator simulator, Vec2... points){
-        this(simulator, 0, 0, points);
-    }
 
     /**
      * Give the points in local coordinates to an arbitrary base
-     * @param simulator
-     * @param x
-     * @param y
-     * @param points
      */
-    public Obstacle(Simulator simulator, float x, float y, Vec2... points){
-        super(simulator);
-        this.x =x; this.y=y;
-        simulator.obstacles.add(this);
-
-        this.world = simulator.getWorld();
-
-        BodyDef bd = new BodyDef();
-        bd.position.set(x, y);
-        bd.angle = 0f;
-        bd.type = BodyType.DYNAMIC;
-
-        //Setting the shape of the robot to an circle with radius 0.1
-        shape = new PolygonShape();
-        shape.set(points, points.length);
-
-        fixtureDef = new FixtureDef();
-        fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.3f;
-        fixtureDef.restitution = 0.5f;
-        fixtureDef.userData = this;
-
-        super.initJBox2D(bd, fixtureDef);
-
+    public Obstacle(Body body,PolygonShape shape, Simulator simulator){
+        super(body, simulator);
+        this.shape = shape;
     }
 
     /**

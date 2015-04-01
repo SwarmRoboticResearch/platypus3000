@@ -16,7 +16,6 @@ import processing.core.PVector;
 
 import java.awt.*;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -372,7 +371,7 @@ public class InteractiveVisualisation extends PApplet
         }
 
         if(key == DELETE && selectedObject!=null){
-             simRunner.getSim().remove(selectedObject);
+             simRunner.getSim().destroy(selectedObject);
             selectedObject = null;
             swarmVisualisation.selectedRobots.clear();
         }

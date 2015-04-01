@@ -27,7 +27,8 @@ public class OdometryExample extends RobotController {
 
     public static void main(String[] args) throws IOException{
         Simulator sim = new Simulator(new Configuration());
-        Robot r = new Robot(new OdometryExample(), sim, 0,0,0);
+        Robot r = sim.createRobot(0,0,0);
+        r.setController(new OdometryExample());//new Robot(new OdometryExample(), sim, 0,0,0);
         new VisualisationWindow(sim);
     }
 }

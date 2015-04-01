@@ -12,29 +12,18 @@ import org.jbox2d.dynamics.FixtureDef;
  *
  */
 public abstract class SimulatedObject {
-    private Body jbox2d_body;
+    protected final Body jbox2d_body; //Represents the object in the physics engine (Position, Movement, Collisions, etc.).
     private Simulator simulator;
-    private boolean frozen = false;
+    private boolean frozen = false; //TODO: Freeze only works for robots for now
 
-    SimulatedObject(Simulator simulator){
+    SimulatedObject(Body body, Simulator simulator){
+        this.jbox2d_body = body;
         this.simulator = simulator;
     }
 
-    public void initJBox2D(BodyDef bodyDef, FixtureDef fixtureDef) {
-        jbox2d_body = simulator.getWorld().createBody(bodyDef);
-        jbox2d_body.createFixture(fixtureDef);
-    }
 
     public Simulator getSimulator(){
         return simulator;
-    }
-
-    /**
-     * Only to be called by simulation.remove().
-     * DO NOT USE!
-     */
-    void destroy(){
-        simulator.getWorld().destroyBody(jbox2d_body);
     }
 
     public void setMovement(float speed, float rotation){
@@ -74,10 +63,20 @@ public abstract class SimulatedObject {
         jbox2d_body.setTransform(getGlobalPosition(), angle);
     }
 
+    /**
+     * Transforms a global coordinate to the local coordinate system
+     * @param world
+     * @return
+     */
     public Vec2 getLocalPoint(Vec2 world){
         return jbox2d_body.getLocalPoint(world);
     }
 
+    /**
+     * Transforms a local point (vector in own coordinate system with robot as origin) to the global coordinate system.
+     * @param local
+     * @return
+     */
     public Vec2 getWorldPoint(Vec2 local){
         return jbox2d_body.getWorldPoint(local);
     }
@@ -86,7 +85,7 @@ public abstract class SimulatedObject {
      * If you set frozen to true, the robot will not move anymore but still execute its controller.
      * This is especially useful if you want to build a special formation while getting visual feedback of the robots.
      * If you only want everything to freeze, you can simply pause the whole simulation
-     * @param frozen
+     * @param frozen If true the setMovement method is deactivated
      */
     public void setFrozen(boolean frozen){
         this.frozen = frozen;

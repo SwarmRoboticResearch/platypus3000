@@ -22,8 +22,8 @@ public class VisualizedExperiment {
     public static void main(String[] args) throws IOException {
         Simulator sim = new Simulator(new Configuration("src/main/java/projects/Steiner/simulation.properties"));
         LeaderSet l  =  new LeaderSet(0, 1, 2, 3, 4);
-        for(int i = 1; i<400; i++){
-            new Robot(Integer.toString(i), new ExperimentalController(l), sim, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5,5),MathUtils.randomFloat(0, MathUtils.TWOPI));
+        for(int i = 0; i<400; i++){
+            sim.createRobot(i, MathUtils.randomFloat(-5, 5), MathUtils.randomFloat(-5,5),MathUtils.randomFloat(0, MathUtils.TWOPI)).setController(new ExperimentalController(l));
         }
         SimulationRunner simRun = new SimulationRunner(sim);
         new VisualisationWindow(simRun);
@@ -87,7 +87,7 @@ public class VisualizedExperiment {
                     System.out.println("Killed Robot "+r.getID());
                     killedRobots.add(r);
                 }
-            for(Robot r : killedRobots) sim.remove(r);
+            for(Robot r : killedRobots) sim.destroy(r);
 
             //Check if the simulation should continue
             boolean isWellControlled = true;

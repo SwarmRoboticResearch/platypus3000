@@ -4,9 +4,10 @@ import org.jbox2d.callbacks.ContactFilter;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
+import org.jbox2d.collision.shapes.CircleShape;
+import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
-import org.jbox2d.dynamics.Fixture;
-import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.Contact;
 import platypus3000.analyticstools.OverlayManager;
 import platypus3000.simulation.neighborhood.GlobalNeighborhood;
@@ -81,6 +82,86 @@ public class Simulator {
         });
     }
 
+    private int getFreeID(){
+        //find free id
+        int id = robots.size();
+        while(robots.containsKey(id)){
+            id++;
+        }
+        return id;
+    }
+
+    public Robot createRobot(String name, float x, float y, float angle){
+         return createRobot(name, getFreeID(), x, y, angle);
+    }
+
+    public Robot createRobot(float x, float y, float angle){
+        return createRobot(getFreeID(), x, y, angle);
+    }
+
+    public Robot createRobot(int ID, float x, float y , float angle){
+        return createRobot("ID: "+ID,ID, x, y, angle);
+    }
+
+    public Robot createRobot(String name, int ID, float x, float y, float angle){
+        if(robots.containsKey(ID))
+            throw new IllegalArgumentException("Tried to add a robot with id " + ID + " to a simulation, that already contains a robot with this id!");
+
+        //Create Abstract Robot Body for Physics Engine
+        BodyDef bd = new BodyDef(); //Create a body in the physic engine
+        bd.position.set(x, y);
+        bd.angle = angle;
+        bd.type = BodyType.DYNAMIC;
+        Body jbox2d_body = getWorld().createBody(bd);
+
+        Robot robot = new Robot(name, ID, jbox2d_body, this, getNoiseModel(), configuration);
+
+        //Setting the shape of the robot in the physic engine to an circle with radius defined in RADIUS
+        CircleShape shape = new CircleShape();
+        shape.m_radius = configuration.RADIUS;
+
+        FixtureDef fixtureDef = new FixtureDef(); //The fixture contains the physical properties of the robot in the physic engine
+        fixtureDef.shape = shape;
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.9f;
+        fixtureDef.restitution = 0.5f;
+        fixtureDef.userData = robot;
+
+        jbox2d_body.createFixture(fixtureDef);
+
+
+        robots.put(robot.getID(), robot);
+
+        return robot;
+    }
+
+    public Obstacle createObstacle(float x, float y, Vec2... points){
+        BodyDef bd = new BodyDef();
+        bd.position.set(x, y);
+        bd.angle = 0f;
+        bd.type = BodyType.DYNAMIC;
+        Body body = getWorld().createBody(bd);
+
+        //Setting the shape of the robot to an circle with radius 0.1
+        PolygonShape shape = new PolygonShape();
+        shape.set(points, points.length);
+
+        Obstacle obstacle = new Obstacle(body, shape, this);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 0.5f;
+        fixtureDef.friction = 0.3f;
+        fixtureDef.restitution = 0.5f;
+        fixtureDef.userData = obstacle;
+
+        body.createFixture(fixtureDef);
+
+        obstacles.add(obstacle);
+
+        return obstacle;
+    }
+
     /**
      * The time in the simulation. Measured in steps.
      * Used in Messages
@@ -138,13 +219,13 @@ public class Simulator {
         object.sudo_setGlobalAngle(a);
     }
 
-    public void remove(SimulatedObject o){
+    public void destroy(SimulatedObject o){
         if(o instanceof Robot) {
             robots.remove(((Robot)o).getID());
         } else {
             obstacles.remove(o);
         }
-        o.destroy();
+        getWorld().destroyBody(o.jbox2d_body);
     }
 
     public void refresh(){
@@ -160,17 +241,6 @@ public class Simulator {
 
     public Robot getRobot(int address) {
         return robots.get(address);
-    }
-
-    /**
-     * Robots will add them self to the simulator with this method
-     *
-     * @param r
-     */
-    void addRobot(Robot r) {
-        if(robots.containsKey(r.getID()))
-            throw new IllegalArgumentException("Tried to add a robot with id " + r.getID() + " to a simulation, that already contains a robot with this id!");
-        robots.put(r.getID(), r);
     }
 
 

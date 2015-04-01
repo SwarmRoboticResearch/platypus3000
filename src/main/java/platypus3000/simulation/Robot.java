@@ -4,6 +4,7 @@ import org.jbox2d.collision.WorldManifold;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
+import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
@@ -53,44 +54,14 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     //-----------------------------------------------------------------------------------
 
+
     //<Constructors>
-    public Robot(String name, RobotController controller, Simulator simulator, float x, float y, float angle) {
-        super(simulator);
-        noiseModel = simulator.getNoiseModel();
-
-        BodyDef bd = new BodyDef(); //Create a body in the physic engine
-        bd.position.set(x, y);
-        bd.angle = angle;
-        bd.type = BodyType.DYNAMIC;
-
-        //Setting the shape of the robot in the physic engine to an circle with radius defined in RADIUS
-        CircleShape shape = new CircleShape();
-        shape.m_radius = simulator.configuration.RADIUS;
-
-        FixtureDef fixtureDef = new FixtureDef(); //The fixture contains the physical properties of the robot in the physic engine
-        fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.9f;
-        fixtureDef.restitution = 0.5f;
-        fixtureDef.userData = this;
-
-        super.initJBox2D(bd, fixtureDef);
-
-
+    public Robot(String name, int ID, Body body, Simulator simulator, NoiseModel noiseModel, Configuration configuration){
+        super(body, simulator);
+        this.noiseModel = noiseModel;
         this.name = name;
-        this.robotID = simulator.getRobots().size();
-        simulator.addRobot(this);
-        setController(controller);
-
-        movementsPhysics = new RobotMovementPhysics(noiseModel,getSimulator().configuration);
-    }
-
-    /**
-     * Constructor with default name
-     */
-    public Robot(RobotController controller, Simulator simulator, float x, float y, float angle) {
-        this(null, controller, simulator, x, y, angle);
-        name = "ID:" + getID();
+        this.robotID = ID;
+        this.movementsPhysics = new RobotMovementPhysics(noiseModel,configuration);
     }
     //</Constructors>
 

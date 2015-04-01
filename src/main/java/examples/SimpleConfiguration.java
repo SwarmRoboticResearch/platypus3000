@@ -16,8 +16,8 @@ public class SimpleConfiguration {
         //First we need a simulation, where the robots can live.
         Simulator sim = new Simulator(new Configuration());
         //Second, we need robots in this simulation
-        Robot r1 = new Robot("Robot 1", null, sim, 0, 0, 0.5f* MathUtils.PI);
-        Robot r2 = new Robot("Robot 2", null, sim, 0.5f, 0, 0);
+        Robot r1 = sim.createRobot("Robot 1", 0, 0,0,0);
+        Robot r2 = sim.createRobot("Robot 2", 1, 0.5f, 0,0);
         //third we want to watch the simulation in a GUI
         new VisualisationWindow(sim);
     }
