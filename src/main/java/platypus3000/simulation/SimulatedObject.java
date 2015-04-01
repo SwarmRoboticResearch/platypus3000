@@ -14,6 +14,7 @@ import org.jbox2d.dynamics.FixtureDef;
 public abstract class SimulatedObject {
     private Body jbox2d_body;
     private Simulator simulator;
+    private boolean frozen = false;
 
     SimulatedObject(Simulator simulator){
         this.simulator = simulator;
@@ -37,8 +38,13 @@ public abstract class SimulatedObject {
     }
 
     public void setMovement(float speed, float rotation){
-        jbox2d_body.setLinearVelocity(jbox2d_body.getWorldVector(new Vec2(speed, 0)));
-        jbox2d_body.setAngularVelocity(rotation);
+        if(!frozen) {
+            jbox2d_body.setLinearVelocity(jbox2d_body.getWorldVector(new Vec2(speed, 0)));
+            jbox2d_body.setAngularVelocity(rotation);
+        } else {
+            jbox2d_body.setLinearVelocity(jbox2d_body.getWorldVector(new Vec2(0, 0)));
+            jbox2d_body.setAngularVelocity(0);
+        }
     }
 
     public Vec2 getMovement(){
@@ -74,5 +80,19 @@ public abstract class SimulatedObject {
 
     public Vec2 getWorldPoint(Vec2 local){
         return jbox2d_body.getWorldPoint(local);
+    }
+
+    /**
+     * If you set frozen to true, the robot will not move anymore but still execute its controller.
+     * This is especially useful if you want to build a special formation while getting visual feedback of the robots.
+     * If you only want everything to freeze, you can simply pause the whole simulation
+     * @param frozen
+     */
+    public void setFrozen(boolean frozen){
+        this.frozen = frozen;
+    }
+
+    public boolean isFrozen(){
+        return frozen;
     }
 }

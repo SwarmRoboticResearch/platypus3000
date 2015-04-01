@@ -61,7 +61,6 @@ public class InteractiveVisualisation extends PApplet
     }
 
     RobotRotator rotator = new RobotRotator(this);
-    HashSet<SimulatedObject> dontMoveObjects = new HashSet<SimulatedObject>();
     boolean dontMove = false;
 
     SwarmVisualisation swarmVisualisation;
@@ -213,16 +212,6 @@ public class InteractiveVisualisation extends PApplet
         swarmVisualisation.drawSimulation();
         drawRobotsTexts();
 
-        //TODO: Freezing should happen inside the simulation. It has nothing to do with the visualisation!
-        if (dontMove) {
-            for (Robot r : simRunner.getSim().getRobots()) {
-                r.setMovement(0, 0);
-            }
-        } else {
-            for (SimulatedObject so : dontMoveObjects) {
-                so.setMovement(0, 0);
-            }
-        }
 
         if (extraDrawing != null)
             extraDrawing.onDraw(this);
@@ -388,20 +377,19 @@ public class InteractiveVisualisation extends PApplet
             swarmVisualisation.selectedRobots.clear();
         }
 
+        //Single Freeze/Unfreeze
         if(selectedObject != null && key == ','){
-            dontMoveObjects.remove(selectedObject);
-            swarmVisualisation.frozenRobots.remove(selectedObject);
+            selectedObject.setFrozen(false);
+        }else if(selectedObject !=null && key == '.'){
+            selectedObject.setFrozen(true);
         }
-        if(selectedObject !=null && key == '.'){
-            dontMoveObjects.add(selectedObject);
-            if(selectedObject instanceof Robot) swarmVisualisation.frozenRobots.add((Robot) selectedObject);
-        }
+
+        //Freeze/Unfreeze all
         if(key == '/') {
             dontMove = !dontMove;
-            dontMoveObjects.clear();
-            swarmVisualisation.frozenRobots.clear();
-            if(dontMove)
-                swarmVisualisation.frozenRobots.addAll(simRunner.getSim().getRobots());
+            for(Robot r: simRunner.getSim().getRobots()){
+                r.setFrozen(dontMove);
+             }
         }
 
 

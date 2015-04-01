@@ -63,7 +63,7 @@ public class OverlayManager {
             graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
             graphics.rotate(r.getGlobalAngle());
             graphics.pushStyle();
-            if(r.getController()!=null) {
+            if(r.getController()!=null) { //a dead/dummy robot may have no controller
                 for (LocalOverlay overlay : r.getController().overlays) {
                     if (overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
                         overlay.drawBackground(graphics, r);
@@ -95,7 +95,7 @@ public class OverlayManager {
             graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
             graphics.rotate(r.getGlobalAngle());
             graphics.pushStyle();
-            if(r.getController()!=null) {
+            if(r.getController()!=null) { //a dead/dummy robot may have no controller
                 for (LocalOverlay overlay : r.getController().overlays) {
                     if (overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
                         overlay.drawForeground(graphics);

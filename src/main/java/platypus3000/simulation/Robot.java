@@ -47,7 +47,9 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //</Talking>
 
     private long local_time_difference = (long)MathUtils.randomFloat(0,10000);
-    private int robotID;
+    private final int robotID;
+
+
 
     //-----------------------------------------------------------------------------------
 
@@ -120,10 +122,13 @@ public class Robot extends SimulatedObject implements RobotInterface {
         }
     }
 
+
     void updateOutput() {
         //Set the movement
         movementsPhysics.step(getMovement());
+
         super.setMovement(movementsPhysics.getRealSpeed(), movementsPhysics.getRealRotationSpeed());
+
 
         while (outgoingMessages.size() > 0) transmit(outgoingMessages.poll());
     }
@@ -349,6 +354,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // END: Collision
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 
     @Override
