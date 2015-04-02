@@ -46,12 +46,12 @@ public class LocalNeighborhoodTest {
         float R = sim.configuration.RANGE*1.01f;
 
         A = sim.createRobot("A", 0, 0, 0);
-        B = sim.createRobot("B",  R/2,  -R/2, 0);
-        C = sim.createRobot("C",   R/2,   R/2, 0);
+        B = sim.createRobot("B",  R/2,  R/2, 0);
+        C = sim.createRobot("C",   R/2,   -R/2, 0);
         D = sim.createRobot("D",     R,     0, 0);
         E = sim.createRobot("E",  R+R/2,     0, 0);
-        F = sim.createRobot("F",     2*R,  -R/2, 0);
-        G = sim.createRobot("G",    2*R,   R/2, 0);
+        F = sim.createRobot("F",     2*R,  R/2, 0);
+        G = sim.createRobot("G",    2*R,   -R/2, 0);
         H = sim.createRobot("H", 2.5f*R,     0, 0);
 
         DviewsB = new NeighborView(D, B);
