@@ -9,10 +9,9 @@ import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.*;
 import org.jbox2d.dynamics.contacts.Contact;
-import platypus3000.analyticstools.OverlayManager;
 import platypus3000.simulation.neighborhood.GlobalNeighborhood;
-import platypus3000.visualisation.InteractiveVisualisation;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -33,6 +32,10 @@ public class Simulator {
     GlobalNeighborhood globalNeighborhood = new GlobalNeighborhood(this);
 
     private final ExecutorService executor;
+
+    public Simulator() throws IOException{
+        this(new Configuration());
+    }
 
     public Simulator(Configuration conf) {
         this.configuration = conf;
@@ -212,11 +215,11 @@ public class Simulator {
     }
 
     public void beamObject(SimulatedObject object, float x, float y) {
-        object.sudo_setGlobalPosition(x, y);
+        object.setGlobalPosition(x, y);
     }
 
     public void rotateObject(SimulatedObject object, float a) {
-        object.sudo_setGlobalAngle(a);
+        object.setGlobalAngle(a);
     }
 
     public void destroy(SimulatedObject o){
@@ -263,6 +266,10 @@ public class Simulator {
             noiseModel = new NoiseModel(configuration);
         }
         return noiseModel;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
     }
 }
 

@@ -55,11 +55,11 @@ public abstract class SimulatedObject {
      * @param x
      * @param y
      */
-    void sudo_setGlobalPosition(float x, float y) {
+    public void setGlobalPosition(float x, float y) {
         jbox2d_body.setTransform(new Vec2(x, y), jbox2d_body.getAngle());
     }
 
-    void sudo_setGlobalAngle(float angle){
+    public void setGlobalAngle(float angle){
         jbox2d_body.setTransform(getGlobalPosition(), angle);
     }
 

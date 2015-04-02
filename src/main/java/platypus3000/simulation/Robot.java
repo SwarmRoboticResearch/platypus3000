@@ -1,13 +1,9 @@
 package platypus3000.simulation;
 
 import org.jbox2d.collision.WorldManifold;
-import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
-import org.jbox2d.dynamics.BodyDef;
-import org.jbox2d.dynamics.BodyType;
-import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.contacts.Contact;
 import platypus3000.simulation.communication.Message;
 import platypus3000.simulation.communication.MessagePayload;
@@ -30,7 +26,6 @@ import java.util.concurrent.BlockingQueue;
  * the constructor.
  */
 public class Robot extends SimulatedObject implements RobotInterface {
-    private static final boolean CLEAN_OLD_MESSAGES = false; //TODO false leads to unpredictable behaviors (but could be the algorithm)
     //<R-One Properties>
     final RobotMovementPhysics movementsPhysics;
     public final NoiseModel noiseModel;
@@ -86,7 +81,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
         if (controller != null) {
             controller.loop(this);   //The robot specific (user programmed) loop function.
         }
-        if(CLEAN_OLD_MESSAGES){
+        if(getSimulator().getConfiguration().CLEAN_OLD_MESSAGES){
             messageQueue.removeOldMessages();
         } else {
             messageQueue.cleanUp();
@@ -271,7 +266,8 @@ public class Robot extends SimulatedObject implements RobotInterface {
      */
     @Override
     public Vec2 getLocalPositionOfCollision() {
-        if (collisionSensor == null && !collisions.isEmpty()) {
+        if(collisions.isEmpty()) return null;
+        if (collisionSensor == null) {
             Contact contact = collisions.getFirst(); //Change to getLast() for the newest active collision
             WorldManifold manifold = new WorldManifold();
             contact.getWorldManifold(manifold);

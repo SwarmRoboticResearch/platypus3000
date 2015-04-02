@@ -12,6 +12,7 @@ import java.util.Properties;
  * Collected configuration for Simulator.
  */
 public class Configuration {
+    public final boolean CLEAN_OLD_MESSAGES;
     public final boolean GUI_SHOW_PARAMETER_WINDOW;
     public OverlayManager overlayManager = new OverlayManager();
 
@@ -88,7 +89,8 @@ public class Configuration {
     }
 
     public Configuration() throws IOException{
-        this("src/main/java/platypus3000/simulation.properties"); //TODO
+        this("src/main/java/platypus3000/simulation.properties");
+        System.out.println("THIS IS THE DEFAULT CONFIGURATION. ");
     }
 
     public Configuration(String prop_file) throws IOException{
@@ -123,6 +125,9 @@ public class Configuration {
         GUI_WIDTH = Integer.parseInt(prop.getProperty("SimulationWindowWidth"));
         GUI_HEIGHT = Integer.parseInt(prop.getProperty("SimulationWindowHeight"));
         GUI_SHOW_PARAMETER_WINDOW = Boolean.parseBoolean(prop.getProperty("showParameterWindow"));
+
+        CLEAN_OLD_MESSAGES = Boolean.parseBoolean(prop.getProperty("CleanOldMessages", "False"));
+        System.out.println("CleanOldMessages = "+(CLEAN_OLD_MESSAGES?"True":"False"));
 
     }
 }

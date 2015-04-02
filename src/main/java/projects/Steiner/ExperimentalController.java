@@ -53,8 +53,21 @@ public class ExperimentalController extends RobotController implements LeaderInt
         leaderFollowAlgorithm = new LeaderFollowAlgorithm(this, robot, stateManager, leaderset);
         densityDistribution = new DensityDistribution(this, boundaryAlgorithm, stateManager);
         helpSignal  = new HelpSignal(stateManager, leaderset.isLeader(robot.getID()));
+        stateManager.setLocalState("BoundTest", testPublicState);
     }
 
+    //Distributing the boundary force
+    class TestPublicState extends PublicState{
+        Vec2 bound_mov = new Vec2();
+
+        @Override
+        public PublicState clone() throws CloneNotSupportedException {
+            TestPublicState cloned = new TestPublicState();
+            cloned.bound_mov = bound_mov.clone();
+            return cloned;
+        }
+    }
+    TestPublicState testPublicState = new TestPublicState();
     @Override
     public void loop(RobotInterface robot) {
         stateManager.loop(robot);
@@ -67,7 +80,22 @@ public class ExperimentalController extends RobotController implements LeaderInt
 
         if(densityActivated)
             if(!boundaryAlgorithm.isBoundary()) forceTuner.addForce("Denisty", densityDistribution.getForce(), robot);
-        forceTuner.addForce("Boundary", boundaryAlgorithm.getBoundaryForce(), 5f, robot);
+
+        Vec2 bf = boundaryAlgorithm.getBoundaryForce();
+       if(!boundaryAlgorithm.isBoundary()){
+           int i = 0;
+
+           for(TestPublicState s: stateManager.<TestPublicState>getStates("BoundTest")){
+               bf.addLocal(s.bound_mov);
+               i++;
+           }
+           if(i!=0){
+               bf.mulLocal(1f/i);
+           }
+       }
+        testPublicState.bound_mov = bf;
+
+        forceTuner.addForce("Boundary", bf, 5f, robot);
         forceTuner.addForce("DynBoundary", boundaryAlgorithm.getDynamicBoundaryForce(), 5f, robot);
         forceTuner.addForce("Flocking", flockAlgorithm.getForce(), robot);
         if(leadersInfluenceActivated) {

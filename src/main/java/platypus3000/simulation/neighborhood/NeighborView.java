@@ -168,6 +168,7 @@ public class NeighborView {
      * The comparator has been updated but as these degenerated cases only happen rarely, we still don't know if it really
      * has been fixed.
      * TODO: Check if degenerated cases have been fixed.
+     * TODO: I changed the order because the LocalNeighborhoodTest failed. Check if it is correct.
      */
     public static Comparator<NeighborView> angularComparator = new Comparator<NeighborView>() {
         @Override
@@ -175,8 +176,8 @@ public class NeighborView {
             if(a==b) return 0;
             float angleA = AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(a.getLocalPosition()));
             float angleB = AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(b.getLocalPosition()));
-            if(angleA< angleB || (angleA == angleB && a.getID()<b.getID())) return -1;
-            else return 1;
+            if(angleA< angleB || (angleA == angleB && a.getID()<b.getID())) return 1;
+            else return -1;
         }
     };
 

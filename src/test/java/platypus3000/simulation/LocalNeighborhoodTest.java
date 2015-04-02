@@ -39,33 +39,35 @@ public class LocalNeighborhoodTest {
     NeighborView BviewsA, BviewsD;
 
     @Before
-    public void setUp() throws Exception {  /**
-        float R = Robot.RANGE*1.1f;
-        Simulator sim = new Simulator();
+    public void setUp() throws Exception {
 
-        A = new Robot("A", null, sim,      0,     0, 0);
-        B = new Robot("B", null, sim,    R/2,  -R/2, 0);
-        C = new Robot("C", null, sim,    R/2,   R/2, 0);
-        D = new Robot("D", null, sim,      R,     0, 0);
-        E = new Robot("E", null, sim,  R+R/2,     0, 0);
-        F = new Robot("F", null, sim,    2*R,  -R/2, 0);
-        G = new Robot("G", null, sim,    2*R,   R/2, 0);
-        H = new Robot("H", null, sim, 2.5f*R,     0, 0);
+        Simulator sim = new Simulator(new Configuration());
 
-        DviewsB = new NeighborView(D, B, sim.getTime());
-        DviewsC = new NeighborView(D, C, sim.getTime());
-        DviewsE = new NeighborView(D, E, sim.getTime());
+        float R = sim.configuration.RANGE*1.01f;
 
-        HviewsF = new NeighborView(H, F, sim.getTime());
-        HviewsG = new NeighborView(H, G, sim.getTime());
+        A = sim.createRobot("A", 0, 0, 0);
+        B = sim.createRobot("B",  R/2,  -R/2, 0);
+        C = sim.createRobot("C",   R/2,   R/2, 0);
+        D = sim.createRobot("D",     R,     0, 0);
+        E = sim.createRobot("E",  R+R/2,     0, 0);
+        F = sim.createRobot("F",     2*R,  -R/2, 0);
+        G = sim.createRobot("G",    2*R,   R/2, 0);
+        H = sim.createRobot("H", 2.5f*R,     0, 0);
 
-        BviewsA = new NeighborView(B, A, sim.getTime());
-        BviewsD = new NeighborView(B, D, sim.getTime());
+        DviewsB = new NeighborView(D, B);
+        DviewsC = new NeighborView(D, C);
+        DviewsE = new NeighborView(D, E);
+
+        HviewsF = new NeighborView(H, F);
+        HviewsG = new NeighborView(H, G);
+
+        BviewsA = new NeighborView(B, A);
+        BviewsD = new NeighborView(B, D);
 
         Dneighborhood = new LocalNeighborhood(new ArrayList(Arrays.asList(DviewsB, DviewsC, DviewsE)));
         Hneighborhood = new LocalNeighborhood(new ArrayList(Arrays.asList(HviewsF, HviewsG)));
         Bneighborhood = new LocalNeighborhood(new ArrayList(Arrays.asList(BviewsA, BviewsD)));
-                                 **/
+
     }
 
     @Test
@@ -141,33 +143,33 @@ public class LocalNeighborhoodTest {
     @Test
     public void testNextCounterClockwiseNeighbor() throws Exception {
         //Dneighborhood
-        assertEquals(DviewsE, Dneighborhood.nextCounterClockwiseNeighbor(DviewsC));
-        assertEquals(DviewsC, Dneighborhood.nextCounterClockwiseNeighbor(DviewsB));
-        assertEquals(DviewsB, Dneighborhood.nextCounterClockwiseNeighbor(DviewsE));
+        assertEquals(DviewsE.getID(), Dneighborhood.nextCounterClockwiseNeighbor(DviewsC).getID());
+        assertEquals(DviewsC.getID(), Dneighborhood.nextCounterClockwiseNeighbor(DviewsB).getID());
+        assertEquals(DviewsB.getID(), Dneighborhood.nextCounterClockwiseNeighbor(DviewsE).getID());
 
         //Hneighborhood
-        assertEquals(HviewsF, Hneighborhood.nextCounterClockwiseNeighbor(HviewsG));
-        assertEquals(HviewsG, Hneighborhood.nextCounterClockwiseNeighbor(HviewsF));
+        assertEquals(HviewsF.getID(), Hneighborhood.nextCounterClockwiseNeighbor(HviewsG).getID());
+        assertEquals(HviewsG.getID(), Hneighborhood.nextCounterClockwiseNeighbor(HviewsF).getID());
 
         //Bneighborhood
-        assertEquals(BviewsA, Bneighborhood.nextCounterClockwiseNeighbor(BviewsD));
-        assertEquals(BviewsD, Bneighborhood.nextCounterClockwiseNeighbor(BviewsA));
+        assertEquals(BviewsA.getID(), Bneighborhood.nextCounterClockwiseNeighbor(BviewsD).getID());
+        assertEquals(BviewsD.getID(), Bneighborhood.nextCounterClockwiseNeighbor(BviewsA).getID());
     }
 
     @Test
     public void testNextClockwiseNeighbor() throws Exception {
         //Dneighborhood
-        assertEquals(DviewsB, Dneighborhood.nextClockwiseNeighbor(DviewsC));
-        assertEquals(DviewsE, Dneighborhood.nextClockwiseNeighbor(DviewsB));
-        assertEquals(DviewsC, Dneighborhood.nextClockwiseNeighbor(DviewsE));
+        assertEquals(DviewsB.getID(), Dneighborhood.nextClockwiseNeighbor(DviewsC).getID());
+        assertEquals(DviewsE.getID(), Dneighborhood.nextClockwiseNeighbor(DviewsB).getID());
+        assertEquals(DviewsC.getID(), Dneighborhood.nextClockwiseNeighbor(DviewsE).getID());
 
         //Hneighborhood
-        assertEquals(HviewsF, Hneighborhood.nextClockwiseNeighbor(HviewsG));
-        assertEquals(HviewsG, Hneighborhood.nextClockwiseNeighbor(HviewsF));
+        assertEquals(HviewsF.getID(), Hneighborhood.nextClockwiseNeighbor(HviewsG).getID());
+        assertEquals(HviewsG.getID(), Hneighborhood.nextClockwiseNeighbor(HviewsF).getID());
 
         //Bneighborhood
-        assertEquals(BviewsA, Bneighborhood.nextClockwiseNeighbor(BviewsD));
-        assertEquals(BviewsD, Bneighborhood.nextClockwiseNeighbor(BviewsA));
+        assertEquals(BviewsA.getID(), Bneighborhood.nextClockwiseNeighbor(BviewsD).getID());
+        assertEquals(BviewsD.getID(), Bneighborhood.nextClockwiseNeighbor(BviewsA).getID());
     }
 
 

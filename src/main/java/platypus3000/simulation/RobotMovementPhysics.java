@@ -34,8 +34,8 @@ public class RobotMovementPhysics {
         actual_speed = getNewVelocity(actual_speed);
         actual_roationSpeed = getRotationVelocity(actual_roationSpeed);
 
-        deviation += noiseModel.getSpeedDeviationChange();
-        deviation_rotation += noiseModel.getRotationSpeedDeviationChange();
+        deviation = noiseModel.getSpeedDeviationChange();
+        deviation_rotation = noiseModel.getRotationSpeedDeviationChange();
 
     }
 
@@ -44,7 +44,7 @@ public class RobotMovementPhysics {
     }
 
     public float getRealSpeed(){
-        return actual_speed+deviation;
+        return actual_speed*(1+deviation);
     }
 
     public float getObservedRotationSpeed(){
@@ -52,7 +52,7 @@ public class RobotMovementPhysics {
     }
 
     public float getRealRotationSpeed(){
-        return actual_roationSpeed+deviation_rotation;
+        return actual_roationSpeed*(1+deviation_rotation);
     }
 
     public void setLocalMovement(Vec2 v){

@@ -12,6 +12,10 @@ import platypus3000.simulation.neighborhood.LocalNeighborhood;
  */
 public interface RobotInterface extends ColorInterface
 {
+    /**
+     * This is the unique ID of the robot
+     * @return ID
+     */
     public int getID();
 
     // Sending messages
@@ -19,14 +23,6 @@ public interface RobotInterface extends ColorInterface
     public void send(MessagePayload msg);
     public Iterable<Message> incomingMessages();
 
-    /**
-     *        (1,0)
-     * (0,-1) / | \ (0,1)
-     *        \ _ /
-     *       (-1,0)
-     *
-     * @return
-     */
 
     public LocalNeighborhood getNeighborhood();
 
