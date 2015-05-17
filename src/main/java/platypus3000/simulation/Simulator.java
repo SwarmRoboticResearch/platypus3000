@@ -22,6 +22,7 @@ import java.util.concurrent.*;
  */
 public class Simulator {
     public final Configuration configuration;
+    public LineEnvironment environment;
 
     //<Robots>
     LinkedHashMap<Integer, Robot> robots = new LinkedHashMap<Integer, Robot>();
@@ -83,6 +84,7 @@ public class Simulator {
 
             }
         });
+        this.environment = new LineEnvironment(this);
     }
 
     private int getFreeID(){
@@ -163,6 +165,10 @@ public class Simulator {
         obstacles.add(obstacle);
 
         return obstacle;
+    }
+
+    public Obstacle createObstacle(Vec2... globalPoints){
+        return createObstacle(0,0,globalPoints);
     }
 
     /**

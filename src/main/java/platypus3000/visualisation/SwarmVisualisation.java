@@ -8,6 +8,7 @@ import platypus3000.simulation.Robot;
 import platypus3000.simulation.Simulator;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PVector;
 import processing.pdf.PGraphicsPDF;
 
 import java.io.File;
@@ -42,6 +43,7 @@ public class SwarmVisualisation implements PConstants{
 
     public void drawSimulation() {
         graphics.strokeWeight(0.01f);
+        drawEnvironment();
         drawNeighborhoodGraph();
         simulator.configuration.overlayManager.loopBackgroundOverlays(graphics, simulator.getRobots(), selectedRobots);
         for(Robot r: selectedRobots) drawRobot(r);
@@ -52,6 +54,18 @@ public class SwarmVisualisation implements PConstants{
             drawObstacle(o);
         simulator.configuration.overlayManager.loopForegroundOverlays(graphics, simulator.getRobots(), selectedRobots);
 
+    }
+
+    public void drawEnvironment(){
+        graphics.pushStyle();
+        graphics.strokeWeight(0.02f);
+        graphics.stroke(Colors.BLACK);
+        for(Vec2[] l: simulator.environment.linesToDraw){
+            for(int i=1; i<l.length; i++){
+                graphics.line(l[i-1].x, l[i-1].y, l[i].x,l[i].y);
+            }
+        }
+        graphics.popStyle();
     }
 
     public void drawRobotBody(Robot r) {
