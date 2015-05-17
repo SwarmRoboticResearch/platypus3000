@@ -18,6 +18,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  *  In this class the visualisation is managed. The simulator runs in
@@ -45,7 +46,6 @@ public class InteractiveVisualisation extends PApplet
     public int simulationSpeed = 1;
 
     //<Select and Drag> Only needed for the possibility of selecting and/or dragging a robot
-    private boolean dragging = false;
     private boolean recordPDF = false;
 
     public void makeScreenshot(){
@@ -68,6 +68,7 @@ public class InteractiveVisualisation extends PApplet
 
     public void setup()
     {
+        pushMouseHandler(new DefaultMouseAction());
         size(WINDOW_SIZE.width, WINDOW_SIZE.height, P2D);
         zoomPan = new ZoomPan(this);
         float simToVisScaling = 100;
@@ -145,7 +146,7 @@ public class InteractiveVisualisation extends PApplet
             public boolean reportFixture(Fixture fixture) {
                         if (fixture.getUserData() instanceof Robot) {
                             hoverRobot = (Robot) fixture.getUserData();
-                            if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.RADIUS * simRunner.getSim().configuration.RADIUS)) {
+                            if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.getRobotRadius() * simRunner.getSim().configuration.getRobotRadius())) {
                                 hoverRobot = null;
                                 return true;
                             }
@@ -175,12 +176,11 @@ public class InteractiveVisualisation extends PApplet
         }
         swarmVisualisation.setGraphics(usedGraphics);
 
-        //Set the zoom and move possibility and additional the dragging.
-        if (dragging && mousePressedFor(300)) {
-            //Move the selected robot to the mouse-position, if it is dragged (mouse is still clicked)
-            PVector mouseCoord = zoomPan.getMouseCoord();
-            simRunner.getSim().beamObject(selectedObject, mouseCoord.x, mouseCoord.y);
-            // zoomPan.setMouseMask(SHIFT); //Still allow moving in the coord-system with shift
+
+        //Loop mouse handler
+        if(mousePressed){
+            PVector coords = zoomPan.getMouseCoord();
+            mouseHandlerStack.peek().onPressedIteration(coords.x, coords.y,mouseButton, this, System.currentTimeMillis()-mousePressedAt);
         }
 
         background(255); //Set background. 255->transparent/white, 0->Black
@@ -230,12 +230,7 @@ public class InteractiveVisualisation extends PApplet
 
     }
 
-    private long mousePressedAt = 0;
 
-    boolean mousePressedFor(long ms){
-        if(mousePressedAt == 0) return false; //0 is 'never pressed'
-        return System.currentTimeMillis()-mousePressedAt >= ms;
-    }
 
     HashMap<PVector, String> texts = new HashMap<PVector, String>();
 
@@ -259,103 +254,73 @@ public class InteractiveVisualisation extends PApplet
         texts.clear();
     }
 
+
+
+    //**Mouse Handling**
+    private Stack<MouseHandler> mouseHandlerStack = new Stack<MouseHandler>();
+    private boolean mousePressed = false;
+    private long mousePressedAt = 0;
+
+    /**
+     * Sets a new mouse handler on top. This mouse handler will get all mouse events until it is popped. Then the
+     * previous handle will take its place again
+     * @param mouseHandler The new mouse handler
+     */
+    public void pushMouseHandler(MouseHandler mouseHandler){
+        mouseHandlerStack.push(mouseHandler);
+        if(mousePressed){
+            PVector coords = zoomPan.getMouseCoord();
+            mouseHandlerStack.peek().onClick(coords.x, coords.y,mouseButton, this);
+        }
+    }
+
+    /**
+     * This method removes the mouse handler and replaces it by the previous one
+     * @param mouseHandler
+     */
+    public void popMouseHandler(MouseHandler mouseHandler){
+        assert mouseHandlerStack.peek() == mouseHandler;
+        mouseHandlerStack.pop();
+    }
     @Override
     public void mousePressed()
     {
+        mousePressed = true;
         mousePressedAt = System.currentTimeMillis();
-        if(mouseButton == LEFT) {
-
-            if(selectedObject != null && selectedObject instanceof Robot){
-                if(rotator.isInRotationField(zoomPan.getMouseCoord())){
-                    rotator.activateRotation();
-                    return;
-                }
-            }
-
-            //println(zoomPan.getMouseCoord());
-            selectedObject = null;
-            swarmVisualisation.selectedRobots.clear();
-            dragging = false;
-            synchronized (simRunner.getSim()) {
-                simRunner.getSim().world.queryAABB(new QueryCallback() {
-                    @Override
-                    public boolean reportFixture(Fixture fixture) {
-                        if (fixture.getUserData() instanceof Robot) {
-                            selectedObject = (Robot) fixture.getUserData();
-                            swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
-
-                            if (selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.RADIUS * simRunner.getSim().configuration.RADIUS)) {
-                                selectedObject = null;
-                                swarmVisualisation.selectedRobots.clear();
-                                return true;
-                            }
-                            selectedRobotTrace.clear();
-                            dragging = allowRobotDragging;
-                            zoomPan.setMouseMask(SHIFT);
-
-                            return false;
-                        } else if (fixture.getUserData() instanceof Obstacle) {
-                            if (!((Obstacle) fixture.getUserData()).pointInObstacle(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y))
-                                return true;
-                            selectedObject = (Obstacle) fixture.getUserData();
-                            swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
-                            dragging = allowRobotDragging;
-                            zoomPan.setMouseMask(SHIFT);
-                            selectedRobotTrace.clear();
-                            return false;
-                        }
-                        return true;
-                    }
-                }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
-            }
-
-        } else if(mouseButton == RIGHT){
-            assert dragging == false;
-            if(selectedObject != null && selectedObject instanceof Robot) {
-                Robot selectedRobot = (Robot) selectedObject;
-                selectedRobot.setController(new MouseFollowController(this, selectedRobot, selectedRobot.getController()));
-                zoomPan.setMouseMask(SHIFT);
-            }
-        }
+        PVector coords = zoomPan.getMouseCoord();
+        mouseHandlerStack.peek().onClick(coords.x, coords.y,mouseButton, this);
     }
+    @Override
+    public void mouseReleased()
+    {
+        mousePressed  = false;
+        PVector coords = zoomPan.getMouseCoord();
+        mouseHandlerStack.peek().onRelease(coords.x, coords.y, mouseButton, this);
+    }
+    //***
+
+
+
 
     public void drawRobotsTexts() {
         for(Robot r : simRunner.getSim().getRobots()) {
             //Prints the name under the robot
             if (showNamesOfAllRobots) {
 
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.toString());
+                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.toString());
             } else {
                 if (showNameOfSelectedRobot && r == selectedObject)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
                 if (HOVER && r == hoverRobot)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.RADIUS * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
             }
 
             if (simRunner.getSim().configuration.drawTexts() &&  r.textString != null)
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - simRunner.getSim().configuration.RADIUS * 2), r.textString);
+                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - simRunner.getSim().configuration.getRobotRadius() * 2), r.textString);
         }
     }
 
-    @Override
-    public void mouseReleased()
-    {
-        mousePressedAt =0;
-        zoomPan.setMouseMask(0);
-        dragging = false;
 
-        //Remove MouseFollowController
-        if(selectedObject instanceof Robot){
-            Robot r = (Robot)selectedObject;
-            if(r.getController() instanceof MouseFollowController){
-                r.setController(((MouseFollowController) r.getController()).oldController);
-                r.setMovement(new Vec2(0,0));
-            }
-        }
-
-        //if rotation is active, deactivate it. There is no use in checking if it is active
-        rotator.deactivateRotation();
-    }
 
 
 
@@ -401,27 +366,96 @@ public class InteractiveVisualisation extends PApplet
 
     public InteractiveVisualisation(Dimension size, SimulationRunner simRunner) {
         super();
-        if(instance != null) throw new RuntimeException();
+        if(instance != null) throw new RuntimeException("You can only run one visualisation window at once!");
         instance = this;
         this.simRunner = simRunner;
         WINDOW_SIZE = size;
     }
 
-    /**
-     * Prints a ASCII Platypus and the name on System.out
-     * Only for fun, not really necessary.
-     */
-    public static void printPlatypus()
-    {
-        System.out.println("            _.- ~~^^^'~- _ _  .,.-  ~  ~ ~  ~  -  _");
-        System.out.println("  ________,'       ::.                              ~ -.");
-        System.out.println(" ((      ~_\\   -s-  ::                         _ -       ;,");
-        System.out.println("  \\\\ ______<.._ .;;;`                        ,'         }  `',");
-        System.out.println("   ``~~~~~ ~` ~- _                          ;            ;    `\\");
-        System.out.println("                 _ _- _ (   }               {           , \\,    `,");
-        System.out.println("                ((/  _ _i   ! _              ,        ,'    \\,    ,");
-        System.out.println("                   ((((____/    ~  - - - - _ _'_-_,_,`        \\,  ;");
-        System.out.println("                                          (,(,(, ____>          \\,'");
-        System.out.println("------PLATYPUS 3000 - A simple R-One Swarm Robotic Simulator------");
+
+    class DefaultMouseAction implements MouseHandler {
+
+        @Override
+        public void onClick(float X, float Y, int button, InteractiveVisualisation vis) {
+            mousePressedAt = System.currentTimeMillis();
+            if(mouseButton == LEFT) {
+
+                if(selectedObject != null && selectedObject instanceof Robot){
+                    if(rotator.isInRotationField(zoomPan.getMouseCoord())){
+                        rotator.activateRotation();
+                        return;
+                    }
+                }
+
+                //println(zoomPan.getMouseCoord());
+                selectedObject = null;
+                swarmVisualisation.selectedRobots.clear();
+                synchronized (simRunner.getSim()) {
+                    simRunner.getSim().world.queryAABB(new QueryCallback() {
+                        @Override
+                        public boolean reportFixture(Fixture fixture) {
+                            if (fixture.getUserData() instanceof Robot) {
+                                selectedObject = (Robot) fixture.getUserData();
+                                swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
+
+                                if (selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.getRobotRadius() * simRunner.getSim().configuration.getRobotRadius())) {
+                                    selectedObject = null;
+                                    swarmVisualisation.selectedRobots.clear();
+                                    return true;
+                                }
+                                selectedRobotTrace.clear();
+                                if(allowRobotDragging) pushMouseHandler(new DraggingHandler(selectedObject));
+
+
+                                return false;
+                            } else if (fixture.getUserData() instanceof Obstacle) {
+                                if (!((Obstacle) fixture.getUserData()).pointInObstacle(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y))
+                                    return true;
+                                selectedObject = (Obstacle) fixture.getUserData();
+                                swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
+                                if(allowRobotDragging) pushMouseHandler(new DraggingHandler(selectedObject));
+                                selectedRobotTrace.clear();
+                                return false;
+                            }
+                            return true;
+                        }
+                    }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+                }
+
+            } else if(mouseButton == RIGHT){
+                if(selectedObject != null && selectedObject instanceof Robot) {
+                    Robot selectedRobot = (Robot) selectedObject;
+                    selectedRobot.setController(new MouseFollowController(vis, selectedRobot, selectedRobot.getController()));
+                    zoomPan.setMouseMask(SHIFT);
+                }
+            }
+        }
+
+        @Override
+        public void onPressedIteration(float X, float Y, int button, InteractiveVisualisation vis, long timeInMs) {
+
+        }
+
+        @Override
+        public void onRelease(float X, float Y, int button, InteractiveVisualisation vis) {
+            mousePressedAt =0;
+            zoomPan.setMouseMask(0);
+
+            //Remove MouseFollowController
+            if(selectedObject instanceof Robot){
+                Robot r = (Robot)selectedObject;
+                if(r.getController() instanceof MouseFollowController){
+                    r.setController(((MouseFollowController) r.getController()).oldController);
+                    r.setMovement(new Vec2(0,0));
+                }
+            }
+
+            //if rotation is active, deactivate it. There is no use in checking if it is active
+            rotator.deactivateRotation();
+        }
     }
+
+
+
+
 }

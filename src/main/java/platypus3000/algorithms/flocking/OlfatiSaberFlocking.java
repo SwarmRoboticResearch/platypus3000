@@ -54,9 +54,9 @@ public class OlfatiSaberFlocking implements Loopable {
         multiVectorOverlay.add(consensusForce, "Consensus");
         multiVectorOverlay.add(gridForce, "grid");
         multiVectorOverlay.add(force, "force");
-        H = controller.getConfiguration().RADIUS/ controller.getConfiguration().RANGE; //Perfect adjacency
-        R = controller.getConfiguration().RANGE;
-        D =  0.5f* controller.getConfiguration().RANGE;
+        H = controller.getConfiguration().getRobotRadius()/ controller.getConfiguration().getRobotCommunicationRange(); //Perfect adjacency
+        R = controller.getConfiguration().getRobotCommunicationRange();
+        D =  0.5f* controller.getConfiguration().getRobotCommunicationRange();
         R_ALPHA = omegaNorm(R);
         D_ALPHA = omegaNorm(D);
     }

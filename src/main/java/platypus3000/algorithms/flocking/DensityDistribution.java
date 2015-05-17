@@ -42,8 +42,8 @@ public class DensityDistribution implements Loopable {
         stateManager.setLocalState(STATE_KEY, publicState);
         new VectorOverlay(controller, "New Density Force", force);
         strengthOverlay = new ContinuousColorOverlay(controller, "New Density", 0,6);
-        RANGE = controller.getConfiguration().RANGE;
-        RADIUS = controller.getConfiguration().RADIUS;
+        RANGE = controller.getConfiguration().getRobotCommunicationRange();
+        RADIUS = controller.getConfiguration().getRobotRadius();
         conf = controller.getConfiguration();
     }
 
@@ -85,10 +85,10 @@ public class DensityDistribution implements Loopable {
         float weightedRobotCount = 0;
         for(NeighborView n: robot.getNeighborhood()){
             weightedRobotCount += 1;
-            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.25)*(conf.RANGE*0.25)) weightedRobotCount+=0.1f;
-            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.2)*(conf.RANGE*0.2)) weightedRobotCount+=0.3f;
-            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.15)*(conf.RANGE*0.15)) weightedRobotCount+=0.9f;
-            if(n.getLocalPosition().lengthSquared()<(conf.RANGE*0.1)*(conf.RANGE*0.15)) weightedRobotCount+=2.7f;
+            if(n.getLocalPosition().lengthSquared()<(conf.getRobotCommunicationRange()*0.25)*(conf.getRobotCommunicationRange()*0.25)) weightedRobotCount+=0.1f;
+            if(n.getLocalPosition().lengthSquared()<(conf.getRobotCommunicationRange()*0.2)*(conf.getRobotCommunicationRange()*0.2)) weightedRobotCount+=0.3f;
+            if(n.getLocalPosition().lengthSquared()<(conf.getRobotCommunicationRange()*0.15)*(conf.getRobotCommunicationRange()*0.15)) weightedRobotCount+=0.9f;
+            if(n.getLocalPosition().lengthSquared()<(conf.getRobotCommunicationRange()*0.1)*(conf.getRobotCommunicationRange()*0.15)) weightedRobotCount+=2.7f;
         }
 
         if(boundaryRobot!=null && sectorCount>0) sectorAreas += sectorAreas/sectorCount;
@@ -109,7 +109,7 @@ public class DensityDistribution implements Loopable {
                 Vec2 d = n.getLocalPosition();
                 float dist = d.normalize();//d.mulLocal(1/(n.getDistance()));
                 float diff = (DESIRED_DENSITY-nstate.density);
-                dist = dist/conf.RANGE;
+                dist = dist/conf.getRobotCommunicationRange();
                 if(diff<0) dist = 1- dist;
                 //if(diff<0) diff*=(1/n.getDistance());
                 //else diff*=n.getDistance();

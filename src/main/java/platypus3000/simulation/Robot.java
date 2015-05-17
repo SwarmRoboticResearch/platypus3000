@@ -91,7 +91,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     void updateOutput() {
         //Set the movement
-        movementsPhysics.step(getMovement());
+        movementsPhysics.step(super.getMovement());
 
         super.setMovement(movementsPhysics.getRealSpeed(), movementsPhysics.getRealRotationSpeed());
 
@@ -102,10 +102,6 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     public void setMovementAccuracy(float accuracy){
         movementsPhysics.setAccuracy(accuracy);
-    }
-
-    public Vec2 getGlobalMovement() {
-        return AngleUtils.toVector(movementsPhysics.getObservedSpeed(), getGlobalAngle());
     }
 
     public void setMovement(Vec2 direction) {
@@ -161,7 +157,7 @@ public class Robot extends SimulatedObject implements RobotInterface {
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-    private BlockingQueue<Message> outgoingMessages = new ArrayBlockingQueue<Message>(getSimulator().configuration.MESSAGE_BUFFER_SIZE);
+    private BlockingQueue<Message> outgoingMessages = new ArrayBlockingQueue<Message>(getSimulator().configuration.getMessageBufferSize());
 
     @Override
     public int getID() {

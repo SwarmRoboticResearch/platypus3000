@@ -41,7 +41,7 @@ public class GlobalNeighborhoodTest {
 
 
         sim = new Simulator(new Configuration());
-        float R = sim.configuration.RANGE*1.01f;
+        float R = sim.configuration.getRobotCommunicationRange()*1.01f;
 
         A = sim.createRobot("A",0,0,0);
         B = sim.createRobot("B", R/2,  -R/2, 0);

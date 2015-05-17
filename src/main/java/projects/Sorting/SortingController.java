@@ -198,7 +198,7 @@ public class SortingController extends RobotController {
                 //Move closer to predecessor if necessary
                 if(contractionTree!=null && !contractionTree.isTerminated() && contractionTree.areChildrenTerminated()){
                     robot.setMovementAccuracy(0.3f);
-                    boolean constr = robot.getNeighborhood().getById(contractionTree.getPredecessor()).getDistance()>0.8f*getConfiguration().RANGE;
+                    boolean constr = robot.getNeighborhood().getById(contractionTree.getPredecessor()).getDistance()>0.8f*getConfiguration().getRobotCommunicationRange();
                     contractionTree.delay(constr);
                     if(constr){
                         robot.setMovement(robot.getNeighborhood().getById(contractionTree.getPredecessor()).getLocalPosition());
@@ -323,7 +323,7 @@ public class SortingController extends RobotController {
                             if(bstNbr == null || bestNbr_hops>nbrDistanceValue){
                                 bestNbr_hops = nbrDistanceValue;
                                 bstNbr = nbrState.getRobotID();
-                                if(nbrState.path && (nbrState.getRobotID() == contractionTree.getPredecessor() || robot.getNeighborhood().getById(nbrState.getRobotID()).getDistance()<0.8*getConfiguration().RANGE)) {
+                                if(nbrState.path && (nbrState.getRobotID() == contractionTree.getPredecessor() || robot.getNeighborhood().getById(nbrState.getRobotID()).getDistance()<0.8*getConfiguration().getRobotCommunicationRange())) {
                                     if (nbrState.rightIntegrationPos != null && (nbrState.leftIntegrationPos == null || (nbr.transformPointToObserversViewpoint(nbrState.rightIntegrationPos.mul(1/nbrState.rightIntegrationPos.length())).lengthSquared() < nbr.transformPointToObserversViewpoint(nbrState.leftIntegrationPos.mul(1/nbrState.leftIntegrationPos.length())).lengthSquared()))) {
                                         //if (nbrState.rightIntegrationPos != null && (nbrState.leftIntegrationPos == null || (nbr.transformPointToObserversViewpoint(nbrState.rightIntegrationPos).lengthSquared() < nbr.transformPointToObserversViewpoint(nbrState.leftIntegrationPos).lengthSquared()))) {
                                         bestNbrPos = nbr.transformPointToObserversViewpoint(nbrState.rightIntegrationPos);
@@ -351,11 +351,11 @@ public class SortingController extends RobotController {
                         Vec2 collisionAvoidance = new Vec2();
                         Float closestNbr = null;
                         for(NeighborView n: robot.getNeighborhood()){
-                            if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.03f)*(2*getConfiguration().RADIUS+0.03f) || retreating){
+                            if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().getRobotRadius()+0.03f)*(2*getConfiguration().getRobotRadius()+0.03f) || retreating){
                                 if(n.getLocalPosition().sub(bestNbrPos).lengthSquared()<bestNbrPos.lengthSquared() || (stateManager.contains(n.getID(), SortingController.class.getName()) && stateManager.<PublicSortingState>getState(n.getID(), SortingController.class.getName()).path)){
                                     float x = 1f/n.getLocalPosition().lengthSquared();
                                     collisionAvoidance.addLocal(n.getLocalPosition().mul(-x));
-                                    if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.03f)*(2*getConfiguration().RADIUS+0.03f)) retreating = true;
+                                    if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().getRobotRadius()+0.03f)*(2*getConfiguration().getRobotRadius()+0.03f)) retreating = true;
                                     if(closestNbr == null || n.getLocalPosition().lengthSquared()<closestNbr) closestNbr = n.getLocalPosition().lengthSquared();
                                 }
                             }
@@ -579,7 +579,7 @@ public class SortingController extends RobotController {
     Vec2 getCollisionAvoidanceVector(RobotInterface r, LocalNeighborhood neighborhood){
         Vec2 v = new Vec2();
         for(NeighborView n: neighborhood){
-            if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().RADIUS+0.01f)*(2*getConfiguration().RADIUS+0.01f)){
+            if(n.getLocalPosition().lengthSquared() < (2*getConfiguration().getRobotRadius()+0.01f)*(2*getConfiguration().getRobotRadius()+0.01f)){
                 float x = 1f/n.getLocalPosition().lengthSquared();
                 if(n.getID()< r.getID()) x*=5;
                 v.addLocal(n.getLocalPosition().mul(-x));
@@ -638,7 +638,7 @@ public class SortingController extends RobotController {
         ArrayList<NeighborView> possibleCollisions = new ArrayList<NeighborView>();
         for(NeighborView n : ln) {
             if(Math.abs(AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getClockwiseRadian(dir, n.getLocalPosition()))) < Math.PI/2 &&
-                    getPointLineVector(n, dir).length() < getConfiguration().RADIUS*2 &&
+                    getPointLineVector(n, dir).length() < getConfiguration().getRobotRadius()*2 &&
                     n.getLocalPosition().lengthSquared() <= dir.lengthSquared())
                 possibleCollisions.add(n);
         }

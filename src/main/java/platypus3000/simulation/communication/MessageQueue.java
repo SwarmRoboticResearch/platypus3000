@@ -20,7 +20,7 @@ public class MessageQueue implements Iterable<Message>{
     public MessageQueue(Robot robot){
         this.robot = robot;
 
-        delayableMessageQueue = new PriorityBlockingQueue<Message>(robot.getSimulator().configuration.MESSAGE_BUFFER_SIZE, new Comparator<Message>() {
+        delayableMessageQueue = new PriorityBlockingQueue<Message>(robot.getSimulator().configuration.getMessageBufferSize(), new Comparator<Message>() {
             @Override
             public int compare(Message m1, Message m2) {
                 return new Long(m1.timestamp).compareTo(m2.timestamp);

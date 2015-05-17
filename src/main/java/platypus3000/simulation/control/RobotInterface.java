@@ -18,8 +18,23 @@ public interface RobotInterface extends ColorInterface
      */
     public int getID();
 
+    //**************************************************************************
     // Sending messages
+    //**************************************************************************
+
+    /**
+     * This method sends a message to the neighbor with the specified address.
+     * All messages need to extend MessagePayload that in especially enforces the implementation of a deep copy
+     * method. If you do not provide a deep copy, the robots can interfere.
+     * @param message The message wrapped as MessagePayload
+     * @param address ID of the neighbor
+     */
     public void send(MessagePayload message, int address);
+
+    /**
+     * This method sends a message to all neighbors.
+     * @param msg
+     */
     public void send(MessagePayload msg);
     public Iterable<Message> incomingMessages();
 

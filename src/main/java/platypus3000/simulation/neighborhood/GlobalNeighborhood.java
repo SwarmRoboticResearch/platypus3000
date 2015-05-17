@@ -61,13 +61,13 @@ public class GlobalNeighborhood {
             public boolean reportFixture(Fixture fixture) {
                 if (fixture.getUserData() instanceof Robot) {
                     final Robot closeRobot = (Robot) fixture.getUserData();
-                    if (closeRobot != sourceRobot && location.sub(closeRobot.getGlobalPosition()).lengthSquared() < sim.configuration.RANGE*sim.configuration.RANGE) {
+                    if (closeRobot != sourceRobot && location.sub(closeRobot.getGlobalPosition()).lengthSquared() < sim.configuration.getRobotCommunicationRange()*sim.configuration.getRobotCommunicationRange()) {
                         robotsInRange.add(closeRobot); //Add the robot to the neighbours list for now
                     }
                 }
                 return true;
             }
-        }, new AABB(new Vec2(location.x - sim.configuration.RANGE, location.y - sim.configuration.RANGE), new Vec2(location.x + sim.configuration.RANGE, location.y + sim.configuration.RANGE)));
+        }, new AABB(new Vec2(location.x - sim.configuration.getRobotCommunicationRange(), location.y - sim.configuration.getRobotCommunicationRange()), new Vec2(location.x + sim.configuration.getRobotCommunicationRange(), location.y + sim.configuration.getRobotCommunicationRange())));
 
         final Set<Robot> visibleRobots = new HashSet<Robot>(robotsInRange);
 

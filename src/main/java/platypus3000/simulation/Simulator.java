@@ -121,7 +121,7 @@ public class Simulator {
 
         //Setting the shape of the robot in the physic engine to an circle with radius defined in RADIUS
         CircleShape shape = new CircleShape();
-        shape.m_radius = configuration.RADIUS;
+        shape.m_radius = configuration.getRobotRadius();
 
         FixtureDef fixtureDef = new FixtureDef(); //The fixture contains the physical properties of the robot in the physic engine
         fixtureDef.shape = shape;

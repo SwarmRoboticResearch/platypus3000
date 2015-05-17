@@ -19,7 +19,7 @@ public class NeighborViewTest {
     public void setUp() throws Exception {
         sim = new Simulator();
         a = sim.createRobot("A",0f,0f,0f);
-        b = sim.createRobot("B",sim.getConfiguration().RANGE*0.5f,0f,0f);
+        b = sim.createRobot("B",sim.getConfiguration().getRobotCommunicationRange()*0.5f,0f,0f);
         sim.step();
     }
 

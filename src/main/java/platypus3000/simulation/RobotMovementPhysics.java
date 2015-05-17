@@ -93,18 +93,17 @@ public class RobotMovementPhysics {
         float speed = desiredSpeed;
         //accelerating
         if((desiredSpeed>=0 && oldVelocity<desiredSpeed) || (desiredSpeed<0 && desiredSpeed< oldVelocity)) {
-            speed = MathUtils.min(oldVelocity + configuration.MAX_ACCELERATION, speed);
-            speed = MathUtils.max(oldVelocity - configuration.MAX_ACCELERATION, speed);
+            speed = MathUtils.min(oldVelocity + configuration.getMaximalAcceleration(), speed);
+            speed = MathUtils.max(oldVelocity - configuration.getMaximalAcceleration(), speed);
         }
         //braking
         else {
-            speed = MathUtils.max(oldVelocity - configuration.MAX_BRAKE_POWER, speed);
-            speed = MathUtils.min(oldVelocity + configuration.MAX_BRAKE_POWER, speed);
+            speed = MathUtils.max(oldVelocity - configuration.getMaximalBrakeVelocity(), speed);
+            speed = MathUtils.min(oldVelocity + configuration.getMaximalBrakeVelocity(), speed);
         }
         //Max velocity
-        speed = MathUtils.min(configuration.MAX_VELOCITY, speed);
-        speed = MathUtils.max(-configuration.MAX_VELOCITY, speed);
-        assert speed >= -configuration.MAX_VELOCITY && speed <= configuration.MAX_VELOCITY;
+        speed = MathUtils.min(configuration.getMaximalVelocity(), speed);
+        speed = MathUtils.max(-configuration.getMaximalVelocity(), speed);
         return speed;
     }
 

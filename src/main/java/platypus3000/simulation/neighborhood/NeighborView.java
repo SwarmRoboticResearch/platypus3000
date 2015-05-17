@@ -90,12 +90,8 @@ public class NeighborView {
      * @return
      */
     public Vec2 getLocalMovementDifference() {
-        if(localDirection == null) { //lazy evaluation
-            localDirection = getLocalMovement().sub(observerRobot.getLocalMovement());  //TODO no need for lazy
-        }
-        return localDirection.clone();
+        return getLocalMovement().sub(observerRobot.getLocalMovement());
     }
-    Vec2 localDirection = null;
 
 
     /**
@@ -150,7 +146,7 @@ public class NeighborView {
 
         NeighborView that = (NeighborView) o;
 
-        return !(timestamp != that.timestamp || ID != that.ID || !observerRobot.equals(that.observerRobot));
+        return timestamp == that.timestamp && ID == that.ID && observerRobot.equals(that.observerRobot);
 
     }
 
