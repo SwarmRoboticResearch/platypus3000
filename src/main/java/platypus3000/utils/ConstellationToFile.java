@@ -17,6 +17,14 @@ import java.util.StringTokenizer;
  * Created by doms on 5/21/15.
  */
 public class ConstellationToFile {
+    /**
+     * Writes the positions and ids of the robots to a file that can be parsed again.
+     * The state and the controller are NOT saved.
+     * Obstacles are saved to.
+     * @param sim The simulation that shall be safed
+     * @param filePath The path and name of the file. Does not need to exist. May be overwritten
+     * @throws IOException
+     */
     public static void writeConstellationToFile(Simulator sim, String filePath) throws IOException{
         PrintWriter writer = new PrintWriter(filePath, "UTF-8");
         for(Robot r: sim.getRobots()){
@@ -38,6 +46,16 @@ public class ConstellationToFile {
         System.out.println("Wrote Constellation for File "+filePath);
     }
 
+    /**
+     * Parses a constellation file, that may have been created with 'writeConstellationToFile'.
+     * Obstacles are created without help.
+     * For the robots, it gives the position, id and stuff to a robot creator that has to create the robots.
+     * This is done, because otherwise the controller can not be set easily.
+     * @param filePath The path of the file to be parsed
+     * @param sim The simulator, the elements shall be added to
+     * @param robotCreator A creator object that handles the creation of the robots.
+     * @throws IOException
+     */
     public static void loadConstellationFromFile(String filePath, Simulator sim, RobotCreator robotCreator) throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(filePath));
         try {
@@ -74,6 +92,14 @@ public class ConstellationToFile {
     }
 
     public interface RobotCreator {
+        /**
+         * This method creates the robots
+         * @param sim Simulation the robot has to be added to.
+         * @param id id of robot
+         * @param x global x-Position
+         * @param y global y-Position
+         * @param angle global angle
+         */
         public void createRobot(Simulator sim, int id, float x, float y, float angle);
     }
 }
