@@ -39,6 +39,7 @@ public class Simulator {
     }
 
     public Simulator(Configuration conf) {
+        conf.makeFinal();
         this.configuration = conf;
         executor  = Executors.newFixedThreadPool(configuration.THREADS);
 

@@ -15,6 +15,7 @@ public class Configuration {
     public final boolean CLEAN_OLD_MESSAGES;
     public final boolean GUI_SHOW_PARAMETER_WINDOW;
     public OverlayManager overlayManager = new OverlayManager();
+    private boolean finalized = false;
 
     private boolean ALLOW_OVERLAPPING;
     public void setAllowOverlapping(boolean overlapping){
@@ -46,9 +47,13 @@ public class Configuration {
         return RADIUS;
     }
 
-    private final float RANGE; //range of the communication in m from the center of the robot
+    private float RANGE; //range of the communication in m from the center of the robot
     public float getRobotCommunicationRange(){
         return RANGE;
+    }
+    public void setRobotCommunicationRange(float range) {
+        if(finalized) throw new RuntimeException("Configuration is finalized! No changes at this time possible");
+        RANGE = range;
     }
 
     private final int MESSAGE_BUFFER_SIZE; //The maximum amount of messages, the robot can buffer.
@@ -116,6 +121,9 @@ public class Configuration {
         return drawTexts;
     }
 
+    public void makeFinal(){
+        finalized = true;
+    }
 
 
     public interface ConfigurationChangeListener{
