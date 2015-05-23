@@ -94,4 +94,6 @@ public abstract class SimulatedObject {
     public boolean isFrozen(){
         return frozen;
     }
+
+    public abstract boolean containsPoint(float x, float y);
 }

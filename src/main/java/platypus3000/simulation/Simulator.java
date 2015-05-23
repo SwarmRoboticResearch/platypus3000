@@ -106,6 +106,10 @@ public class Simulator {
     }
 
     public Robot createRobot(int ID, float x, float y , float angle){
+        if(ID<0){
+            System.err.println("Cannot create robot with ID="+ID+"! Possible Error: Sometimes the RobotCreator only gives a negative ID to show that no ID is specified. Assigning new ID");
+            ID = getFreeID();
+        }
         return createRobot("ID: "+ID,ID, x, y, angle);
     }
 

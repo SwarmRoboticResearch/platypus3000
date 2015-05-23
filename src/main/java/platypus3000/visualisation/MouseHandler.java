@@ -1,5 +1,7 @@
 package platypus3000.visualisation;
 
+import processing.core.PGraphics;
+
 /**
  * Created by doms on 5/17/15.
  */

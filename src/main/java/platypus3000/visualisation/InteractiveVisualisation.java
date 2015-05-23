@@ -9,16 +9,15 @@ import org.jbox2d.dynamics.Fixture;
 import platypus3000.simulation.*;
 import platypus3000.simulation.Robot;
 import platypus3000.simulation.control.RobotInterface;
+import platypus3000.utils.ConstellationToFile;
+import platypus3000.utils.RobotCreator;
 import platypus3000.visualisation.zoompan.ZoomPan;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  *  In this class the visualisation is managed. The simulator runs in
@@ -45,15 +44,9 @@ public class InteractiveVisualisation extends PApplet
 
     public int simulationSpeed = 1;
 
-    //<Select and Drag> Only needed for the possibility of selecting and/or dragging a robot
-    private boolean recordPDF = false;
 
-    public void makeScreenshot(){
-        recordPDF = true;
-    }
 
     SimulatedObject selectedObject = null;
-
 
     public boolean isSelectedRobot(RobotInterface r){
         return r == selectedObject;
@@ -64,11 +57,30 @@ public class InteractiveVisualisation extends PApplet
 
     SwarmVisualisation swarmVisualisation;
 
-    //</Select and Drag>
+    private HashSet<InteractiveVisualisationOverlay> extraOverlays = new HashSet<InteractiveVisualisationOverlay>();
+    public void addExtraInteractiveVisualisationOverlay(InteractiveVisualisationOverlay extraOverlay){
+        extraOverlays.add(extraOverlay);
+    }
+    public void removeExtraInteractiveVisualisationOverlay(InteractiveVisualisationOverlay extraOverlay){
+        extraOverlays.remove(extraOverlay);
+    }
+    private void drawExtraOverlays(PGraphics g){
+        for(InteractiveVisualisationOverlay ivo: extraOverlays){
+            g.pushStyle();
+            ivo.onDraw(g, zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y, mouseButton);
+            g.popStyle();
+        }
+    }
+
+    private RobotCreator robotCreator;
+    public void setRobotCreator(RobotCreator robotCreator){
+        this.robotCreator = robotCreator;
+    }
+
 
     public void setup()
     {
-        pushMouseHandler(new DefaultMouseAction());
+
         size(WINDOW_SIZE.width, WINDOW_SIZE.height, P2D);
         zoomPan = new ZoomPan(this);
         float simToVisScaling = 100;
@@ -79,8 +91,130 @@ public class InteractiveVisualisation extends PApplet
         frameRate(30);
 
         swarmVisualisation = new SwarmVisualisation(simRunner.getSim(), g);
+
+        //Mouse Handler
+        pushMouseHandler(new DefaultMouseHandler());
+
+
+        //Key Handler
+        pushKeyHandler('p', new KeyHandler() {
+            @Override
+            public void onKeyPress(char key) {
+                recordPDF = true;
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler(' ', new KeyHandler() {
+            @Override
+            public void onKeyPress(char key) {
+                simRunner.paused = !simRunner.paused;
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler(DELETE, new KeyHandler() {
+            @Override
+            public void onKeyPress(char key) {
+               if(selectedObject!=null){
+                   simRunner.getSim().destroy(selectedObject);
+                   selectedObject = null;
+                   swarmVisualisation.selectedRobots.clear();
+               }
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler(',', new KeyHandler() {//revokes a freezen object
+            @Override
+            public void onKeyPress(char key) {
+                if(selectedObject!=null){
+                    selectedObject.setFrozen(false);
+                }
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler('.', new KeyHandler() {//Freezes the selected object
+            @Override
+            public void onKeyPress(char key) {
+                 if(selectedObject!=null){
+                     selectedObject.setFrozen(true);
+                 }
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler('/', new KeyHandler() { //Unfreeze all
+            @Override
+            public void onKeyPress(char key) {
+                dontMove = !dontMove;
+                for(Robot r: simRunner.getSim().getRobots()){
+                    r.setFrozen(dontMove);
+                }
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler('s', new KeyHandler() {  //toggle speed
+            @Override
+            public void onKeyPress(char key) {
+                simulationSpeed = simulationSpeed == 1 ? 20 : 1;
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler('o', new KeyHandler() {
+            @Override
+            public void onKeyPress(char key) {
+                new ObstacleCreator(InteractiveVisualisation.this);
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
+        pushKeyHandler('r', new KeyHandler() {
+            @Override
+            public void onKeyPress(char key) {
+                if(robotCreator!=null){
+                    PVector coords = zoomPan.getMouseCoord();
+                    robotCreator.createRobot(simRunner.getSim(), -1, coords.x, coords.y, 0);
+                }
+            }
+
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
     }
 
+    /**
+     * TODO: I am not sure if this is a buggy method I once added.
+     */
     public void scaleToSwarm(){
         float simToVisScaling = 100;
 
@@ -120,6 +254,16 @@ public class InteractiveVisualisation extends PApplet
 
     }
 
+
+    private boolean recordPDF = false; //If it is true, the visualisation will be drawn to pdf instead to GUI
+    /**
+     * Makes a screenshot of the swarm
+     */
+    public void makeScreenshot(){
+        recordPDF = true;
+    }
+
+
     Integer recording_iteration = null;
     String recording_path;
     public void recordVideoTo(String path){
@@ -131,31 +275,30 @@ public class InteractiveVisualisation extends PApplet
     }
 
 
-
-    Robot hoverRobot = null;
+    SimulatedObject objectUnderMouse = null;
     LinkedList<Vec2> selectedRobotTrace = new LinkedList<Vec2>();
     public void draw()
     {
         simRunner.loop(simulationSpeed);
+
+        objectUnderMouse = null;
         if (HOVER) {
-            //Find robot under mouse cursor
-            hoverRobot = null;
             if (selectedObject == null) {
                 simRunner.getSim().world.queryAABB(new QueryCallback() {
                     @Override
             public boolean reportFixture(Fixture fixture) {
-                        if (fixture.getUserData() instanceof Robot) {
-                            hoverRobot = (Robot) fixture.getUserData();
-                            if (hoverRobot.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.getRobotRadius() * simRunner.getSim().configuration.getRobotRadius())) {
-                                hoverRobot = null;
-                                return true;
+                        if(fixture.getUserData() instanceof SimulatedObject){
+                            objectUnderMouse = (SimulatedObject)fixture.getUserData();
+                            if(objectUnderMouse.containsPoint(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)){ //The query does often give too much objects back.
+                                return false;
+                            } else {
+                                objectUnderMouse = null;
+                                return false;
                             }
-                            return false;
                         }
                         return true;
                     }
                 }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
-
             }
         }
 
@@ -177,11 +320,6 @@ public class InteractiveVisualisation extends PApplet
         swarmVisualisation.setGraphics(usedGraphics);
 
 
-        //Loop mouse handler
-        if(mousePressed){
-            PVector coords = zoomPan.getMouseCoord();
-            mouseHandlerStack.peek().onPressedIteration(coords.x, coords.y,mouseButton, this, System.currentTimeMillis()-mousePressedAt);
-        }
 
         background(255); //Set background. 255->transparent/white, 0->Black
         usedGraphics.pushMatrix();
@@ -210,6 +348,13 @@ public class InteractiveVisualisation extends PApplet
 
         swarmVisualisation.drawSimulation();
         drawRobotsTexts();
+
+        drawExtraOverlays(g);
+        //Loop mouse handler
+        if(mousePressed){
+            PVector coords = zoomPan.getMouseCoord();
+            mouseHandlerStack.peek().onPressedIteration(coords.x, coords.y,mouseButton, this, System.currentTimeMillis()-mousePressedAt);
+        }
 
 
         if (extraDrawing != null)
@@ -256,7 +401,7 @@ public class InteractiveVisualisation extends PApplet
 
 
 
-    //**Mouse Handling**
+    //** MOUSE HANDLER***********************************************************************************************
     private Stack<MouseHandler> mouseHandlerStack = new Stack<MouseHandler>();
     private boolean mousePressed = false;
     private long mousePressedAt = 0;
@@ -297,7 +442,7 @@ public class InteractiveVisualisation extends PApplet
         PVector coords = zoomPan.getMouseCoord();
         mouseHandlerStack.peek().onRelease(coords.x, coords.y, mouseButton, this);
     }
-    //***
+    //-----------------------------------------------------------------------------------------------------------------
 
 
 
@@ -311,7 +456,7 @@ public class InteractiveVisualisation extends PApplet
             } else {
                 if (showNameOfSelectedRobot && r == selectedObject)
                     texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
-                if (HOVER && r == hoverRobot)
+                if (HOVER && r == objectUnderMouse)
                     texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
             }
 
@@ -321,46 +466,88 @@ public class InteractiveVisualisation extends PApplet
     }
 
 
+    //** KEY HANDLER **********************************************************************************************
 
+    /**
+     * KeyHandlers are called if a specific key has been pressed. There can be multiple KeyHandlers for the same key,
+     * however, only the latest is called. If it is removed, the second latest takes its place again (stack).
+     * On this way we hope to avoid interferences.
+     */
+    public interface KeyHandler {
+        public static char KEY_ESCAPE = ESC;
+        public static char KEY_DELETE = DELETE;
+        void onKeyPress(char key);
+        void onKeyRelease();
+    }
+    //Saves the KeyHandler stacks for every key
+    HashMap<Character, Stack<KeyHandler>> keyHandlerStacks = new HashMap<Character, Stack<KeyHandler>>();
+    //Saves the currently called KeyHandler (to notify at releas)
+    KeyHandler keyHandlerWaitingForRelease = null;
 
+    /**
+     * Adds a new key handler that will be exclusively called if the defined key has been pressed.
+     * Older KeyHandlers are suppressed as long as this KeyHandler is the latest one.
+     * If a further KeyHandler is pushed, this KeyHandler becomes inactive until the further KeyHandler is popped again.
+     * @param key The key for which the KeyHandler should be called.
+     * @param keyHandler The KeyHandler to be called
+     */
+    public void pushKeyHandler(char key, KeyHandler keyHandler){
+        if(!keyHandlerStacks.containsKey(key)){ keyHandlerStacks.put(key, new Stack<KeyHandler>()); }
+        keyHandlerStacks.get(key).push(keyHandler);
+    }
 
+    /**
+     * Removes a KeyHandler again, thus that the previous KeyHandler becomes active again. To be popped, the KeyHandler
+     * has to be the top-most. If you program nicely, this should always be the case (hopefully).
+     * Note that a KeyHandler can be registered for multiple keys, but it is only removed for the specified key.
+     * @param key The key the KeyHandler is registered for.
+     * @param keyHandler  The KeyHandler to be removed
+     */
+    public void popKeyHandler(char key, KeyHandler keyHandler){
+        Stack<KeyHandler> keyHandlers = keyHandlerStacks.get(key);
+        assert keyHandlers!=null;
+        assert keyHandlers.peek() == keyHandler; //Ensure it is actually active.
+        if(keyHandlers.peek()==keyHandler){
+            keyHandlers.pop();
+        } else {
+            System.err.println("Could not pop KeyHandler for "+key+"! Can only pop topmost keyhandlers");
+        }
+        if(keyHandlerStacks.isEmpty()) keyHandlerStacks.remove(key);
+    }
+
+    /**
+     * This method handles a internal 'key is pressed' event. It calls the corresponding KeyHandler.
+     * Should not be called externally, don't know why it is public at all (but we can't change it).
+     */
     @Override
     public void keyPressed()
     {
-        if(key == 'p') {
-            recordPDF = true;
+        if(keyHandlerWaitingForRelease!=null){
+            keyHandlerWaitingForRelease.onKeyRelease();
+            keyHandlerWaitingForRelease = null;
         }
-
-        if(key == ' '){
-            simRunner.paused = !simRunner.paused;
-        }
-
-        if(key == DELETE && selectedObject!=null){
-             simRunner.getSim().destroy(selectedObject);
-            selectedObject = null;
-            swarmVisualisation.selectedRobots.clear();
-        }
-
-        //Single Freeze/Unfreeze
-        if(selectedObject != null && key == ','){
-            selectedObject.setFrozen(false);
-        }else if(selectedObject !=null && key == '.'){
-            selectedObject.setFrozen(true);
-        }
-
-        //Freeze/Unfreeze all
-        if(key == '/') {
-            dontMove = !dontMove;
-            for(Robot r: simRunner.getSim().getRobots()){
-                r.setFrozen(dontMove);
-             }
-        }
-
-
-        if(key == 's') {
-            simulationSpeed = simulationSpeed == 1 ? 20 : 1;
+        Stack<KeyHandler> keyHandlers = keyHandlerStacks.get(key);
+        if(keyHandlers!=null){
+            keyHandlerWaitingForRelease = keyHandlers.peek();
+            keyHandlerWaitingForRelease.onKeyPress(key);
         }
     }
+    /**
+     * This method handles a internal 'key is released' event. It calls the corresponding KeyHandler.
+     * Should not be called externally, don't know why it is public at all (but we can't change it).
+     */
+    @Override
+    public void keyReleased(){
+        if(keyHandlerWaitingForRelease!=null){
+            keyHandlerWaitingForRelease.onKeyRelease();
+            keyHandlerWaitingForRelease = null;
+        }
+    }
+
+
+    //------------------------------------------------------------------------------------------------------------
+
+
 
     public static InteractiveVisualisation instance = null;
 
@@ -373,87 +560,6 @@ public class InteractiveVisualisation extends PApplet
     }
 
 
-    class DefaultMouseAction implements MouseHandler {
-
-        @Override
-        public void onClick(float X, float Y, int button, InteractiveVisualisation vis) {
-            mousePressedAt = System.currentTimeMillis();
-            if(mouseButton == LEFT) {
-
-                if(selectedObject != null && selectedObject instanceof Robot){
-                    if(rotator.isInRotationField(zoomPan.getMouseCoord())){
-                        rotator.activateRotation();
-                        return;
-                    }
-                }
-
-                //println(zoomPan.getMouseCoord());
-                selectedObject = null;
-                swarmVisualisation.selectedRobots.clear();
-                synchronized (simRunner.getSim()) {
-                    simRunner.getSim().world.queryAABB(new QueryCallback() {
-                        @Override
-                        public boolean reportFixture(Fixture fixture) {
-                            if (fixture.getUserData() instanceof Robot) {
-                                selectedObject = (Robot) fixture.getUserData();
-                                swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
-
-                                if (selectedObject.getGlobalPosition().sub(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)).lengthSquared() > (simRunner.getSim().configuration.getRobotRadius() * simRunner.getSim().configuration.getRobotRadius())) {
-                                    selectedObject = null;
-                                    swarmVisualisation.selectedRobots.clear();
-                                    return true;
-                                }
-                                selectedRobotTrace.clear();
-                                if(allowRobotDragging) pushMouseHandler(new DraggingHandler(selectedObject));
-
-
-                                return false;
-                            } else if (fixture.getUserData() instanceof Obstacle) {
-                                if (!((Obstacle) fixture.getUserData()).pointInObstacle(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y))
-                                    return true;
-                                selectedObject = (Obstacle) fixture.getUserData();
-                                swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
-                                if(allowRobotDragging) pushMouseHandler(new DraggingHandler(selectedObject));
-                                selectedRobotTrace.clear();
-                                return false;
-                            }
-                            return true;
-                        }
-                    }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
-                }
-
-            } else if(mouseButton == RIGHT){
-                if(selectedObject != null && selectedObject instanceof Robot) {
-                    Robot selectedRobot = (Robot) selectedObject;
-                    selectedRobot.setController(new MouseFollowController(vis, selectedRobot, selectedRobot.getController()));
-                    zoomPan.setMouseMask(SHIFT);
-                }
-            }
-        }
-
-        @Override
-        public void onPressedIteration(float X, float Y, int button, InteractiveVisualisation vis, long timeInMs) {
-
-        }
-
-        @Override
-        public void onRelease(float X, float Y, int button, InteractiveVisualisation vis) {
-            mousePressedAt =0;
-            zoomPan.setMouseMask(0);
-
-            //Remove MouseFollowController
-            if(selectedObject instanceof Robot){
-                Robot r = (Robot)selectedObject;
-                if(r.getController() instanceof MouseFollowController){
-                    r.setController(((MouseFollowController) r.getController()).oldController);
-                    r.setMovement(new Vec2(0,0));
-                }
-            }
-
-            //if rotation is active, deactivate it. There is no use in checking if it is active
-            rotator.deactivateRotation();
-        }
-    }
 
 
 

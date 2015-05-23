@@ -28,7 +28,8 @@ public class Obstacle extends SimulatedObject{
      * @param y
      * @return
      */
-    public boolean pointInObstacle(float x, float y){
+    @Override
+    public boolean containsPoint(float x, float y){
         //http://stackoverflow.com/questions/8721406/how-to-determine-if-a-point-is-inside-a-2d-convex-polygon
         boolean result = false;
         Vec2[] points = new Vec2[shape.m_count];

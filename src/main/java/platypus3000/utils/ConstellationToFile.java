@@ -91,15 +91,5 @@ public class ConstellationToFile {
         }
     }
 
-    public interface RobotCreator {
-        /**
-         * This method creates the robots
-         * @param sim Simulation the robot has to be added to.
-         * @param id id of robot
-         * @param x global x-Position
-         * @param y global y-Position
-         * @param angle global angle
-         */
-        public void createRobot(Simulator sim, int id, float x, float y, float angle);
-    }
+
 }

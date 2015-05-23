@@ -378,4 +378,10 @@ public class Robot extends SimulatedObject implements RobotInterface {
     public int hashCode() {
         return robotID;
     }
+
+    @Override
+    public boolean containsPoint(float x, float y) {
+        float radius = getSimulator().getConfiguration().getRobotRadius();
+        return getGlobalPosition().sub(new Vec2(x,y)).lengthSquared()<=radius*radius;
+    }
 }

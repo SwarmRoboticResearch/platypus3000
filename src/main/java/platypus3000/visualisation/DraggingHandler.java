@@ -6,6 +6,7 @@ package platypus3000.visualisation;
 
 import platypus3000.simulation.SimulatedObject;
 import platypus3000.visualisation.MouseHandler;
+import processing.core.PGraphics;
 
 /**
  * This class manages the dragging of an object
