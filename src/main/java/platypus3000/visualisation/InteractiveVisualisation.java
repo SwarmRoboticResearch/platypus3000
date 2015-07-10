@@ -79,7 +79,7 @@ public class InteractiveVisualisation extends PApplet
     }
 
     public PVector getSimulationMousePos() {
-        Point p = getMousePosition();
+        Point p = getMousePosition(); //The mouse position from swing does not lag like the one from processing, but sometimes it is not available (if the mouse is out of the window e.g.) then we fall back to the processing coords
         if(p == null)
             return zoomPan.getDispToCoord(new PVector(mouseX, mouseY + 18));
         else
