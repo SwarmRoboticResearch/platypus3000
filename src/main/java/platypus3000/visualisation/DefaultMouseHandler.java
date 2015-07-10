@@ -6,6 +6,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Fixture;
 import platypus3000.simulation.Obstacle;
 import platypus3000.simulation.Robot;
+import processing.core.PVector;
 
 /**
  * Created by doms on 5/22/15.
@@ -14,16 +15,16 @@ public class DefaultMouseHandler implements MouseHandler {
 
     @Override
     public void onClick(float X, float Y, int button, final InteractiveVisualisation vis) {
+        final PVector mousePos = vis.getSimulationMousePos();
         if(vis.mouseButton == LEFT_BUTTON) {
 
             if(vis.selectedObject != null && vis.selectedObject instanceof Robot){
-                if(vis.rotator.isInRotationField(vis.zoomPan.getMouseCoord())){
+                if(vis.rotator.isInRotationField(mousePos)){
                     vis.rotator.activateRotation();
                     return;
                 }
             }
 
-            //println(zoomPan.getMouseCoord());
             vis.selectedObject = null;
             vis.swarmVisualisation.selectedRobots.clear();
             synchronized (vis.simRunner.getSim()) {
@@ -34,7 +35,7 @@ public class DefaultMouseHandler implements MouseHandler {
                             vis.selectedObject = (Robot) fixture.getUserData();
                             vis.swarmVisualisation.selectedRobots.add((Robot) fixture.getUserData());
 
-                            if (vis.selectedObject.getGlobalPosition().sub(new Vec2(vis.zoomPan.getMouseCoord().x, vis.zoomPan.getMouseCoord().y)).lengthSquared() > (vis.simRunner.getSim().configuration.getRobotRadius() * vis.simRunner.getSim().configuration.getRobotRadius())) {
+                            if (vis.selectedObject.getGlobalPosition().sub(new Vec2(mousePos.x, mousePos.y)).lengthSquared() > (vis.simRunner.getSim().configuration.getRobotRadius() * vis.simRunner.getSim().configuration.getRobotRadius())) {
                                 vis.selectedObject = null;
                                 vis.swarmVisualisation.selectedRobots.clear();
                                 return true;

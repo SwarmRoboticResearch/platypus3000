@@ -238,7 +238,8 @@ public class ZoomPan20 implements ZoomPanable
 	 */
 	public PVector getMouseCoord()
 	{
-		return getDispToCoord(new PVector(zoomPanState.aContext.mouseX,zoomPanState.aContext.mouseY));
+		throw new IllegalArgumentException("You really should not use it. It is 18 pixels off in this project because of the menu bar!!! use the getSimulationMousePos() of the interactive visualisation instead!");
+//		return getDispToCoord(new PVector(zoomPanState.aContext.mouseX,zoomPanState.aContext.mouseY));
 	}
 
 	/** Reports the current zoom scale. Can be used for drawing objects that maintain their

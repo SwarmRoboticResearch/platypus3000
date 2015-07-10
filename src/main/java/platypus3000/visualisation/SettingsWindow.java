@@ -14,7 +14,8 @@ public class SettingsWindow extends JFrame {
         super("Platypus 3000");
         setVisible(true);
         setLayout(new FlowLayout());
-        setSize(800,800);
+        setBounds((int)applet.getBounds().getMaxX(), (int)applet.getBounds().getMinY(), 800, 800); //conveniently set the window to the right of the simulator
+
         setResizable(applet.simRunner.getSim().configuration.GUI_SHOW_PARAMETER_WINDOW);
         add(new JScrollPane(ParameterPlayground.getInstance(),ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER));
         add(new JScrollPane(applet.simRunner.getSim().configuration.overlayManager.getJTable()));

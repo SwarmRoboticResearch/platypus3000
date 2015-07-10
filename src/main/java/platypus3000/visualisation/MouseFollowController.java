@@ -33,7 +33,7 @@ public class MouseFollowController extends RobotController implements LeaderInte
     @Override
     public void loop(RobotInterface r) {
         if(ACTIVE_WHILE_MOUSE && oldController !=null) oldController.loop(r);
-        PVector pv =  interactiveVisualisation.zoomPan.getMouseCoord();
+        PVector pv =  interactiveVisualisation.getSimulationMousePos();
         Vec2 localMouse = robot.getLocalPoint(new Vec2(pv.x, pv.y));
         if(oldController instanceof LeaderInterface)
             ((LeaderInterface) oldController).setLocalGoal(localMouse);

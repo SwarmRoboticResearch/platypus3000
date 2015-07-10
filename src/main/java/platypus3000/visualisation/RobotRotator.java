@@ -38,10 +38,9 @@ public class RobotRotator {
         float rx = r.getGlobalPosition().x;
         float ry = r.getGlobalPosition().y;
 
-        float mx = v.zoomPan.getMouseCoord().x;
-        float my = v.zoomPan.getMouseCoord().y;
+        PVector mousePos = v.getSimulationMousePos();
 
-        float squaredDist = r.getGlobalPosition().sub(new Vec2(mx,my)).lengthSquared();
+        float squaredDist = r.getGlobalPosition().sub(new Vec2(mousePos.x, mousePos.y)).lengthSquared();
 
         if(rotate || squaredDist<=radius*radius*1.2f) {
 
@@ -54,7 +53,7 @@ public class RobotRotator {
                 graphics.fill(255, 0, 0,150);
                 graphics.ellipse(rx + radius * MathUtils.cos(r.getGlobalAngle()), ry + radius * MathUtils.sin(r.getGlobalAngle()), radius_selected * 2, radius_selected * 2);
             } else {
-                if(isInRotationField(v.zoomPan.getMouseCoord())){
+                if(isInRotationField(mousePos)){
                     graphics.fill(0, 255, 255,150);
                     graphics.ellipse(rx + radius * MathUtils.cos(r.getGlobalAngle()), ry + radius * MathUtils.sin(r.getGlobalAngle()), getRadius_unselected_entered * 2, getRadius_unselected_entered * 2);
                 }
@@ -64,7 +63,7 @@ public class RobotRotator {
             }
 
             if (rotate) {
-                r.getSimulator().rotateObject(r, -AngleUtils.getRadian(new Vec2(v.zoomPan.getMouseCoord().x, v.zoomPan.getMouseCoord().y).sub(r.getGlobalPosition())));
+                r.getSimulator().rotateObject(r, -AngleUtils.getRadian(new Vec2(mousePos.x, mousePos.y).sub(r.getGlobalPosition())));
             }
         }
 

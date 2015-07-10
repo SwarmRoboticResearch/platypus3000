@@ -16,6 +16,7 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 
@@ -77,10 +78,16 @@ public class InteractiveVisualisation extends PApplet
         this.robotCreator = robotCreator;
     }
 
+    public PVector getSimulationMousePos() {
+        Point p = getMousePosition();
+        if(p == null)
+            return zoomPan.getDispToCoord(new PVector(mouseX, mouseY + 18));
+        else
+            return zoomPan.getDispToCoord(new PVector(p.x, p.y + 18));
+    }
 
     public void setup()
     {
-
         size(WINDOW_SIZE.width, WINDOW_SIZE.height, P2D);
         zoomPan = new ZoomPan(this);
         float simToVisScaling = 100;
@@ -210,6 +217,7 @@ public class InteractiveVisualisation extends PApplet
 
             }
         });
+
     }
 
     /**
@@ -279,9 +287,15 @@ public class InteractiveVisualisation extends PApplet
     LinkedList<Vec2> selectedRobotTrace = new LinkedList<Vec2>();
     public void draw()
     {
+        try {
+
+            println(mouseX - SwingUtilities.getAncestorOfClass(JFrame.class, this).getMousePosition(true).x);
+        } catch (NullPointerException e) {}
         simRunner.loop(simulationSpeed);
 
         objectUnderMouse = null;
+        final PVector mouseCoord = getSimulationMousePos();
+
         if (HOVER) {
             if (selectedObject == null) {
                 simRunner.getSim().world.queryAABB(new QueryCallback() {
@@ -289,7 +303,7 @@ public class InteractiveVisualisation extends PApplet
             public boolean reportFixture(Fixture fixture) {
                         if(fixture.getUserData() instanceof SimulatedObject){
                             objectUnderMouse = (SimulatedObject)fixture.getUserData();
-                            if(objectUnderMouse.containsPoint(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)){ //The query does often give too much objects back.
+                            if(objectUnderMouse.containsPoint(mouseCoord.x, mouseCoord.y)){ //The query does often give too much objects back.
                                 return false;
                             } else {
                                 objectUnderMouse = null;
@@ -298,7 +312,7 @@ public class InteractiveVisualisation extends PApplet
                         }
                         return true;
                     }
-                }, new AABB(new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y), new Vec2(zoomPan.getMouseCoord().x, zoomPan.getMouseCoord().y)));
+                }, new AABB(new Vec2(mouseCoord.x, mouseCoord.y), new Vec2(mouseCoord.x, mouseCoord.y)));
             }
         }
 
@@ -324,6 +338,10 @@ public class InteractiveVisualisation extends PApplet
         background(255); //Set background. 255->transparent/white, 0->Black
         usedGraphics.pushMatrix();
         zoomPan.transform(usedGraphics);
+        ellipseMode(CENTER);
+        noFill();
+        usedGraphics.ellipse( mouseCoord.x, mouseCoord.y, 0.01f, 0.01f);
+
         usedGraphics.strokeWeight(0.01f);
 
         if (selectedObject != null) {
@@ -352,8 +370,7 @@ public class InteractiveVisualisation extends PApplet
         drawExtraOverlays(g);
         //Loop mouse handler
         if(mousePressed){
-            PVector coords = zoomPan.getMouseCoord();
-            mouseHandlerStack.peek().onPressedIteration(coords.x, coords.y,mouseButton, this, System.currentTimeMillis()-mousePressedAt);
+            mouseHandlerStack.peek().onPressedIteration(mouseCoord.x, mouseCoord.y,mouseButton, this, System.currentTimeMillis()-mousePressedAt);
         }
 
 
@@ -372,7 +389,7 @@ public class InteractiveVisualisation extends PApplet
             usedGraphics.dispose();
         }
 
-
+//        usedGraphics.ellipse( mouseX, mouseY, 1f, 1f);
     }
 
 
@@ -414,7 +431,7 @@ public class InteractiveVisualisation extends PApplet
     public void pushMouseHandler(MouseHandler mouseHandler){
         mouseHandlerStack.push(mouseHandler);
         if(mousePressed){
-            PVector coords = zoomPan.getMouseCoord();
+            PVector coords = getSimulationMousePos();
             mouseHandlerStack.peek().onClick(coords.x, coords.y,mouseButton, this);
         }
     }
@@ -432,14 +449,14 @@ public class InteractiveVisualisation extends PApplet
     {
         mousePressed = true;
         mousePressedAt = System.currentTimeMillis();
-        PVector coords = zoomPan.getMouseCoord();
+        PVector coords = getSimulationMousePos();
         mouseHandlerStack.peek().onClick(coords.x, coords.y,mouseButton, this);
     }
     @Override
     public void mouseReleased()
     {
         mousePressed  = false;
-        PVector coords = zoomPan.getMouseCoord();
+        PVector coords = getSimulationMousePos();
         mouseHandlerStack.peek().onRelease(coords.x, coords.y, mouseButton, this);
     }
     //-----------------------------------------------------------------------------------------------------------------
