@@ -79,11 +79,7 @@ public class InteractiveVisualisation extends PApplet
     }
 
     public PVector getSimulationMousePos() {
-        Point p = getMousePosition(); //The mouse position from swing does not lag like the one from processing, but sometimes it is not available (if the mouse is out of the window e.g.) then we fall back to the processing coords
-        if(p == null)
-            return zoomPan.getDispToCoord(new PVector(mouseX, mouseY + 18));
-        else
-            return zoomPan.getDispToCoord(new PVector(p.x, p.y + 18));
+        return zoomPan.getDispToCoord(new PVector(mouseX, mouseY)); //TODO: Make this offset NOT hardcoded!
     }
 
     public void setup()
@@ -287,10 +283,6 @@ public class InteractiveVisualisation extends PApplet
     LinkedList<Vec2> selectedRobotTrace = new LinkedList<Vec2>();
     public void draw()
     {
-        try {
-
-            println(mouseX - SwingUtilities.getAncestorOfClass(JFrame.class, this).getMousePosition(true).x);
-        } catch (NullPointerException e) {}
         simRunner.loop(simulationSpeed);
 
         objectUnderMouse = null;
@@ -338,12 +330,9 @@ public class InteractiveVisualisation extends PApplet
         background(255); //Set background. 255->transparent/white, 0->Black
         usedGraphics.pushMatrix();
         zoomPan.transform(usedGraphics);
-        ellipseMode(CENTER);
-        noFill();
-        usedGraphics.ellipse( mouseCoord.x, mouseCoord.y, 0.01f, 0.01f);
+
 
         usedGraphics.strokeWeight(0.01f);
-
         if (selectedObject != null) {
             selectedRobotTrace.add(selectedObject.getGlobalPosition().clone());
             while (selectedRobotTrace.size() > 500)
@@ -382,14 +371,14 @@ public class InteractiveVisualisation extends PApplet
         usedGraphics.popMatrix();
 //        saveFrame("./movie/picture-#####.png");
 
-            drawTexts(usedGraphics);
+        drawTexts(usedGraphics);
         if (recordPDF) {
             recordPDF = false;
             usedGraphics.endDraw();
             usedGraphics.dispose();
         }
 
-//        usedGraphics.ellipse( mouseX, mouseY, 1f, 1f);
+
     }
 
 
