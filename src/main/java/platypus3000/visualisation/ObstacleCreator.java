@@ -10,6 +10,8 @@ import java.util.ArrayList;
 /**
  * This class creates a new obstacle based on the users mouse clicks.
  * A left click adds a new vertex and a right click finalizes the obstacle.
+ *
+ * TODO: JBox2D has some special wishes for construction polygons. E.g. they have to be concave and the orientation of the edges plays a role. Make this idiot proof.
  */
 public class ObstacleCreator implements MouseHandler, InteractiveVisualisationOverlay, InteractiveVisualisation.KeyHandler{
     ArrayList<Vec2> points = new ArrayList<Vec2>();

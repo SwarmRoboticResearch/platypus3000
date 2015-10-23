@@ -17,8 +17,6 @@ import platypus3000.utils.Loopable;
 import platypus3000.utils.NeighborState.PublicState;
 import platypus3000.utils.NeighborState.StateManager;
 
-import java.awt.*;
-
 /**
  * Created by doms on 7/27/14.
  */

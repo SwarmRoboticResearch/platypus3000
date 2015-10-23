@@ -4,7 +4,6 @@ import org.jbox2d.common.Vec2;
 import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.visualisation.InteractiveVisualisation;
-import sun.awt.VerticalBagLayout;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -132,8 +131,8 @@ public class ForceTuner {
         TuningWindow(){
             this.add(jPanel);
             //jPanel.setLayout(new FlowLayout());
-            jPanel.setLayout(new VerticalBagLayout());
-            jPanel.add(jComboBox);
+            jPanel.setLayout(new GridBagLayout());
+                    jPanel.add(jComboBox);
             jPanel.add(new JScrollPane(tuningTable));
             jComboBox.addActionListener(new ActionListener() {
                 @Override

@@ -1,12 +1,10 @@
 package platypus3000.visualisation;
 
-import platypus3000.simulation.Configuration;
 import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.Simulator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 /**
  * This class provides a window with a MenuBar and the Visualisation Embedding.

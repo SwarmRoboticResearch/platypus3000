@@ -8,14 +8,13 @@ import platypus3000.algorithms.flocking.OlfatiSaberFlocking;
 import platypus3000.algorithms.leader.LeaderFollowAlgorithm;
 import platypus3000.algorithms.leader.LeaderSet;
 import platypus3000.simulation.Configuration;
-import platypus3000.simulation.Robot;
 import platypus3000.simulation.Simulator;
 import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.utils.ForceTuner;
+import platypus3000.utils.LeaderInterface;
 import platypus3000.utils.Loopable;
 import platypus3000.utils.NeighborState.PublicState;
-import platypus3000.utils.LeaderInterface;
 import platypus3000.utils.NeighborState.StateManager;
 import platypus3000.visualisation.VisualisationWindow;
 

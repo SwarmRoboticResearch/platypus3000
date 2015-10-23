@@ -12,7 +12,7 @@ import platypus3000.utils.Loopable;
 import platypus3000.utils.NeighborState.PublicState;
 import platypus3000.utils.NeighborState.StateManager;
 import platypus3000.visualisation.Colors;
-import sun.org.mozilla.javascript.ast.Loop;
+
 
 /**
  * Created by doms on 7/22/14.

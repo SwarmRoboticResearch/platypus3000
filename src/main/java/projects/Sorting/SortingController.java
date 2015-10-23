@@ -472,7 +472,7 @@ public class SortingController extends RobotController {
 
     public static int integrated = 0;
     public static boolean abort =false;
-    public static int SIZE = 75;
+    public static int SIZE = 20;
     public static int SIZE_MAX = 130;
     public static float HIGHT = 10;
 
@@ -485,7 +485,7 @@ public class SortingController extends RobotController {
          loop:
          while(SIZE<=SIZE_MAX) {
          integrated = 0;
-         Simulator sim = new Simulator(new Configuration(args[1]));
+         Simulator sim = new Simulator(new Configuration("/home/doms/Projects/SwarmRoboticResearch/platypus3000/src/main/java/projects/Sorting/simulation.properties"));
          sim.createRobot(0, 0,0,0).setController(new SortingController(0));
 
 
@@ -504,17 +504,19 @@ public class SortingController extends RobotController {
          abort = true;
          }
          }
+             sim.step();
          if(!(new ConnectivityInspector(sim.getGlobalNeighborhood().getGraph())).isGraphConnected()){
+             abort = true;
+             //new VisualisationWindow(sim, new Dimension(1800,1000));
          System.out.println("Not connected");
-         abort = true;
          }
          boolean printed = false;
-
+/**
          new VisualisationWindow(runner, new Dimension(1920,1100));
              runner.paused = true;
-             return; }/**
+             return; }**/
          while (!abort) {
-         if (SIZE != integrated && sim.getTime() > 90) {
+         if (SIZE != integrated && sim.getTime() > 9000) {
          System.out.println("Abort" + integrated);
          abort = true;
          try {
@@ -533,19 +535,19 @@ public class SortingController extends RobotController {
          System.err.println("Not terminated");
          //new VisualisationWindow(sim, new Dimension(1800,1000));
          //break loop;
-         SwarmVisualisation.drawSwarmToPDF("Screenshot-toolongstraightening" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
+        // SwarmVisualisation.drawSwarmToPDF("Screenshot-toolongstraightening" + MathUtils.round(MathUtils.randomFloat(0, 10000)) + ".pdf", sim);
          } catch(Throwable e){
          System.err.println("Couldn't draw pdf"+e);
          }
          printed = true;
          }
          }
-         if(integrated==SIZE) SIZE++;
+         if(integrated==SIZE) SIZE+=40;
          }
-         for(int i=14; i<SIZE_MAX; i++){
+         for(int i=19; i<SIZE_MAX; i+=40){
          System.out.println((i+1)+"\t"+times_integration[i]+"\t"+times_straightening[i]+"\t"+times_sorting[i]);
          }
-         System.exit(0);         **/
+         System.exit(0);
          /**
 
         integrated = 0;

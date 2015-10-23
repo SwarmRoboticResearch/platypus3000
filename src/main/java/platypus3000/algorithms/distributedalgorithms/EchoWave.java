@@ -2,7 +2,6 @@ package platypus3000.algorithms.distributedalgorithms;
 
 import platypus3000.simulation.communication.Message;
 import platypus3000.simulation.communication.MessagePayload;
-import platypus3000.simulation.control.RobotController;
 import platypus3000.simulation.control.RobotInterface;
 import platypus3000.simulation.neighborhood.NeighborView;
 

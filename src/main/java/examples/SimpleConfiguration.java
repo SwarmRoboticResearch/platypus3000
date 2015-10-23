@@ -1,10 +1,9 @@
 package examples;
 
-import org.jbox2d.common.MathUtils;
+import platypus3000.simulation.Configuration;
+import platypus3000.simulation.Robot;
 import platypus3000.simulation.Simulator;
 import platypus3000.visualisation.VisualisationWindow;
-
-import platypus3000.simulation.*;
 
 import java.io.IOException;
 

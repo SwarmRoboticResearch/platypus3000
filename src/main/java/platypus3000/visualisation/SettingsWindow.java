@@ -1,10 +1,8 @@
 package platypus3000.visualisation;
 
-import platypus3000.analyticstools.OverlayManager;
 import platypus3000.simulation.Configuration;
 import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.Simulator;
-import processing.core.PApplet;
 
 import javax.swing.*;
 import java.awt.*;
