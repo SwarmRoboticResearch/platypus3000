@@ -47,7 +47,7 @@ public interface RobotInterface extends ColorInterface
 
 
     public void setSpeed(float speed);
-    public void setRotation(float rotation);
+    public void setRotationVelocity(float rotation);
     public void setMovement(Vec2 direction);
     public Odometer getOdometryVector();
     public void setMovementAccuracy(float accuracy);

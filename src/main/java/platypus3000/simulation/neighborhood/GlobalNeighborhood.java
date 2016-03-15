@@ -30,15 +30,17 @@ public class GlobalNeighborhood {
     }
 
     public void updateNeighborhoodGraph() {
-        neighborhoodGraph = new SimpleGraph<Robot, RobotVisibilityEdge>(RobotVisibilityEdge.getFactory());
-        raycastCount = 0;
-        minCut = null;
-        for(Robot robot : sim.getRobots()) {
-            Set<Robot> neighbors = getVisibleRobots(robot);
-            neighborhoodGraph.addVertex(robot);
-            for(Robot neighbor : neighbors) {
-                neighborhoodGraph.addVertex(neighbor);
-                neighborhoodGraph.addEdge(robot, neighbor);
+        synchronized (sim) {
+            neighborhoodGraph = new SimpleGraph<Robot, RobotVisibilityEdge>(RobotVisibilityEdge.getFactory());
+            raycastCount = 0;
+            minCut = null;
+            for (Robot robot : sim.getRobots()) {
+                Set<Robot> neighbors = getVisibleRobots(robot);
+                neighborhoodGraph.addVertex(robot);
+                for (Robot neighbor : neighbors) {
+                    neighborhoodGraph.addVertex(neighbor);
+                    neighborhoodGraph.addEdge(robot, neighbor);
+                }
             }
         }
     }
@@ -84,8 +86,13 @@ public class GlobalNeighborhood {
                                 return 1;
                             } else //We hit something between source robot and close robot -> closeRobot can not be visible!
                             {
-                                visibleRobots.remove(closeRobot);
-                                return -1;
+                                //differ between line of sight disturbed by robots or obstacles/walls
+                                if(sim.configuration.doRobotsBlockLineOfSight() || !(fixture.getUserData() instanceof Robot)){
+                                    visibleRobots.remove(closeRobot);
+                                    return -1;
+                                } else {
+                                    return 1;
+                                }
                             }
                         }
                     }, location, closeRobot.getGlobalPosition());

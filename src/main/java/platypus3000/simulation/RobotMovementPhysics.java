@@ -13,7 +13,8 @@ import platypus3000.utils.AngleUtils;
 public class RobotMovementPhysics {
     Configuration configuration;
     NoiseModel noiseModel;
-    private float accuracy = MathUtils.PI;
+    private float accuracy = 0.1f*MathUtils.PI;
+    boolean NO_BACKWARDS = false;
 
     public RobotMovementPhysics(NoiseModel noiseModel, Configuration configuration){
         this.configuration = configuration;
@@ -55,8 +56,16 @@ public class RobotMovementPhysics {
         return actual_roationSpeed*(1+deviation_rotation);
     }
 
+    public void setVelocity(float velocity){
+        desiredSpeed = velocity;
+    }
+
+    public void setDesiredRotationSpeed(float rotation_velocity){
+        desiredRotationSpeed = rotation_velocity;
+    }
+
     public void setLocalMovement(Vec2 v){
-        if(v.x>=0) {
+        if(v.x>=0 || NO_BACKWARDS) {
             if(v.y>=0) {
                 float rotationspeed = AngleUtils.normalizeToMinusPi_Pi(AngleUtils.getRadian(v));
                 float timetostop = MathUtils.ceil(Math.abs(rotationspeed) / configuration.MAX_ROTATION_BRAKE_POWER);

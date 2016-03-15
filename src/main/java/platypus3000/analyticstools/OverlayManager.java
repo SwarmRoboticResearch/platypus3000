@@ -1,7 +1,6 @@
 package platypus3000.analyticstools;
 
 import platypus3000.simulation.Robot;
-import platypus3000.simulation.control.RobotController;
 import processing.core.PGraphics;
 
 import java.util.*;
@@ -33,7 +32,7 @@ public class OverlayManager {
      * @param name The unique name of the overlay
      * @return The SharedOverlayProperties Object, which is the same for same names.
      */
-    protected synchronized SharedOverlayProperties getSharedProperties(String name){
+    public synchronized SharedOverlayProperties getSharedProperties(String name){
         if(!propertiesMap.containsKey(name)){
             SharedOverlayProperties properties = new SharedOverlayProperties(name);
             propertiesMap.put(name, properties);
@@ -57,21 +56,23 @@ public class OverlayManager {
             o.drawBackground(graphics, robots, selectedRobots);
             graphics.popStyle();
         }
-        for(Robot r: robots){
-            graphics.pushMatrix();
+        synchronized (robots) {
+            for (Robot r : robots) {
+                graphics.pushMatrix();
 
-            graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
-            graphics.rotate(r.getGlobalAngle());
-            graphics.pushStyle();
-            if(r.getController()!=null) { //a dead/dummy robot may have no controller
-                for (LocalOverlay overlay : r.getController().overlays) {
-                    if (overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
-                        overlay.drawBackground(graphics, r);
+                graphics.translate(r.getGlobalPosition().x, r.getGlobalPosition().y);
+                graphics.rotate(r.getGlobalAngle());
+                graphics.pushStyle();
+                if (r.getController() != null) { //a dead/dummy robot may have no controller
+                    for (LocalOverlay overlay : r.getController().overlays) {
+                        if (overlay.showAll() || (overlay.showSelected() && selectedRobots.contains(r))) {
+                            overlay.drawBackground(graphics, r);
+                        }
                     }
                 }
+                graphics.popStyle();
+                graphics.popMatrix();
             }
-            graphics.popStyle();
-            graphics.popMatrix();
         }
     }
 

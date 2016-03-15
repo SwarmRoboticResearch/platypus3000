@@ -2,13 +2,12 @@ package platypus3000.visualisation;
 
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
-import platypus3000.simulation.neighborhood.GlobalNeighborhood.RobotVisibilityEdge;
 import platypus3000.simulation.Obstacle;
 import platypus3000.simulation.Robot;
 import platypus3000.simulation.Simulator;
+import platypus3000.simulation.neighborhood.GlobalNeighborhood.RobotVisibilityEdge;
 import processing.core.PConstants;
 import processing.core.PGraphics;
-import processing.core.PVector;
 import processing.pdf.PGraphicsPDF;
 
 import java.io.File;
@@ -22,7 +21,7 @@ public class SwarmVisualisation implements PConstants{
     final private Simulator simulator;
     private PGraphics graphics;
 
-    public boolean showNeighborhood = false;
+    public boolean showNeighborhood = true;
     public boolean showCollisions = false;
     public boolean showSelectedRobotsRanges = true;
     public boolean showAllRobotsRanges = false;
@@ -42,18 +41,19 @@ public class SwarmVisualisation implements PConstants{
     }
 
     public void drawSimulation() {
-        graphics.strokeWeight(0.01f);
-        drawEnvironment();
-        drawNeighborhoodGraph();
-        simulator.configuration.overlayManager.loopBackgroundOverlays(graphics, simulator.getRobots(), selectedRobots);
-        for(Robot r: selectedRobots) drawRobot(r);
-        for(Robot r : simulator.getRobots()){
-            if(!selectedRobots.contains(r)) drawRobot(r);
+        synchronized (simulator) {
+            graphics.strokeWeight(0.01f);
+            drawEnvironment();
+            drawNeighborhoodGraph();
+            simulator.configuration.overlayManager.loopBackgroundOverlays(graphics, simulator.getRobots(), selectedRobots);
+            for (Robot r : selectedRobots) drawRobot(r);
+            for (Robot r : simulator.getRobots()) {
+                if (!selectedRobots.contains(r)) drawRobot(r);
+            }
+            for (Obstacle o : simulator.getObstacles())
+                drawObstacle(o);
+            simulator.configuration.overlayManager.loopForegroundOverlays(graphics, simulator.getRobots(), selectedRobots);
         }
-        for(Obstacle o : simulator.getObstacles())
-            drawObstacle(o);
-        simulator.configuration.overlayManager.loopForegroundOverlays(graphics, simulator.getRobots(), selectedRobots);
-
     }
 
     public void drawEnvironment(){
@@ -212,6 +212,7 @@ public class SwarmVisualisation implements PConstants{
     public int obstacleColor;
 
     public static void drawSwarmToPDF(String filename, Simulator sim) {
+        if(!filename.endsWith(".pdf")) filename = filename+".pdf";
         //Try-Catch to avoid crashes during experiments.
         try {
             // Create a new graphics object, that draws to pdf

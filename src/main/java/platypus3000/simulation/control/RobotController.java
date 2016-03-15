@@ -1,7 +1,6 @@
 package platypus3000.simulation.control;
 
 import platypus3000.analyticstools.LocalOverlay;
-import platypus3000.analyticstools.OverlayManager;
 import platypus3000.simulation.Configuration;
 
 import java.util.ArrayList;
@@ -23,6 +22,10 @@ public abstract class RobotController {
      * @param robot To control the robot
      */
     public abstract void loop(RobotInterface robot);
+
+    public void print_debug(){
+        System.out.println("Not implemented: Implement print_debug() in your controller to use this function");
+    }
 
     /**
      * Here you can initialize some algorithms or data structures. Only executed once even if removed and added again.

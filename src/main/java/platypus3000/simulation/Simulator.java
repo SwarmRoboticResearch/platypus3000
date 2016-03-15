@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.concurrent.*;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * This class is the main class which maintains the simulation. It is independent of the visualisation!
@@ -25,7 +28,7 @@ public class Simulator {
     public LineEnvironment environment;
 
     //<Robots>
-    LinkedHashMap<Integer, Robot> robots = new LinkedHashMap<Integer, Robot>();
+    private final LinkedHashMap<Integer, Robot> robots = new LinkedHashMap<Integer, Robot>();
     ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
 
     public World world; //JBox2d-World
@@ -89,16 +92,23 @@ public class Simulator {
     }
 
     private int getFreeID(){
-        //find free id
-        int id = robots.size();
-        while(robots.containsKey(id)){
-            id++;
+        synchronized (this) {
+            //find free id
+            int id = robots.size();
+            while (robots.containsKey(id)) {
+                id++;
+            }
+            return id;
         }
-        return id;
     }
 
     public Robot createRobot(String name, float x, float y, float angle){
          return createRobot(name, getFreeID(), x, y, angle);
+    }
+
+    public Robot createRobot(float x, float y){
+        Random rand = new Random(0);
+        return createRobot(x, y,rand.nextFloat());
     }
 
     public Robot createRobot(float x, float y, float angle){
@@ -114,35 +124,38 @@ public class Simulator {
     }
 
     public Robot createRobot(String name, int ID, float x, float y, float angle){
-        if(robots.containsKey(ID))
-            throw new IllegalArgumentException("Tried to add a robot with id " + ID + " to a simulation, that already contains a robot with this id!");
+        //System.out.println("Create Robot "+name+" with id "+ID+" at "+x+","+y+","+angle);
+        synchronized (this) {
+            if (robots.containsKey(ID))
+                throw new IllegalArgumentException("Tried to add a robot with id " + ID + " to a simulation, that already contains a robot with this id!");
 
-        //Create Abstract Robot Body for Physics Engine
-        BodyDef bd = new BodyDef(); //Create a body in the physic engine
-        bd.position.set(x, y);
-        bd.angle = angle;
-        bd.type = BodyType.DYNAMIC;
-        Body jbox2d_body = getWorld().createBody(bd);
+            //Create Abstract Robot Body for Physics Engine
+            BodyDef bd = new BodyDef(); //Create a body in the physic engine
+            bd.position.set(x, y);
+            bd.angle = angle;
+            bd.type = BodyType.DYNAMIC;
+            Body jbox2d_body = getWorld().createBody(bd);
 
-        Robot robot = new Robot(name, ID, jbox2d_body, this, getNoiseModel(), configuration);
+            Robot robot = new Robot(name, ID, jbox2d_body, this, getNoiseModel(), configuration);
 
-        //Setting the shape of the robot in the physic engine to an circle with radius defined in RADIUS
-        CircleShape shape = new CircleShape();
-        shape.m_radius = configuration.getRobotRadius();
+            //Setting the shape of the robot in the physic engine to an circle with radius defined in RADIUS
+            CircleShape shape = new CircleShape();
+            shape.m_radius = configuration.getRobotRadius();
 
-        FixtureDef fixtureDef = new FixtureDef(); //The fixture contains the physical properties of the robot in the physic engine
-        fixtureDef.shape = shape;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.9f;
-        fixtureDef.restitution = 0.5f;
-        fixtureDef.userData = robot;
+            FixtureDef fixtureDef = new FixtureDef(); //The fixture contains the physical properties of the robot in the physic engine
+            fixtureDef.shape = shape;
+            fixtureDef.density = 0.5f;
+            fixtureDef.friction = 0.9f;
+            fixtureDef.restitution = 0.5f;
+            fixtureDef.userData = robot;
 
-        jbox2d_body.createFixture(fixtureDef);
+            jbox2d_body.createFixture(fixtureDef);
 
 
-        robots.put(robot.getID(), robot);
+            robots.put(robot.getID(), robot);
 
-        return robot;
+            return robot;
+        }
     }
 
     public Obstacle createObstacle(float x, float y, Vec2... points){
@@ -191,38 +204,38 @@ public class Simulator {
 
     // Next step for Physic Engine
     public void step() {
+        synchronized (this) {
             ++time;
             world.step(configuration.TIME_STEP, configuration.VELOCITY_ITERATIONS, configuration.POSITION_ITERATIONS);
             refresh(); //The base function for calculating the neighborhood and co
 
-        final CountDownLatch latch = new CountDownLatch(robots.size());
-        for (Robot r : robots.values()) {
-            final Robot theRobot = r;
-            executor.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        theRobot.runController();
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                        System.err.println("Error "+theRobot.getID());
-                    }
-                    finally {
-                        latch.countDown();
-                    }
+    final CountDownLatch latch = new CountDownLatch(robots.size());
+    for (Robot r : robots.values()) {
+        final Robot theRobot = r;
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    theRobot.runController();
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    System.err.println("Error " + theRobot.getID());
+                } finally {
+                    latch.countDown();
                 }
-            });
-        }
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            }
+        });
+    }
+    try {
+        latch.await();
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
 //        for(Robot r : robots.values())
 //                r.runController();
 
-        for (Robot r : robots.values()) r.updateOutput(); //Update the output of the robots
-
+    for (Robot r : robots.values()) r.updateOutput(); //Update the output of the robots
+}
     }
 
     public void beamObject(SimulatedObject object, float x, float y) {
@@ -234,27 +247,35 @@ public class Simulator {
     }
 
     public void destroy(SimulatedObject o){
-        if(o instanceof Robot) {
-            robots.remove(((Robot)o).getID());
-        } else {
-            obstacles.remove(o);
+        synchronized (robots) {
+            if (o instanceof Robot) {
+                robots.remove(((Robot) o).getID());
+            } else {
+                obstacles.remove(o);
+            }
+            getWorld().destroyBody(o.jbox2d_body);
         }
-        getWorld().destroyBody(o.jbox2d_body);
     }
 
     public void refresh(){
-        globalNeighborhood.updateNeighborhoodGraph();
-        for (Robot r : robots.values()) r.updateInput();
+        synchronized (robots) {
+            globalNeighborhood.updateNeighborhoodGraph();
+            for (Robot r : robots.values()) r.updateInput();
+        }
     }
 
 
 
     public Collection<Robot> getRobots() {
-        return robots.values();
+        synchronized (robots) {
+            return robots.values();
+        }
     }
 
     public Robot getRobot(int address) {
-        return robots.get(address);
+        synchronized (robots) {
+            return robots.get(address);
+        }
     }
 
 

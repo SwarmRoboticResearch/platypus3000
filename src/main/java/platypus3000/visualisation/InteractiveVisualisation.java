@@ -6,17 +6,16 @@ import org.jbox2d.collision.AABB;
 import org.jbox2d.common.MathUtils;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Fixture;
-import platypus3000.simulation.*;
 import platypus3000.simulation.Robot;
+import platypus3000.simulation.SimulatedObject;
+import platypus3000.simulation.SimulationRunner;
 import platypus3000.simulation.control.RobotInterface;
-import platypus3000.utils.ConstellationToFile;
 import platypus3000.utils.RobotCreator;
 import platypus3000.visualisation.zoompan.ZoomPan;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 
@@ -203,7 +202,7 @@ public class InteractiveVisualisation extends PApplet
             @Override
             public void onKeyPress(char key) {
                 if(robotCreator!=null){
-                    PVector coords = zoomPan.getMouseCoord();
+                    PVector coords = getSimulationMousePos();
                     robotCreator.createRobot(simRunner.getSim(), -1, coords.x, coords.y, 0);
                 }
             }
@@ -213,7 +212,19 @@ public class InteractiveVisualisation extends PApplet
 
             }
         });
+        pushKeyHandler('`', new KeyHandler() {
+            @Override
+            public void onKeyPress(char key) {
+                if(selectedObject!=null && selectedObject instanceof Robot && ((Robot) selectedObject).getController()!=null){
+                    ((Robot) selectedObject).getController().print_debug();
+                }
+            }
 
+            @Override
+            public void onKeyRelease() {
+
+            }
+        });
     }
 
     /**
@@ -454,20 +465,22 @@ public class InteractiveVisualisation extends PApplet
 
 
     public void drawRobotsTexts() {
-        for(Robot r : simRunner.getSim().getRobots()) {
-            //Prints the name under the robot
-            if (showNamesOfAllRobots) {
+        synchronized (simRunner.getSim()) {
+            for (Robot r : simRunner.getSim().getRobots()) {
+                //Prints the name under the robot
+                if (showNamesOfAllRobots) {
 
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.toString());
-            } else {
-                if (showNameOfSelectedRobot && r == selectedObject)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
-                if (HOVER && r == objectUnderMouse)
-                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.toString());
+                } else {
+                    if (showNameOfSelectedRobot && r == selectedObject)
+                        texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
+                    if (HOVER && r == objectUnderMouse)
+                        texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y + simRunner.getSim().configuration.getRobotRadius() * 2), r.getName());
+                }
+
+                if (simRunner.getSim().configuration.drawTexts() && r.textString != null)
+                    texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - simRunner.getSim().configuration.getRobotRadius() * 2), r.textString);
             }
-
-            if (simRunner.getSim().configuration.drawTexts() &&  r.textString != null)
-                texts.put(new PVector(r.getGlobalPosition().x, r.getGlobalPosition().y - simRunner.getSim().configuration.getRobotRadius() * 2), r.textString);
         }
     }
 

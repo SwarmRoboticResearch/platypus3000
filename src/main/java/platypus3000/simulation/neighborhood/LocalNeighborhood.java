@@ -50,7 +50,7 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
         return getById(i)!=null;
     }
 
-    //Left Neighbor
+    //Left PublicVariables
     public NeighborView nextCounterClockwiseNeighbor(NeighborView n){
         //if(neighborViews.size() <= 1) return null;
         Integer pos = positionOfId.get(n.getID());
@@ -59,7 +59,7 @@ public class LocalNeighborhood implements Iterable<NeighborView>{
     }
 
 
-    //Right Neighbor
+    //Right PublicVariables
     public NeighborView nextClockwiseNeighbor(NeighborView n){
         //if(neighborViews.size() <= 1) return null;
         Integer pos = positionOfId.get(n.getID());

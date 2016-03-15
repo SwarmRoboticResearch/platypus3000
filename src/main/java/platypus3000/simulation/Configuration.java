@@ -39,6 +39,11 @@ public class Configuration {
         return LINE_OF_SIGHT_CONSTRAINT;
     }
 
+    private boolean ROBOTS_DO_NOT_BLOCK_SIGHT;
+    public boolean doRobotsBlockLineOfSight(){
+        return !ROBOTS_DO_NOT_BLOCK_SIGHT;
+    }
+
     public final int THREADS;
 
     //Robot Options
@@ -187,6 +192,7 @@ public class Configuration {
         if(print_config) System.out.println("RotationSpeedDeviationChange = "+ROTATIONSPEED_DEVIATION_CHANGE+(ROTATIONSPEED_DEVIATION_CHANGE==0f?" (No Noise)":" (Noisy)"));
 
         LINE_OF_SIGHT_CONSTRAINT = Boolean.parseBoolean(prop.getProperty("LineOfSightConstraint"));
+        ROBOTS_DO_NOT_BLOCK_SIGHT = Boolean.parseBoolean(prop.getProperty("RobotsDoNotBlockLineOfSight", "false"));
         ALLOW_OVERLAPPING = Boolean.parseBoolean(prop.getProperty("AllowOverlappingOfShapes"));
 
         GUI_WIDTH = Integer.parseInt(prop.getProperty("SimulationWindowWidth"));

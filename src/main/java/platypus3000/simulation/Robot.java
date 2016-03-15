@@ -110,12 +110,12 @@ public class Robot extends SimulatedObject implements RobotInterface {
 
     @Override
     public void setSpeed(float speed) {
-        assert false;
+        movementsPhysics.setVelocity(speed);
     }
 
     @Override
-    public void setRotation(float rotation) {
-        assert false;
+    public void setRotationVelocity(float rotation) {
+        movementsPhysics.setDesiredRotationSpeed(rotation);
     }
 
     @Override
